@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
   <title>Audio Control PWA Prototype</title>
-  
-  <!-- PWA & Mobile Web App Meta Tags -->
+
+  <!-- PWA -->
   <meta name="theme-color" content="#0a0a0a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
 
@@ -19,107 +23,143 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
 
+    html,
     body {
-      background-color: #171717;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #171717;
+    }
+
+    body {
       color: #f5f5f5;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
     }
 
-    /* Device Frame */
+    /* =========================================================
+       PHONE FRAME
+       ========================================================= */
+
     .phone-container {
       width: 100%;
       max-width: 390px;
-      height: 100%;
+
+      height: 100vh;
+      height: 100dvh;
+
       max-height: 844px;
-      background-color: #0a0a0a;
+
+      background: #0a0a0a;
+
       border-radius: 40px;
       border: 8px solid #262626;
+
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+
       position: relative;
+
       display: flex;
       flex-direction: column;
+
       overflow: hidden;
     }
 
     @media (max-width: 480px) {
+
       .phone-container {
+        max-height: 100dvh;
         border-radius: 0;
         border: none;
-        max-height: 100vh;
       }
+
     }
 
-    /* Status Bar Header */
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px 2px;
-      font-size: 11px;
-      color: #a3a3a3;
-      font-weight: 600;
-      flex-shrink: 0;
-      z-index: 20;
-    }
+    /* =========================================================
+       SCREEN CONTENT
+       ========================================================= */
 
-    .notch {
-      width: 60px;
-      height: 14px;
-      background-color: #171717;
-      border-radius: 10px;
-    }
-
-    /* Screen Content Viewport */
     .screen-content {
-      flex: 1;
+
+      flex: 1 1 auto;
+
+      min-height: 0;
+
       display: flex;
       flex-direction: column;
+
       overflow: hidden;
+
       position: relative;
-      padding: 8px 12px 64px 12px;
+
+      padding: 7px 10px 6px 10px;
     }
 
-    /* Bottom Navigation Bar */
+    /* =========================================================
+       BOTTOM NAVIGATION
+       
+       IMPORTANT:
+       This is now part of the phone's flex layout rather
+       than being absolutely positioned over the screen.
+       ========================================================= */
+
     .bottom-nav {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 56px;
-      background-color: rgba(23, 23, 23, 0.95);
+
+      flex: 0 0 58px;
+
+      height: 58px;
+
+      background: rgba(23, 23, 23, 0.98);
+
       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+
       border-top: 1px solid #262626;
+
       display: flex;
+
       justify-content: space-around;
       align-items: center;
-      padding-bottom: 6px;
+
+      padding: 3px 4px 5px;
+
       z-index: 30;
     }
 
     .nav-item {
+
+      flex: 1;
+
+      height: 50px;
+
       display: flex;
       flex-direction: column;
+
       align-items: center;
+      justify-content: center;
+
       gap: 2px;
+
       background: none;
       border: none;
+
       color: #737373;
+
       font-size: 10px;
       font-weight: 500;
+
       cursor: pointer;
     }
 
@@ -128,104 +168,125 @@
     }
 
     .nav-item i {
-      width: 18px;
-      height: 18px;
+      width: 19px;
+      height: 19px;
     }
 
-    /* ================= EQUALIZER COMPACT NO-SCROLL LAYOUT ================= */
+    /* =========================================================
+       EQUALIZER
+       ========================================================= */
+
     #screen-eq {
+
       height: 100%;
+
+      min-height: 0;
+
       display: flex;
       flex-direction: column;
+
       justify-content: space-between;
+
       overflow: hidden;
+
+      gap: 3px;
     }
 
     .compact-header {
+
       display: flex;
+
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+
+      margin-bottom: 1px;
+
+      flex-shrink: 0;
     }
 
     .compact-title {
+
       font-size: 15px;
+
       font-weight: 700;
-      line-height: 1.2;
+
+      line-height: 1.15;
     }
+
+    /* =========================================================
+       CARDS
+       ========================================================= */
 
     .compact-card {
-      background-color: rgba(23, 23, 23, 0.8);
+
+      background: rgba(23, 23, 23, 0.8);
+
       border: 1px solid #262626;
-      border-radius: 12px;
-      padding: 6px 8px;
-      margin-bottom: 4px;
+
+      border-radius: 10px;
+
+      padding: 5px 7px;
+
+      margin-bottom: 2px;
+
+      flex-shrink: 0;
     }
 
-    /* Graph Card */
+    /* =========================================================
+       EQ GRAPH
+       ========================================================= */
+
     .graph-container {
+
       position: relative;
-      height: 70px;
+
+      height: 64px;
+
       width: 100%;
     }
 
     .graph-svg {
+
       width: 100%;
       height: 100%;
+
       overflow: visible;
     }
 
     .freq-labels {
+
       display: flex;
+
       justify-content: space-between;
-      font-size: 8px;
+
+      font-size: 7px;
+
       color: #737373;
+
       font-family: monospace;
-      padding-top: 2px;
+
+      padding-top: 1px;
+
       border-top: 1px solid #262626;
     }
 
-    /* Discrete Sliders */
-    .sliders-grid {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 65px;
-      padding: 0 2px;
-    }
+    /* =========================================================
+       PRESETS
+       ========================================================= */
 
-    .slider-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100%;
-      justify-content: space-between;
-    }
-
-    .slider-col input[type="range"] {
-      writing-mode: vertical-lr;
-      direction: rtl;
-      width: 3px;
-      height: 48px;
-      accent-color: #f59e0b;
-      background: #262626;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-
-    .slider-col span {
-      font-size: 8px;
-      color: #737373;
-      font-family: monospace;
-    }
-
-    /* Compact Presets */
     .presets-row {
+
       display: flex;
-      gap: 4px;
+
+      gap: 3px;
+
       overflow-x: auto;
-      padding-bottom: 2px;
-      margin-bottom: 4px;
+
+      padding: 0 0 1px;
+
+      margin-bottom: 1px;
+
+      flex-shrink: 0;
     }
 
     .presets-row::-webkit-scrollbar {
@@ -233,118 +294,260 @@
     }
 
     .preset-btn {
-      padding: 3px 8px;
-      border-radius: 8px;
-      font-size: 10px;
+
+      padding: 3px 7px;
+
+      border-radius: 7px;
+
+      font-size: 9px;
+
       white-space: nowrap;
-      background-color: #171717;
+
+      background: #171717;
+
       color: #a3a3a3;
+
       border: 1px solid #262626;
+
       cursor: pointer;
     }
 
     .preset-btn.active {
-      background-color: #f59e0b;
+
+      background: #f59e0b;
+
       color: #0a0a0a;
+
       font-weight: 700;
+
       border-color: #f59e0b;
     }
 
-    /* Dials Grid */
-    .knobs-grid {
+    /* =========================================================
+       BAND SLIDERS
+       ========================================================= */
+
+    .sliders-grid {
+
       display: flex;
-      gap: 6px;
-      margin-bottom: 4px;
+
+      justify-content: space-between;
+      align-items: center;
+
+      height: 58px;
+
+      padding: 0 2px;
+    }
+
+    .slider-col {
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      height: 100%;
+
+      justify-content: space-between;
+    }
+
+    .slider-col input[type="range"] {
+
+      writing-mode: vertical-lr;
+
+      direction: rtl;
+
+      width: 3px;
+
+      height: 43px;
+
+      accent-color: #f59e0b;
+
+      background: #262626;
+
+      border-radius: 3px;
+
+      cursor: pointer;
+    }
+
+    .slider-col span {
+
+      font-size: 7px;
+
+      color: #737373;
+
+      font-family: monospace;
+    }
+
+    /* =========================================================
+       KNOBS
+       ========================================================= */
+
+    .knobs-grid {
+
+      display: flex;
+
+      gap: 5px;
+
+      margin-bottom: 2px;
     }
 
     .knob-card {
+
       flex: 1;
+
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
-      background-color: rgba(23, 23, 23, 0.8);
-      padding: 6px 4px;
-      border-radius: 12px;
+
+      background: rgba(23, 23, 23, 0.8);
+
+      padding: 5px 3px;
+
+      border-radius: 10px;
+
       border: 1px solid #262626;
     }
 
     .knob-svg {
-      width: 42px;
-      height: 42px;
+
+      width: 40px;
+      height: 40px;
+
       cursor: ns-resize;
     }
 
     .knob-label {
-      font-size: 9px;
+
+      font-size: 8px;
+
       color: #a3a3a3;
-      margin: 2px 0 4px;
+
+      margin: 1px 0 2px;
     }
 
-    /* Compact Volume & Visualizer */
+    /* =========================================================
+       VOLUME
+       ========================================================= */
+
     .volume-slider {
+
       width: 100%;
+
       accent-color: #f59e0b;
+
       background: #262626;
+
       height: 4px;
+
       border-radius: 2px;
+
       cursor: pointer;
-      margin-bottom: 4px;
+
+      margin-bottom: 3px;
     }
+
+    /* =========================================================
+       VISUALIZER
+       ========================================================= */
 
     .visualizer-container {
+
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       gap: 1.5px;
-      height: 28px;
-      padding: 4px 8px;
-      background-color: rgba(23, 23, 23, 0.6);
-      border-radius: 8px;
+
+      height: 25px;
+
+      padding: 3px 7px;
+
+      background: rgba(23, 23, 23, 0.6);
+
+      border-radius: 7px;
+
       border: 1px solid #262626;
     }
 
     .vis-bar {
+
       width: 2.5px;
-      background-color: #f59e0b;
+
+      background: #f59e0b;
+
       border-radius: 2px;
+
       transition: height 0.08s ease;
     }
 
-    /* Toggle Switches */
+    /* =========================================================
+       TOGGLE
+       ========================================================= */
+
     .toggle-switch {
-      width: 36px;
-      height: 18px;
-      background-color: #262626;
+
+      width: 34px;
+
+      height: 17px;
+
+      background: #262626;
+
       border-radius: 10px;
+
       position: relative;
+
       cursor: pointer;
+
       transition: background-color 0.2s;
     }
 
     .toggle-switch.active {
-      background-color: #f59e0b;
+
+      background: #f59e0b;
     }
 
     .toggle-switch::after {
+
       content: '';
+
       position: absolute;
+
       top: 2px;
       left: 2px;
-      width: 14px;
-      height: 14px;
-      background-color: #ffffff;
+
+      width: 13px;
+      height: 13px;
+
+      background: #ffffff;
+
       border-radius: 50%;
+
       transition: transform 0.2s;
     }
 
     .toggle-switch.active::after {
-      transform: translateX(18px);
+
+      transform: translateX(17px);
     }
 
-    /* ================= OTHER SUBSCREENS (SCROLLABLE) ================= */
+    /* =========================================================
+       OTHER SCREENS
+       ========================================================= */
+
     .scrollable-page {
+
       height: 100%;
+
+      min-height: 0;
+
       overflow-y: auto;
+
       padding-right: 2px;
     }
 
@@ -353,294 +556,875 @@
     }
 
     .menu-list {
+
       display: flex;
+
       flex-direction: column;
-      gap: 8px;
+
+      gap: 6px;
     }
 
     .menu-item {
+
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
-      padding: 12px;
-      background-color: rgba(23, 23, 23, 0.8);
+
+      padding: 10px;
+
+      background: rgba(23, 23, 23, 0.8);
+
       border: 1px solid #262626;
-      border-radius: 12px;
+
+      border-radius: 10px;
+
       cursor: pointer;
+
       width: 100%;
+
       text-align: left;
+
       color: inherit;
     }
 
     .menu-item-left {
+
       display: flex;
+
       align-items: center;
-      gap: 10px;
+
+      gap: 8px;
     }
 
     .menu-icon {
-      padding: 6px;
-      border-radius: 8px;
-      background-color: rgba(245, 158, 11, 0.1);
+
+      padding: 5px;
+
+      border-radius: 7px;
+
+      background: rgba(245, 158, 11, 0.1);
+
       color: #f59e0b;
+
       display: flex;
     }
 
     .menu-text-title {
-      font-size: 13px;
+
+      font-size: 12px;
+
       font-weight: 600;
     }
 
     .menu-text-sub {
-      font-size: 10px;
+
+      font-size: 9px;
+
       color: #737373;
     }
 
     .back-btn {
+
       background: #171717;
+
       border: 1px solid #262626;
+
       color: #d4d4d4;
+
       padding: 4px;
-      border-radius: 8px;
+
+      border-radius: 7px;
+
       cursor: pointer;
+
       display: flex;
+
       align-items: center;
     }
 
     .order-item {
+
       display: flex;
+
       justify-content: space-between;
       align-items: center;
-      padding: 10px;
+
+      padding: 8px;
+
       background: #171717;
-      border-radius: 10px;
+
+      border-radius: 9px;
+
       border: 1px solid #262626;
-      margin-bottom: 8px;
+
+      margin-bottom: 6px;
     }
 
     .qty-controls {
+
       display: flex;
+
       align-items: center;
-      gap: 6px;
-      background-color: #262626;
-      padding: 2px 6px;
+
+      gap: 5px;
+
+      background: #262626;
+
+      padding: 2px 5px;
+
       border-radius: 6px;
     }
 
     .qty-btn {
+
       background: none;
+
       border: none;
+
       color: #f5f5f5;
+
       cursor: pointer;
+
       display: flex;
     }
 
     .hidden {
       display: none !important;
     }
+
+    /* =========================================================
+       SHORT SCREENS
+       ========================================================= */
+
+    @media (max-height: 700px) {
+
+      .screen-content {
+        padding-top: 4px;
+        padding-bottom: 4px;
+      }
+
+      #screen-eq {
+        gap: 2px;
+      }
+
+      .graph-container {
+        height: 55px;
+      }
+
+      .sliders-grid {
+        height: 52px;
+      }
+
+      .slider-col input[type="range"] {
+        height: 38px;
+      }
+
+      .visualizer-container {
+        height: 21px;
+      }
+
+      .bottom-nav {
+        flex-basis: 54px;
+        height: 54px;
+      }
+
+      .nav-item {
+        height: 47px;
+      }
+    }
+
   </style>
 </head>
+
 <body>
 
   <div class="phone-container">
-    <!-- Status Bar Header -->
-    <!-- MAIN VIEW CONTAINER -->
+
+    <!-- =======================================================
+         MAIN SCREEN CONTENT
+         ======================================================= -->
+
     <div class="screen-content">
 
-      <!-- 1. EQUALIZER TAB (FITS ENTIRELY ON SCREEN, NO SCROLLING) -->
+      <!-- =====================================================
+           1. EQUALIZER
+           ===================================================== -->
+
       <div id="screen-eq" class="screen-page">
-        <!-- Top Bar -->
+
         <div class="compact-header">
-          <div>
-            <h1 class="compact-title">Equalizer</h1>
+
+          <h1 class="compact-title">Equalizer</h1>
+
+          <div
+            class="toggle-switch active"
+            onclick="toggleSwitch(this)">
           </div>
-          <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+
         </div>
 
-        <!-- EQ Curve Graph -->
+        <!-- EQ GRAPH -->
+
         <div class="compact-card">
+
           <div class="graph-container">
-            <svg class="graph-svg" id="eq-graph-svg">
-              <path id="eq-path" fill="none" stroke="#f59e0b" stroke-width="2"></path>
+
+            <svg
+              class="graph-svg"
+              id="eq-graph-svg">
+
+              <path
+                id="eq-path"
+                fill="none"
+                stroke="#f59e0b"
+                stroke-width="2">
+              </path>
+
               <g id="eq-dots"></g>
+
             </svg>
+
           </div>
-          <div class="freq-labels" id="freq-labels-container"></div>
+
+          <div
+            class="freq-labels"
+            id="freq-labels-container">
+          </div>
+
         </div>
 
-        <!-- Presets Bar -->
-        <div class="presets-row" id="presets-container"></div>
+        <!-- PRESETS -->
 
-        <!-- Discrete Sliders -->
+        <div
+          class="presets-row"
+          id="presets-container">
+        </div>
+
+        <!-- BAND LEVELS -->
+
         <div class="compact-card">
-          <span style="font-size: 8px; color: #a3a3a3; font-weight: 600; display: block; margin-bottom: 2px;">BAND LEVELS</span>
-          <div class="sliders-grid" id="sliders-grid-container"></div>
-        </div>
 
+          <span
+            style="
+              font-size:8px;
+              color:#a3a3a3;
+              font-weight:600;
+              display:block;
+              margin-bottom:1px;
+            ">
+            BAND LEVELS
+          </span>
 
-        <!-- Volume & Soundwave Card -->
-        <div class="compact-card" style="margin-bottom:0;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-            <span style="font-size:9px; color:#a3a3a3; font-weight:600;">Volume</span>
-            <span id="volume-readout" style="font-size:9px; color:#f59e0b; font-family:monospace;">60%</span>
+          <div
+            class="sliders-grid"
+            id="sliders-grid-container">
           </div>
-          <input type="range" id="volume-range" class="volume-slider" min="0" max="100" value="60" oninput="updateVolume(this.value)">
-          <div class="visualizer-container" id="visualizer-bars"></div>
+
         </div>
+
+        <!-- VOLUME -->
+
+        <div
+          class="compact-card"
+          style="margin-bottom:0;">
+
+          <div
+            style="
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              margin-bottom:1px;
+            ">
+
+            <span
+              style="
+                font-size:9px;
+                color:#a3a3a3;
+                font-weight:600;
+              ">
+              Volume
+            </span>
+
+            <span
+              id="volume-readout"
+              style="
+                font-size:9px;
+                color:#f59e0b;
+                font-family:monospace;
+              ">
+              60%
+            </span>
+
+          </div>
+
+          <input
+            type="range"
+            id="volume-range"
+            class="volume-slider"
+            min="0"
+            max="100"
+            value="60"
+            oninput="updateVolume(this.value)">
+
+          <div
+            class="visualizer-container"
+            id="visualizer-bars">
+          </div>
+
+        </div>
+
       </div>
 
-      <!-- 2. TRANSLATE TAB SCREEN -->
-      <div id="screen-translate" class="screen-page scrollable-page hidden">
-        <h1 class="compact-title" style="margin-bottom:12px;">Live Translate</h1>
-        <div class="compact-card" style="text-align: center; padding: 30px 10px;">
-          <i data-lucide="mic" style="width:36px; height:36px; color:#f59e0b; margin-bottom:8px;"></i>
-          <p style="font-size:12px; color:#a3a3a3;">Listening for continuous live audio input...</p>
+      <!-- =====================================================
+           2. TRANSLATE
+           ===================================================== -->
+
+      <div
+        id="screen-translate"
+        class="screen-page scrollable-page hidden">
+
+        <h1
+          class="compact-title"
+          style="margin-bottom:10px;">
+          Live Translate
+        </h1>
+
+        <div
+          class="compact-card"
+          style="
+            text-align:center;
+            padding:25px 10px;
+          ">
+
+          <i
+            data-lucide="mic"
+            style="
+              width:36px;
+              height:36px;
+              color:#f59e0b;
+              margin-bottom:8px;
+            ">
+          </i>
+
+          <p
+            style="
+              font-size:12px;
+              color:#a3a3a3;
+            ">
+            Listening for continuous live audio input...
+          </p>
+
         </div>
+
       </div>
 
-      <!-- 3. VENUE TAB SCREEN -->
-      <div id="screen-venue" class="screen-page scrollable-page hidden">
+      <!-- =====================================================
+           3. VENUE
+           ===================================================== -->
+
+      <div
+        id="screen-venue"
+        class="screen-page scrollable-page hidden">
+
         <div id="venue-sub-hub">
-          <h1 class="compact-title" style="margin-bottom: 12px;">Venue Hub</h1>
+
+          <h1
+            class="compact-title"
+            style="margin-bottom:10px;">
+            Venue Hub
+          </h1>
+
           <div class="menu-list">
-            <button class="menu-item" onclick="openVenueSub('notifications')">
+
+            <button
+              class="menu-item"
+              onclick="openVenueSub('notifications')">
+
               <div class="menu-item-left">
-                <div class="menu-icon"><i data-lucide="bell" style="width:16px; height:16px;"></i></div>
-                <div>
-                  <div class="menu-text-title">Venue Notifications</div>
-                  <div class="menu-text-sub">Alerts, sound thresholds, updates</div>
+
+                <div class="menu-icon">
+                  <i
+                    data-lucide="bell"
+                    style="width:16px;height:16px;">
+                  </i>
                 </div>
+
+                <div>
+
+                  <div class="menu-text-title">
+                    Venue Notifications
+                  </div>
+
+                  <div class="menu-text-sub">
+                    Alerts, sound thresholds, updates
+                  </div>
+
+                </div>
+
               </div>
-              <i data-lucide="chevron-right" style="color:#525252; width:16px; height:16px;"></i>
+
+              <i
+                data-lucide="chevron-right"
+                style="color:#525252;width:16px;height:16px;">
+              </i>
+
             </button>
 
-            <button class="menu-item" onclick="openVenueSub('map')">
+            <button
+              class="menu-item"
+              onclick="openVenueSub('map')">
+
               <div class="menu-item-left">
-                <div class="menu-icon"><i data-lucide="map-pin" style="width:16px; height:16px;"></i></div>
-                <div>
-                  <div class="menu-text-title">Map & Guidance</div>
-                  <div class="menu-text-sub">Indoor navigation and stage points</div>
+
+                <div class="menu-icon">
+
+                  <i
+                    data-lucide="map-pin"
+                    style="width:16px;height:16px;">
+                  </i>
+
                 </div>
+
+                <div>
+
+                  <div class="menu-text-title">
+                    Map & Guidance
+                  </div>
+
+                  <div class="menu-text-sub">
+                    Indoor navigation and stage points
+                  </div>
+
+                </div>
+
               </div>
-              <i data-lucide="chevron-right" style="color:#525252; width:16px; height:16px;"></i>
+
+              <i
+                data-lucide="chevron-right"
+                style="color:#525252;width:16px;height:16px;">
+              </i>
+
             </button>
 
-            <button class="menu-item" onclick="openVenueSub('order')">
+            <button
+              class="menu-item"
+              onclick="openVenueSub('order')">
+
               <div class="menu-item-left">
-                <div class="menu-icon"><i data-lucide="utensils" style="width:16px; height:16px;"></i></div>
-                <div>
-                  <div class="menu-text-title">Order Food & Drinks</div>
-                  <div class="menu-text-sub">Direct-to-seat service</div>
+
+                <div class="menu-icon">
+
+                  <i
+                    data-lucide="utensils"
+                    style="width:16px;height:16px;">
+                  </i>
+
                 </div>
+
+                <div>
+
+                  <div class="menu-text-title">
+                    Order Food & Drinks
+                  </div>
+
+                  <div class="menu-text-sub">
+                    Direct-to-seat service
+                  </div>
+
+                </div>
+
               </div>
-              <i data-lucide="chevron-right" style="color:#525252; width:16px; height:16px;"></i>
+
+              <i
+                data-lucide="chevron-right"
+                style="color:#525252;width:16px;height:16px;">
+              </i>
+
             </button>
+
           </div>
+
         </div>
 
-        <div id="venue-sub-notifications" class="hidden">
-          <div class="compact-header" style="justify-content: flex-start; gap: 8px;">
-            <button class="back-btn" onclick="openVenueSub('hub')"><i data-lucide="arrow-left" style="width:14px; height:14px;"></i></button>
-            <h1 class="compact-title">Notifications</h1>
+        <div
+          id="venue-sub-notifications"
+          class="hidden">
+
+          <div
+            class="compact-header"
+            style="
+              justify-content:flex-start;
+              gap:8px;
+            ">
+
+            <button
+              class="back-btn"
+              onclick="openVenueSub('hub')">
+
+              <i
+                data-lucide="arrow-left"
+                style="width:14px;height:14px;">
+              </i>
+
+            </button>
+
+            <h1 class="compact-title">
+              Notifications
+            </h1>
+
           </div>
-          <div class="compact-card" style="border-color: rgba(245, 158, 11, 0.4);">
-            <div style="display:flex; justify-style:space-between; margin-bottom:2px;">
-              <span style="font-size: 11px; font-weight: 600; color: #f59e0b;">SPL Threshold Exceeded</span>
-              <span style="font-size: 9px; color: #737373;">2m ago</span>
+
+          <div
+            class="compact-card"
+            style="
+              border-color:rgba(245,158,11,0.4);
+            ">
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                margin-bottom:2px;
+              ">
+
+              <span
+                style="
+                  font-size:11px;
+                  font-weight:600;
+                  color:#f59e0b;
+                ">
+                SPL Threshold Exceeded
+              </span>
+
+              <span
+                style="
+                  font-size:9px;
+                  color:#737373;
+                ">
+                2m ago
+              </span>
+
             </div>
-            <p style="font-size: 10px; color: #a3a3a3;">Main Hall ambient noise exceeded 95dB safety threshold.</p>
+
+            <p
+              style="
+                font-size:10px;
+                color:#a3a3a3;
+              ">
+              Main Hall ambient noise exceeded 95dB safety threshold.
+            </p>
+
           </div>
+
         </div>
 
-        <div id="venue-sub-map" class="hidden">
-          <div class="compact-header" style="justify-content: flex-start; gap: 8px;">
-            <button class="back-btn" onclick="openVenueSub('hub')"><i data-lucide="arrow-left" style="width:14px; height:14px;"></i></button>
-            <h1 class="compact-title">Map & Guidance</h1>
+        <div
+          id="venue-sub-map"
+          class="hidden">
+
+          <div
+            class="compact-header"
+            style="
+              justify-content:flex-start;
+              gap:8px;
+            ">
+
+            <button
+              class="back-btn"
+              onclick="openVenueSub('hub')">
+
+              <i
+                data-lucide="arrow-left"
+                style="width:14px;height:14px;">
+              </i>
+
+            </button>
+
+            <h1 class="compact-title">
+              Map & Guidance
+            </h1>
+
           </div>
-          <div class="compact-card" style="height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #121212;">
-            <i data-lucide="map-pin" style="width:28px; height:28px; color:#f59e0b; margin-bottom:4px;"></i>
-            <span style="font-size:11px; color:#a3a3a3;">Main Stage - Area A</span>
+
+          <div
+            class="compact-card"
+            style="
+              height:180px;
+              display:flex;
+              flex-direction:column;
+              align-items:center;
+              justify-content:center;
+              background:#121212;
+            ">
+
+            <i
+              data-lucide="map-pin"
+              style="
+                width:28px;
+                height:28px;
+                color:#f59e0b;
+                margin-bottom:4px;
+              ">
+            </i>
+
+            <span
+              style="
+                font-size:11px;
+                color:#a3a3a3;
+              ">
+              Main Stage - Area A
+            </span>
+
           </div>
+
         </div>
 
-        <div id="venue-sub-order" class="hidden">
-          <div class="compact-header" style="justify-content: flex-start; gap: 8px;">
-            <button class="back-btn" onclick="openVenueSub('hub')"><i data-lucide="arrow-left" style="width:14px; height:14px;"></i></button>
-            <h1 class="compact-title">Venue Ordering</h1>
+        <div
+          id="venue-sub-order"
+          class="hidden">
+
+          <div
+            class="compact-header"
+            style="
+              justify-content:flex-start;
+              gap:8px;
+            ">
+
+            <button
+              class="back-btn"
+              onclick="openVenueSub('hub')">
+
+              <i
+                data-lucide="arrow-left"
+                style="width:14px;height:14px;">
+              </i>
+
+            </button>
+
+            <h1 class="compact-title">
+              Venue Ordering
+            </h1>
+
           </div>
+
           <div id="order-items-list"></div>
-          <div id="cart-bar" class="compact-card hidden" style="background:#f59e0b; color:#0a0a0a; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
-            <span id="cart-total-text">Checkout ($0.00)</span>
-            <i data-lucide="shopping-cart" style="width:16px; height:16px;"></i>
+
+          <div
+            id="cart-bar"
+            class="compact-card hidden"
+            style="
+              background:#f59e0b;
+              color:#0a0a0a;
+              font-weight:700;
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+            ">
+
+            <span id="cart-total-text">
+              Checkout ($0.00)
+            </span>
+
+            <i
+              data-lucide="shopping-cart"
+              style="width:16px;height:16px;">
+            </i>
+
           </div>
+
         </div>
+
       </div>
 
-      <!-- 4. SYSTEM MENU TAB SCREEN -->
-      <div id="screen-menu" class="screen-page scrollable-page hidden">
+      <!-- =====================================================
+           4. SYSTEM MENU
+           ===================================================== -->
+
+      <div
+        id="screen-menu"
+        class="screen-page scrollable-page hidden">
+
         <div id="menu-sub-hub">
-          <h1 class="compact-title" style="margin-bottom: 12px;">System Settings</h1>
+
+          <h1
+            class="compact-title"
+            style="margin-bottom:10px;">
+            System Settings
+          </h1>
+
           <div class="menu-list">
-            <button class="menu-item" onclick="openMenuSub('accessibility')">
+
+            <button
+              class="menu-item"
+              onclick="openMenuSub('accessibility')">
+
               <div class="menu-item-left">
-                <div class="menu-icon"><i data-lucide="eye" style="width:16px; height:16px;"></i></div>
-                <div>
-                  <div class="menu-text-title">Accessibility</div>
-                  <div class="menu-text-sub">Visual, audio, and haptic options</div>
+
+                <div class="menu-icon">
+
+                  <i
+                    data-lucide="eye"
+                    style="width:16px;height:16px;">
+                  </i>
+
                 </div>
+
+                <div>
+
+                  <div class="menu-text-title">
+                    Accessibility
+                  </div>
+
+                  <div class="menu-text-sub">
+                    Visual, audio, and haptic options
+                  </div>
+
+                </div>
+
               </div>
-              <i data-lucide="chevron-right" style="color:#525252; width:16px; height:16px;"></i>
+
+              <i
+                data-lucide="chevron-right"
+                style="color:#525252;width:16px;height:16px;">
+              </i>
+
             </button>
+
           </div>
+
         </div>
 
-        <div id="menu-sub-accessibility" class="hidden">
-          <div class="compact-header" style="justify-content: flex-start; gap: 8px;">
-            <button class="back-btn" onclick="openMenuSub('hub')"><i data-lucide="arrow-left" style="width:14px; height:14px;"></i></button>
-            <h1 class="compact-title">Accessibility</h1>
+        <div
+          id="menu-sub-accessibility"
+          class="hidden">
+
+          <div
+            class="compact-header"
+            style="
+              justify-content:flex-start;
+              gap:8px;
+            ">
+
+            <button
+              class="back-btn"
+              onclick="openMenuSub('hub')">
+
+              <i
+                data-lucide="arrow-left"
+                style="width:14px;height:14px;">
+              </i>
+
+            </button>
+
+            <h1 class="compact-title">
+              Accessibility
+            </h1>
+
           </div>
+
           <div class="menu-list">
+
             <div class="menu-item">
-              <span class="menu-text-title">High Contrast UI</span>
-              <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+
+              <span class="menu-text-title">
+                High Contrast UI
+              </span>
+
+              <div
+                class="toggle-switch active"
+                onclick="toggleSwitch(this)">
+              </div>
+
             </div>
+
             <div class="menu-item">
-              <span class="menu-text-title">Mono Audio Output</span>
-              <div class="toggle-switch" onclick="toggleSwitch(this)"></div>
+
+              <span class="menu-text-title">
+                Mono Audio Output
+              </span>
+
+              <div
+                class="toggle-switch"
+                onclick="toggleSwitch(this)">
+              </div>
+
             </div>
+
             <div class="menu-item">
-              <span class="menu-text-title">Haptic Feedback</span>
-              <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+
+              <span class="menu-text-title">
+                Haptic Feedback
+              </span>
+
+              <div
+                class="toggle-switch active"
+                onclick="toggleSwitch(this)">
+              </div>
+
             </div>
+
           </div>
+
         </div>
+
       </div>
 
     </div>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- =======================================================
+         BOTTOM NAVIGATION
+         ======================================================= -->
+
     <div class="bottom-nav">
-      <button class="nav-item active" onclick="switchTab('eq', this)">
+
+      <button
+        class="nav-item active"
+        onclick="switchTab('eq', this)">
+
         <i data-lucide="sliders"></i>
         <span>EQ</span>
+
       </button>
-      <button class="nav-item" onclick="switchTab('translate', this)">
+
+      <button
+        class="nav-item"
+        onclick="switchTab('translate', this)">
+
         <i data-lucide="mic"></i>
         <span>Translate</span>
+
       </button>
-      <button class="nav-item" onclick="switchTab('venue', this)">
+
+      <button
+        class="nav-item"
+        onclick="switchTab('venue', this)">
+
         <i data-lucide="map-pin"></i>
         <span>Venue</span>
+
       </button>
-      <button class="nav-item" onclick="switchTab('menu', this)">
+
+      <button
+        class="nav-item"
+        onclick="switchTab('menu', this)">
+
         <i data-lucide="settings"></i>
         <span>Menu</span>
+
       </button>
+
     </div>
+
   </div>
 
   <script>
-    // State Data
+
+    /* =========================================================
+       STATE DATA
+       ========================================================= */
+
     const bands = [
       { freq: '31', db: 2.9 },
       { freq: '62', db: 1.2 },
@@ -654,259 +1438,757 @@
       { freq: '16k', db: 3.4 }
     ];
 
-    const presets = ['Flat', 'Bass', 'Vocal', 'Acoustic', 'Podcast', 'Midnight', 'Custom'];
+    const presets = [
+      'Flat',
+      'Bass',
+      'Vocal',
+      'Acoustic',
+      'Podcast',
+      'Midnight',
+      'Custom'
+    ];
+
     let activePreset = 'Custom';
+
     let volumeLevel = 60;
 
     const menuItems = [
-      { id: '1', name: 'Craft IPA', price: 8.50, desc: 'Local draft IPA (16 oz)' },
-      { id: '2', name: 'Sparkling Water', price: 3.50, desc: 'Chilled spring water' },
-      { id: '3', name: 'Artisan Nachos', price: 12.00, desc: 'Loaded with cheese' },
-      { id: '4', name: 'Pretzel Bites', price: 9.00, desc: 'Served with beer cheese' }
+      {
+        id: '1',
+        name: 'Craft IPA',
+        price: 8.50,
+        desc: 'Local draft IPA (16 oz)'
+      },
+      {
+        id: '2',
+        name: 'Sparkling Water',
+        price: 3.50,
+        desc: 'Chilled spring water'
+      },
+      {
+        id: '3',
+        name: 'Artisan Nachos',
+        price: 12.00,
+        desc: 'Loaded with cheese'
+      },
+      {
+        id: '4',
+        name: 'Pretzel Bites',
+        price: 9.00,
+        desc: 'Served with beer cheese'
+      }
     ];
+
     const cart = {};
 
-    // PWA Service Worker Registration
+    /* =========================================================
+       SERVICE WORKER
+       ========================================================= */
+
     if ('serviceWorker' in navigator) {
+
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg error:', err));
+
+        navigator.serviceWorker
+          .register('./sw.js')
+          .catch(err => {
+            console.log('SW registration error:', err);
+          });
+
       });
+
     }
 
-    // Initialization
-    document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons();
-      renderEQGraph();
-      renderSliders();
-      renderPresets();
-      renderVisualizerBars();
-      renderOrderMenu();
-      startVisualizerAnimation();
-      setupKnobDrag();
-    });
+    /* =========================================================
+       INITIALIZATION
+       ========================================================= */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+
+        lucide.createIcons();
+
+        renderEQGraph();
+
+        renderSliders();
+
+        renderPresets();
+
+        renderVisualizerBars();
+
+        renderOrderMenu();
+
+        startVisualizerAnimation();
+
+        setupKnobDrag();
+
+      }
+    );
+
+    /* =========================================================
+       TAB SWITCHING
+       ========================================================= */
 
     function switchTab(tabId, btn) {
-      document.querySelectorAll('.screen-page').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      
-      document.getElementById(`screen-${tabId}`).classList.remove('hidden');
+
+      document
+        .querySelectorAll('.screen-page')
+        .forEach(el => {
+          el.classList.add('hidden');
+        });
+
+      document
+        .querySelectorAll('.nav-item')
+        .forEach(el => {
+          el.classList.remove('active');
+        });
+
+      document
+        .getElementById(`screen-${tabId}`)
+        .classList.remove('hidden');
+
       btn.classList.add('active');
+
     }
+
+    /* =========================================================
+       VENUE SUBMENU
+       ========================================================= */
 
     function openVenueSub(sub) {
-      ['hub', 'notifications', 'map', 'order'].forEach(s => {
-        document.getElementById(`venue-sub-${s}`).classList.add('hidden');
-      });
-      document.getElementById(`venue-sub-${sub}`).classList.remove('hidden');
+
+      ['hub', 'notifications', 'map', 'order']
+        .forEach(s => {
+
+          document
+            .getElementById(`venue-sub-${s}`)
+            .classList.add('hidden');
+
+        });
+
+      document
+        .getElementById(`venue-sub-${sub}`)
+        .classList.remove('hidden');
+
     }
+
+    /* =========================================================
+       MENU SUBMENU
+       ========================================================= */
 
     function openMenuSub(sub) {
-      ['hub', 'accessibility'].forEach(s => {
-        document.getElementById(`menu-sub-${s}`).classList.add('hidden');
-      });
-      document.getElementById(`menu-sub-${sub}`).classList.remove('hidden');
+
+      ['hub', 'accessibility']
+        .forEach(s => {
+
+          document
+            .getElementById(`menu-sub-${s}`)
+            .classList.add('hidden');
+
+        });
+
+      document
+        .getElementById(`menu-sub-${sub}`)
+        .classList.remove('hidden');
+
     }
+
+    /* =========================================================
+       TOGGLE
+       ========================================================= */
 
     function toggleSwitch(el) {
+
       el.classList.toggle('active');
+
     }
 
-    // Render Compact EQ
+    /* =========================================================
+       EQ GRAPH
+       ========================================================= */
+
     function renderEQGraph() {
-      const svg = document.getElementById('eq-graph-svg');
-      const path = document.getElementById('eq-path');
-      const dotsGroup = document.getElementById('eq-dots');
+
+      const svg =
+        document.getElementById('eq-graph-svg');
+
+      const path =
+        document.getElementById('eq-path');
+
+      const dotsGroup =
+        document.getElementById('eq-dots');
+
       const width = 300;
+
       const height = 65;
 
       const points = bands.map((b, i) => {
-        const x = (i / (bands.length - 1)) * width;
-        const y = (height / 2) - (b.db / 12) * (height / 2 - 6);
-        return { x, y, db: b.db };
+
+        const x =
+          (i / (bands.length - 1)) * width;
+
+        const y =
+          (height / 2) -
+          (b.db / 12) *
+          (height / 2 - 6);
+
+        return {
+          x,
+          y,
+          db: b.db
+        };
+
       });
 
-      let d = `M ${points[0].x} ${points[0].y}`;
-      for (let i = 0; i < points.length - 1; i++) {
-        const xMid = (points[i].x + points[i + 1].x) / 2;
-        const yMid = (points[i].y + points[i + 1].y) / 2;
-        const cpX1 = (xMid + points[i].x) / 2;
-        const cpX2 = (xMid + points[i + 1].x) / 2;
-        d += ` Q ${cpX1} ${points[i].y}, ${xMid} ${yMid} T ${points[i + 1].x} ${points[i + 1].y}`;
+      let d =
+        `M ${points[0].x} ${points[0].y}`;
+
+      for (
+        let i = 0;
+        i < points.length - 1;
+        i++
+      ) {
+
+        const xMid =
+          (points[i].x +
+           points[i + 1].x) / 2;
+
+        const yMid =
+          (points[i].y +
+           points[i + 1].y) / 2;
+
+        const cpX1 =
+          (xMid + points[i].x) / 2;
+
+        d +=
+          ` Q ${cpX1} ${points[i].y},
+             ${xMid} ${yMid}`;
+
+        d +=
+          ` T ${points[i + 1].x}
+             ${points[i + 1].y}`;
+
       }
+
       path.setAttribute('d', d);
 
       dotsGroup.innerHTML = '';
+
       points.forEach(p => {
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+
+        const circle =
+          document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            'circle'
+          );
+
         circle.setAttribute('cx', p.x);
+
         circle.setAttribute('cy', p.y);
+
         circle.setAttribute('r', '2.5');
-        circle.setAttribute('fill', '#f59e0b');
+
+        circle.setAttribute(
+          'fill',
+          '#f59e0b'
+        );
+
         dotsGroup.appendChild(circle);
 
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const text =
+          document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            'text'
+          );
+
         text.setAttribute('x', p.x);
-        text.setAttribute('y', p.y - 5);
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('fill', '#f59e0b');
-        text.setAttribute('font-size', '7');
-        text.textContent = p.db > 0 ? `+${p.db.toFixed(1)}` : p.db.toFixed(1);
+
+        text.setAttribute(
+          'y',
+          p.y - 5
+        );
+
+        text.setAttribute(
+          'text-anchor',
+          'middle'
+        );
+
+        text.setAttribute(
+          'fill',
+          '#f59e0b'
+        );
+
+        text.setAttribute(
+          'font-size',
+          '7'
+        );
+
+        text.textContent =
+          p.db > 0
+            ? `+${p.db.toFixed(1)}`
+            : p.db.toFixed(1);
+
         dotsGroup.appendChild(text);
+
       });
+
     }
 
+    /* =========================================================
+       SLIDERS
+       ========================================================= */
+
     function renderSliders() {
-      const container = document.getElementById('sliders-grid-container');
-      const labelsContainer = document.getElementById('freq-labels-container');
+
+      const container =
+        document.getElementById(
+          'sliders-grid-container'
+        );
+
+      const labelsContainer =
+        document.getElementById(
+          'freq-labels-container'
+        );
+
       container.innerHTML = '';
+
       labelsContainer.innerHTML = '';
 
       bands.forEach((b, idx) => {
-        const col = document.createElement('div');
+
+        const col =
+          document.createElement('div');
+
         col.className = 'slider-col';
+
         col.innerHTML = `
-          <input type="range" min="-12" max="12" step="0.5" value="${b.db}" oninput="updateBand(${idx}, this.value)">
+          <input
+            type="range"
+            min="-12"
+            max="12"
+            step="0.5"
+            value="${b.db}"
+            oninput="updateBand(${idx}, this.value)"
+          >
+
           <span>${b.freq}</span>
         `;
+
         container.appendChild(col);
 
-        const label = document.createElement('span');
+        const label =
+          document.createElement('span');
+
         label.textContent = b.freq;
+
         labelsContainer.appendChild(label);
+
       });
+
     }
 
     function updateBand(idx, val) {
-      bands[idx].db = parseFloat(val);
+
+      bands[idx].db =
+        parseFloat(val);
+
       renderEQGraph();
+
     }
+
+    /* =========================================================
+       PRESETS
+       ========================================================= */
 
     function renderPresets() {
-      const container = document.getElementById('presets-container');
+
+      const container =
+        document.getElementById(
+          'presets-container'
+        );
+
       container.innerHTML = '';
+
       presets.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = `preset-btn ${p === activePreset ? 'active' : ''}`;
+
+        const btn =
+          document.createElement('button');
+
+        btn.className =
+          `preset-btn ${
+            p === activePreset
+              ? 'active'
+              : ''
+          }`;
+
         btn.textContent = p;
+
         btn.onclick = () => {
+
           activePreset = p;
+
           renderPresets();
+
         };
+
         container.appendChild(btn);
+
       });
+
     }
+
+    /* =========================================================
+       VOLUME
+       ========================================================= */
 
     function updateVolume(val) {
+
       volumeLevel = val;
-      document.getElementById('volume-readout').textContent = `${val}%`;
+
+      document
+        .getElementById('volume-readout')
+        .textContent = `${val}%`;
+
     }
 
+    /* =========================================================
+       VISUALIZER
+       ========================================================= */
+
     function renderVisualizerBars() {
-      const container = document.getElementById('visualizer-bars');
+
+      const container =
+        document.getElementById(
+          'visualizer-bars'
+        );
+
       container.innerHTML = '';
-      for (let i = 0; i < 36; i++) {
-        const bar = document.createElement('div');
+
+      for (
+        let i = 0;
+        i < 36;
+        i++
+      ) {
+
+        const bar =
+          document.createElement('div');
+
         bar.className = 'vis-bar';
+
         bar.style.height = '8px';
+
         container.appendChild(bar);
+
       }
+
     }
 
     function startVisualizerAnimation() {
+
       let phase = 0;
+
       function animate() {
+
         phase += 0.08;
-        const bars = document.querySelectorAll('.vis-bar');
+
+        const bars =
+          document.querySelectorAll(
+            '.vis-bar'
+          );
+
         bars.forEach((bar, i) => {
-          const base = Math.sin(phase + i * 0.3) * 0.4 + Math.cos(phase * 0.5 + i * 0.2) * 0.4;
-          const normalized = Math.max(0.1, Math.min(1, (base + 1) / 2));
-          const h = Math.floor(normalized * (volumeLevel / 100) * 20 + 3);
-          bar.style.height = `${h}px`;
+
+          const base =
+            Math.sin(
+              phase + i * 0.3
+            ) * 0.4
+            +
+            Math.cos(
+              phase * 0.5 + i * 0.2
+            ) * 0.4;
+
+          const normalized =
+            Math.max(
+              0.1,
+              Math.min(
+                1,
+                (base + 1) / 2
+              )
+            );
+
+          const h =
+            Math.floor(
+              normalized *
+              (volumeLevel / 100) *
+              20 + 3
+            );
+
+          bar.style.height =
+            `${h}px`;
+
         });
-        requestAnimationFrame(animate);
+
+        requestAnimationFrame(
+          animate
+        );
+
       }
+
       animate();
+
     }
+
+    /* =========================================================
+       KNOB DRAG
+       ========================================================= */
 
     function setupKnobDrag() {
-      document.querySelectorAll('.knob-svg').forEach(knob => {
-        let isDragging = false;
-        let startY = 0;
-        let val = 20;
 
-        knob.addEventListener('mousedown', e => {
-          isDragging = true;
-          startY = e.clientY;
+      document
+        .querySelectorAll('.knob-svg')
+        .forEach(knob => {
+
+          let isDragging = false;
+
+          let startY = 0;
+
+          let val = 20;
+
+          knob.addEventListener(
+            'mousedown',
+            e => {
+
+              isDragging = true;
+
+              startY = e.clientY;
+
+            }
+          );
+
+          window.addEventListener(
+            'mousemove',
+            e => {
+
+              if (!isDragging) return;
+
+              const delta =
+                startY - e.clientY;
+
+              val =
+                Math.min(
+                  100,
+                  Math.max(
+                    0,
+                    val +
+                    Math.round(
+                      delta / 2
+                    )
+                  )
+                );
+
+              startY = e.clientY;
+
+              const arc =
+                knob.querySelector(
+                  '.knob-arc'
+                );
+
+              const text =
+                knob.querySelector(
+                  '.knob-val'
+                );
+
+              if (arc && text) {
+
+                const offset =
+                  163 -
+                  (
+                    163 *
+                    (val / 100) *
+                    270
+                  ) / 360;
+
+                arc.style.strokeDashoffset =
+                  offset;
+
+                text.textContent =
+                  `${val}%`;
+
+              }
+
+            }
+          );
+
+          window.addEventListener(
+            'mouseup',
+            () => {
+              isDragging = false;
+            }
+          );
+
         });
 
-        window.addEventListener('mousemove', e => {
-          if (!isDragging) return;
-          const delta = startY - e.clientY;
-          val = Math.min(100, Math.max(0, val + Math.round(delta / 2)));
-          startY = e.clientY;
-
-          const arc = knob.querySelector('.knob-arc');
-          const text = knob.querySelector('.knob-val');
-          const offset = 163 - (163 * (val / 100) * 270) / 360;
-          arc.style.strokeDashoffset = offset;
-          text.textContent = `${val}%`;
-        });
-
-        window.addEventListener('mouseup', () => isDragging = false);
-      });
     }
 
+    /* =========================================================
+       ORDER MENU
+       ========================================================= */
+
     function renderOrderMenu() {
-      const container = document.getElementById('order-items-list');
+
+      const container =
+        document.getElementById(
+          'order-items-list'
+        );
+
       container.innerHTML = '';
 
       menuItems.forEach(item => {
-        const qty = cart[item.id] || 0;
-        const div = document.createElement('div');
+
+        const qty =
+          cart[item.id] || 0;
+
+        const div =
+          document.createElement('div');
+
         div.className = 'order-item';
+
         div.innerHTML = `
           <div>
-            <div style="font-size:12px; font-weight:600;">${item.name}</div>
-            <div style="font-size:9px; color:#737373;">${item.desc}</div>
-            <div style="font-size:10px; color:#f59e0b; font-family:monospace; margin-top:1px;">$${item.price.toFixed(2)}</div>
+
+            <div
+              style="
+                font-size:12px;
+                font-weight:600;
+              ">
+              ${item.name}
+            </div>
+
+            <div
+              style="
+                font-size:9px;
+                color:#737373;
+              ">
+              ${item.desc}
+            </div>
+
+            <div
+              style="
+                font-size:10px;
+                color:#f59e0b;
+                font-family:monospace;
+                margin-top:1px;
+              ">
+              $${item.price.toFixed(2)}
+            </div>
+
           </div>
+
           <div class="qty-controls">
-            <button class="qty-btn" onclick="changeQty('${item.id}', -1)"><i data-lucide="minus" style="width:10px; height:10px;"></i></button>
-            <span style="font-size:10px; font-family:monospace;">${qty}</span>
-            <button class="qty-btn" onclick="changeQty('${item.id}', 1)"><i data-lucide="plus" style="width:10px; height:10px;"></i></button>
+
+            <button
+              class="qty-btn"
+              onclick="changeQty('${item.id}', -1)">
+
+              <i
+                data-lucide="minus"
+                style="width:10px;height:10px;">
+              </i>
+
+            </button>
+
+            <span
+              style="
+                font-size:10px;
+                font-family:monospace;
+              ">
+              ${qty}
+            </span>
+
+            <button
+              class="qty-btn"
+              onclick="changeQty('${item.id}', 1)">
+
+              <i
+                data-lucide="plus"
+                style="width:10px;height:10px;">
+              </i>
+
+            </button>
+
           </div>
         `;
+
         container.appendChild(div);
+
       });
+
       lucide.createIcons();
+
       updateCartBar();
+
     }
 
     function changeQty(id, delta) {
-      cart[id] = Math.max(0, (cart[id] || 0) + delta);
+
+      cart[id] =
+        Math.max(
+          0,
+          (cart[id] || 0) + delta
+        );
+
       renderOrderMenu();
+
     }
 
     function updateCartBar() {
+
       let total = 0;
+
       Object.keys(cart).forEach(id => {
-        const item = menuItems.find(m => m.id === id);
-        total += item.price * cart[id];
+
+        const item =
+          menuItems.find(
+            m => m.id === id
+          );
+
+        total +=
+          item.price *
+          cart[id];
+
       });
 
-      const bar = document.getElementById('cart-bar');
+      const bar =
+        document.getElementById(
+          'cart-bar'
+        );
+
       if (total > 0) {
-        bar.classList.remove('hidden');
-        document.getElementById('cart-total-text').textContent = `Checkout ($${total.toFixed(2)})`;
+
+        bar.classList.remove(
+          'hidden'
+        );
+
+        document
+          .getElementById(
+            'cart-total-text'
+          )
+          .textContent =
+          `Checkout ($${total.toFixed(2)})`;
+
       } else {
-        bar.classList.add('hidden');
+
+        bar.classList.add(
+          'hidden'
+        );
+
       }
+
     }
+
   </script>
-  <script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-}
-</script>
+
 </body>
 </html>
+
