@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12162b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VELSTEN">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>vesselscroll</title>
+<style>
+  :root {
+    --row-h: 64px;
+    --reel-w: 280px;
+    --reel-h: 256px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%; margin: 0; touch-action: none;
+    overflow: hidden;
+    overscroll-behavior: none;   /* no bounce / pull-to-refresh / scroll chaining */
+  }
+  body {
+    position: fixed; inset: 0; width: 100%; height: 100%;   /* pins the page so it can never scroll or shift */
+    height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 28px;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+             max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    background: radial-gradient(circle at 50% 30%, #2b3350 0%, #12162b 60%, #0a0c18 100%);
+    color: #f2f4ff;
+    font-family: "Segoe UI", system-ui, -apple-system, "Noto Sans", "Noto Sans CJK SC", "Noto Sans Arabic", "Noto Sans Devanagari", sans-serif;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.dragging { cursor: grabbing; }
+
+  .caption {
+    min-height: 2.4em; text-align: center; max-width: 90vw;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .caption.top    { font-size: clamp(28px, 6vw, 46px); font-weight: 700; letter-spacing: .5px;
+                    text-shadow: 0 2px 0 #0006, 0 8px 24px #6a8bff55; }
+  .caption.bottom { font-size: clamp(16px, 3.4vw, 24px); color: #b9c3ff; }
+  .swap           { opacity: 0; transform: translateY(8px) scale(.97); }
+
+  /* ---------- Spinner (flat) ---------- */
+  .stage {
+    position: relative;
+    width: min(92vw, 520px);
+    height: 300px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .housing {
+    position: absolute; inset: 14px 8%;
+    border-radius: 26px;
+    background: linear-gradient(180deg, #0b0e1d 0%, #1a2040 50%, #0b0e1d 100%);
+    box-shadow:
+      inset 0 0 40px #000c,
+      inset 0 2px 0 #ffffff14,
+      0 30px 50px -10px #000c,
+      0 0 0 3px #2a3260;
+  }
+
+  .reel {
+    position: relative;
+    width: var(--reel-w); height: var(--reel-h);
+    overflow: hidden;
+    border-radius: 6px;
+  }
+
+  .item {
+    position: absolute; left: 0; top: 50%;
+    width: 100%; height: var(--row-h);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 600; letter-spacing: .5px;
+    color: #1a1f3d;
+    background: linear-gradient(180deg, #ffffff 0%, #e9edff 45%, #c9d1f5 100%);
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #8e99d1;
+    will-change: transform;
+    backface-visibility: hidden;
+    transition: color .3s, background .3s;
+  }
+  .item.active {
+    color: #fff;
+    background: linear-gradient(180deg, #5b7bff 0%, #3a56e0 55%, #2a3fb0 100%);
+    text-shadow: 0 1px 0 #0006;
+  }
+
+  .shade {
+    position: absolute; z-index: 3; pointer-events: none;
+    width: var(--reel-w); height: var(--reel-h);
+    border-radius: 6px;
+    background:
+      linear-gradient(180deg,
+        rgba(5,7,18,.92) 0%, rgba(5,7,18,.55) 22%,
+        rgba(5,7,18,0) 38%, rgba(5,7,18,0) 62%,
+        rgba(5,7,18,.55) 78%, rgba(5,7,18,.92) 100%);
+  }
+  .gloss {
+    position: absolute; z-index: 4; pointer-events: none;
+    width: calc(var(--reel-w) - 30px); height: var(--reel-h);
+    background: linear-gradient(100deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 28%);
+    border-radius: 20px;
+    mix-blend-mode: screen;
+  }
+
+  .band {
+    position: absolute; z-index: 5; pointer-events: none;
+    width: calc(var(--reel-w) + 8px); height: calc(var(--row-h) + 4px);
+    border-top: 2px solid #ff4d5a66; border-bottom: 2px solid #ff4d5a66;
+    box-shadow: 0 0 22px #ff2d3d33;
+  }
+  .tri {
+    position: absolute; z-index: 6; pointer-events: none;
+    width: 40px; height: 52px;
+    background: linear-gradient(135deg, #ff7480 0%, #e5101f 55%, #8d0510 100%);
+    filter: drop-shadow(0 6px 6px #000a) drop-shadow(0 0 10px #ff2d3d88);
+    top: 50%; margin-top: -26px;
+  }
+  .tri.left  { left: calc(50% - var(--reel-w)/2 - 48px);  clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  .tri.right { right: calc(50% - var(--reel-w)/2 - 48px); clip-path: polygon(100% 0, 0 50%, 100% 100%);
+               background: linear-gradient(225deg, #ff7480 0%, #e5101f 55%, #8d0510 100%); }
+
+  .floor {
+    width: 260px; height: 24px; margin-top: -10px;
+    background: radial-gradient(ellipse at center, #6a8bff55 0%, transparent 70%);
+    filter: blur(6px);
+  }
+
+  /* Continue button */
+  button#continue {
+    font: inherit; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    min-width: 200px; padding: 14px 40px; border: 0; border-radius: 999px; cursor: pointer;
+    color: #fff;
+    background: linear-gradient(180deg, #6f8bff 0%, #3c57e6 60%, #2d44bd 100%);
+    box-shadow: 0 6px 0 #1e2f8a, 0 14px 24px #0009, inset 0 1px 0 #ffffff55;
+    transition: transform .1s, box-shadow .1s, filter .2s;
+  }
+  button#continue:hover  { filter: brightness(1.1); }
+  button#continue:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e2f8a, 0 6px 12px #0009, inset 0 1px 0 #ffffff55; }
+  #continueLabel { display: inline-block; transition: opacity .35s ease, transform .35s ease; }
+
+  .hint {
+    font-size: 14px; color: #8a96cc; margin-top: -14px; text-align: center; max-width: min(90vw, 520px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+</style>
+</head>
+<body>
+
+  <div class="caption top" id="top" lang="en" dir="auto">Welcome to VELSTEN</div>
+
+  <div class="stage">
+    <div class="housing"></div>
+    <div class="reel" id="reel"></div>
+    <div class="shade"></div>
+    <div class="gloss"></div>
+    <div class="band"></div>
+    <div class="tri left"></div>
+    <div class="tri right"></div>
+  </div>
+  <div class="floor"></div>
+
+  <div class="caption bottom" id="bottom" lang="en" dir="auto">Your language is English</div>
+
+  <button id="continue"><span id="continueLabel" lang="en" dir="auto">Continue</span></button>
+  <div class="hint" id="hint" lang="en" dir="auto">Drag, scroll, use the arrow keys or click to choose a language, then press Continue</div>
+
+<script>
+  const LANGS = [
+    { name: "English",    code: "en", top: "Welcome to VELSTEN",            bottom: "Your language is English",
+      button: "Continue",   hint: "Drag, scroll, use the arrow keys or click to choose a language, then press Continue" },
+    { name: "Español",    code: "es", top: "Bienvenido a VELSTEN",         bottom: "Tu idioma es español",
+      button: "Continuar",  hint: "Arrastra, desplázate, usa las flechas o haz clic para elegir un idioma y pulsa Continuar" },
+    { name: "Français",   code: "fr", top: "Bienvenue chez VELSTEN",          bottom: "Votre langue est le français",
+      button: "Continuer",  hint: "Faites glisser, faites défiler, utilisez les flèches ou cliquez pour choisir une langue, puis appuyez sur Continuer" },
+    { name: "Deutsch",    code: "de", top: "Willkommen bei VELSTEN",         bottom: "Ihre Sprache ist Deutsch",
+      button: "Weiter",     hint: "Ziehen, scrollen, Pfeiltasten benutzen oder klicken, um eine Sprache zu wählen, dann auf Weiter drücken" },
+    { name: "Italiano",   code: "it", top: "Benvenuto in VELSTEN",          bottom: "La tua lingua è l'italiano",
+      button: "Continua",   hint: "Trascina, scorri, usa le frecce o fai clic per scegliere una lingua, poi premi Continua" },
+    { name: "Português",  code: "pt", top: "Bem-vindo à VELSTEN",          bottom: "Seu idioma é português",
+      button: "Continuar",  hint: "Arraste, role, use as setas ou clique para escolher um idioma e depois pressione Continuar" },
+    { name: "日本語",      code: "ja", top: "VELSTENへようこそ",            bottom: "あなたの言語は日本語です",
+      button: "続ける",      hint: "ドラッグ、スクロール、矢印キー、またはクリックで言語を選び、「続ける」を押してください" },
+    { name: "中文",        code: "zh", top: "欢迎来到 VELSTEN",                bottom: "你的语言是中文",
+      button: "继续",        hint: "拖动、滚动、使用方向键或点击来选择语言，然后按“继续”" },
+    { name: "한국어",      code: "ko", top: "VELSTEN에 오신 것을 환영합니다",          bottom: "당신의 언어는 한국어입니다",
+      button: "계속",        hint: "드래그, 스크롤, 화살표 키 또는 클릭으로 언어를 선택한 다음 '계속'을 누르세요" },
+    { name: "العربية",    code: "ar", top: "مرحباً بك في VELSTEN",              bottom: "لغتك هي العربية",
+      button: "متابعة",      hint: "اسحب أو مرّر أو استخدم مفاتيح الأسهم أو انقر لاختيار لغة، ثم اضغط متابعة" },
+    { name: "हिन्दी",      code: "hi", top: "VELSTEN में आपका स्वागत है",           bottom: "आपकी भाषा हिन्दी है",
+      button: "जारी रखें",   hint: "भाषा चुनने के लिए ड्रैग करें, स्क्रॉल करें, ऐरो कीज़ का उपयोग करें या क्लिक करें, फिर जारी रखें दबाएँ" },
+    { name: "Русский",    code: "ru", top: "Добро пожаловать в VELSTEN",   bottom: "Ваш язык — русский",
+      button: "Продолжить",  hint: "Перетащите, прокрутите, используйте стрелки или щёлкните, чтобы выбрать язык, затем нажмите «Продолжить»" }
+  ];
+
+  const N = LANGS.length;
+  const H = 64; // row height, matches --row-h
+  const reel = document.getElementById("reel");
+  const topEl = document.getElementById("top");
+  const bottomEl = document.getElementById("bottom");
+  const hintEl = document.getElementById("hint");
+  const continueBtn = document.getElementById("continue");
+  const continueLabel = document.getElementById("continueLabel");
+
+  const mod = (a, n) => ((a % n) + n) % n;
+
+  const items = LANGS.map((l, i) => {
+    const el = document.createElement("div");
+    el.className = "item";
+    el.textContent = l.name;
+    el.lang = l.code;
+    el.dataset.i = i;
+    reel.appendChild(el);
+    return el;
+  });
+
+  let pos = 0;            // where the reel is drawn (in rows, loops forever)
+  let target = 0;         // where the reel is heading; pos glides toward it
+  let current = 0;        // language currently selected
+  let dragging = false;
+  let moved = 0;
+  let wheelActive = false, wheelTimer = null;
+  let needsSettle = false;
+  let running = false, last = 0;
+
+  // Place every row relative to the centre; rows wrap so the reel never ends
+  function render() {
+    items.forEach((el, i) => {
+      let d = mod(i - pos, N);
+      if (d > N / 2) d -= N;
+      const visible = Math.abs(d) < 3;
+      el.style.display = visible ? "flex" : "none";
+      if (visible) el.style.transform = `translate3d(0, ${(d * H - H / 2).toFixed(2)}px, 0)`;
+    });
+  }
+
+  // Swap every piece of text on the page to the selected language
+  const swapEls = [topEl, bottomEl, hintEl, continueLabel];
+  function showLanguage(i) {
+    current = i;
+    items.forEach((el, k) => el.classList.toggle("active", k === i));
+    const L = LANGS[i];
+    swapEls.forEach(el => el.classList.add("swap"));
+    setTimeout(() => {
+      topEl.textContent = L.top;
+      bottomEl.textContent = L.bottom;
+      hintEl.textContent = L.hint;
+      continueLabel.textContent = L.button;
+      swapEls.forEach(el => { el.lang = L.code; el.classList.remove("swap"); });
+    }, 300);
+  }
+
+  function clearActive() { items.forEach(el => el.classList.remove("active")); }
+
+  // Smooth motion: every frame the reel glides a fraction of the way to the target.
+  // This is frame-rate independent, so it stays fluid on any display and
+  // blends wheel ticks, drags and clicks into one continuous movement.
+  function loop(now) {
+    const dt = Math.min(64, Math.max(0, now - last));
+    last = now;
+    const diff = target - pos;
+    if (Math.abs(diff) < 0.0015) {
+      pos = target;
+      render();
+      running = false;
+      if (needsSettle && !dragging && !wheelActive) {
+        needsSettle = false;
+        showLanguage(mod(Math.round(pos), N));
+      }
+      return;
+    }
+    const tau = dragging ? 40 : 90; // ms: snappier while a finger/mouse is holding the reel
+    pos += diff * (1 - Math.exp(-dt / tau));
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  function kick() {
+    if (!needsSettle) { needsSettle = true; clearActive(); }
+    if (!running) {
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+  }
+
+  // Move one language up or down
+  function step(dir) {
+    target = Math.round(target) + dir;
+    kick();
+  }
+
+  // Jump to a specific language by the shortest way round
+  function goTo(i) {
+    let diff = mod(i - Math.round(target), N);
+    if (diff > N / 2) diff -= N;
+    if (diff === 0 && !needsSettle) return;
+    target = Math.round(target) + diff;
+    kick();
+  }
+
+  // Continue: confirm the selected language.
+  // Listen for this event elsewhere to move on to the next screen:
+  //   document.addEventListener("languagechosen", e => console.log(e.detail));
+  function proceed() {
+    const L = LANGS[current];
+    document.dispatchEvent(new CustomEvent("languagechosen", { detail: { code: L.code, name: L.name } }));
+  }
+  continueBtn.addEventListener("click", proceed);
+
+  // ---- Inputs (the whole page controls the spinner) ----
+  document.addEventListener("keydown", e => {
+    if (e.code === "ArrowUp")   { e.preventDefault(); step(-1); }
+    if (e.code === "ArrowDown") { e.preventDefault(); step(+1); }
+  });
+
+  // Scrolling anywhere on the page moves the reel continuously
+  window.addEventListener("wheel", e => {
+    e.preventDefault();
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    else if (e.deltaMode === 2) dy *= window.innerHeight;
+    dy = Math.max(-150, Math.min(150, dy));
+    target += dy / 100;                       // one mouse-wheel notch ≈ one language
+    wheelActive = true;
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => {           // when scrolling pauses, lock onto a language
+      wheelActive = false;
+      target = Math.round(target);
+      kick();
+    }, 140);
+    kick();
+  }, { passive: false });
+
+  // Drag / swipe anywhere on the page
+  let startY = 0, startTarget = 0;
+  window.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragging = true; moved = 0;
+    startY = e.clientY; startTarget = target;
+  });
+  window.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const dy = e.clientY - startY;
+    moved = Math.max(moved, Math.abs(dy));
+    if (moved < 6) return;
+    document.body.classList.add("dragging");
+    target = startTarget - dy / H;
+    kick();
+  });
+  const endDrag = e => {
+    if (!dragging) return;
+    dragging = false;
+    document.body.classList.remove("dragging");
+    if (moved < 6) {
+      // a tap: jump to the row that was clicked
+      const row = e.target.closest && e.target.closest(".item");
+      if (row) goTo(+row.dataset.i);
+      return;
+    }
+    target = Math.round(target);
+    kick();
+  };
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
+
+  // Offline support + installability (needs http/https, e.g. GitHub Pages)
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+
+  // Start on English
+  render();
+  showLanguage(0);
+</script>
+</body>
+</html>
