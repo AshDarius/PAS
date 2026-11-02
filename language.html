@@ -11,15 +11,19 @@
     --reel-h: 256px;
   }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
+  html, body { height: 100%; margin: 0; touch-action: none; }
   body {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 28px; padding: 24px;
     background: radial-gradient(circle at 50% 30%, #2b3350 0%, #12162b 60%, #0a0c18 100%);
     color: #f2f4ff;
     font-family: "Segoe UI", system-ui, -apple-system, "Noto Sans", "Noto Sans CJK SC", "Noto Sans Arabic", "Noto Sans Devanagari", sans-serif;
-    overflow-x: hidden;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
   }
+  body.dragging { cursor: grabbing; }
 
   .caption {
     min-height: 2.4em; text-align: center; max-width: 90vw;
@@ -54,11 +58,7 @@
     width: var(--reel-w); height: var(--reel-h);
     overflow: hidden;
     border-radius: 6px;
-    touch-action: none;
-    cursor: grab;
-    user-select: none;
   }
-  .reel.dragging { cursor: grabbing; }
 
   .item {
     position: absolute; left: 0; top: 50%;
@@ -70,6 +70,7 @@
     border-top: 1px solid #fff;
     border-bottom: 1px solid #8e99d1;
     will-change: transform;
+    backface-visibility: hidden;
     transition: color .3s, background .3s;
   }
   .item.active {
@@ -207,11 +208,14 @@
     return el;
   });
 
-  let pos = 0;          // continuous position, in rows (the reel loops forever)
-  let raf = null;       // running animation
-  let current = 0;      // language currently selected
+  let pos = 0;            // where the reel is drawn (in rows, loops forever)
+  let target = 0;         // where the reel is heading; pos glides toward it
+  let current = 0;        // language currently selected
   let dragging = false;
   let moved = 0;
+  let wheelActive = false, wheelTimer = null;
+  let needsSettle = false;
+  let running = false, last = 0;
 
   // Place every row relative to the centre; rows wrap so the reel never ends
   function render() {
@@ -220,7 +224,7 @@
       if (d > N / 2) d -= N;
       const visible = Math.abs(d) < 3;
       el.style.display = visible ? "flex" : "none";
-      if (visible) el.style.transform = `translateY(${d * H - H / 2}px)`;
+      if (visible) el.style.transform = `translate3d(0, ${(d * H - H / 2).toFixed(2)}px, 0)`;
     });
   }
 
@@ -242,38 +246,51 @@
 
   function clearActive() { items.forEach(el => el.classList.remove("active")); }
 
-  const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-
-  function animateTo(to, ms, done) {
-    cancelAnimationFrame(raf);
-    clearActive();
-    const from = pos, start = performance.now();
-    const tick = now => {
-      const t = Math.min(1, (now - start) / ms);
-      pos = from + (to - from) * easeOutCubic(t);
+  // Smooth motion: every frame the reel glides a fraction of the way to the target.
+  // This is frame-rate independent, so it stays fluid on any display and
+  // blends wheel ticks, drags and clicks into one continuous movement.
+  function loop(now) {
+    const dt = Math.min(64, Math.max(0, now - last));
+    last = now;
+    const diff = target - pos;
+    if (Math.abs(diff) < 0.0015) {
+      pos = target;
       render();
-      if (t < 1) { raf = requestAnimationFrame(tick); }
-      else { pos = to; render(); raf = null; done && done(); }
-    };
-    raf = requestAnimationFrame(tick);
+      running = false;
+      if (needsSettle && !dragging && !wheelActive) {
+        needsSettle = false;
+        showLanguage(mod(Math.round(pos), N));
+      }
+      return;
+    }
+    const tau = dragging ? 40 : 90; // ms: snappier while a finger/mouse is holding the reel
+    pos += diff * (1 - Math.exp(-dt / tau));
+    render();
+    requestAnimationFrame(loop);
   }
 
-  function settle() { showLanguage(mod(Math.round(pos), N)); }
+  function kick() {
+    if (!needsSettle) { needsSettle = true; clearActive(); }
+    if (!running) {
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+  }
 
-  // Step one language at a time (queues up if you move quickly)
-  let stepTarget = 0;
+  // Move one language up or down
   function step(dir) {
-    const base = raf ? stepTarget : Math.round(pos);
-    stepTarget = base + dir;
-    animateTo(stepTarget, 260, settle);
+    target = Math.round(target) + dir;
+    kick();
   }
 
+  // Jump to a specific language by the shortest way round
   function goTo(i) {
-    let diff = mod(i - Math.round(pos), N);
+    let diff = mod(i - Math.round(target), N);
     if (diff > N / 2) diff -= N;
-    if (diff === 0) { settle(); return; }
-    stepTarget = Math.round(pos) + diff;
-    animateTo(stepTarget, 120 + Math.abs(diff) * 90, settle);
+    if (diff === 0 && !needsSettle) return;
+    target = Math.round(target) + diff;
+    kick();
   }
 
   // Continue: confirm the selected language.
@@ -285,52 +302,62 @@
   }
   continueBtn.addEventListener("click", proceed);
 
-  // ---- Inputs ----
+  // ---- Inputs (the whole page controls the spinner) ----
   document.addEventListener("keydown", e => {
     if (e.code === "ArrowUp")   { e.preventDefault(); step(-1); }
     if (e.code === "ArrowDown") { e.preventDefault(); step(+1); }
   });
 
-  let wheelLock = false;
-  reel.addEventListener("wheel", e => {
+  // Scrolling anywhere on the page moves the reel continuously
+  window.addEventListener("wheel", e => {
     e.preventDefault();
-    if (wheelLock) return;
-    wheelLock = true; setTimeout(() => wheelLock = false, 120);
-    step(e.deltaY > 0 ? 1 : -1);
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    else if (e.deltaMode === 2) dy *= window.innerHeight;
+    dy = Math.max(-150, Math.min(150, dy));
+    target += dy / 100;                       // one mouse-wheel notch ≈ one language
+    wheelActive = true;
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => {           // when scrolling pauses, lock onto a language
+      wheelActive = false;
+      target = Math.round(target);
+      kick();
+    }, 140);
+    kick();
   }, { passive: false });
 
-  // Drag / swipe
-  let startY = 0, startPos = 0;
-  reel.addEventListener("pointerdown", e => {
-    cancelAnimationFrame(raf); raf = null;
+  // Drag / swipe anywhere on the page
+  let startY = 0, startTarget = 0;
+  window.addEventListener("pointerdown", e => {
+    if (e.target.closest("button")) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
     dragging = true; moved = 0;
-    startY = e.clientY; startPos = pos;
-    reel.setPointerCapture(e.pointerId);
-    reel.classList.add("dragging");
-    clearActive();
+    startY = e.clientY; startTarget = target;
   });
-  reel.addEventListener("pointermove", e => {
+  window.addEventListener("pointermove", e => {
     if (!dragging) return;
     const dy = e.clientY - startY;
     moved = Math.max(moved, Math.abs(dy));
-    pos = startPos - dy / H;
-    render();
+    if (moved < 6) return;
+    document.body.classList.add("dragging");
+    target = startTarget - dy / H;
+    kick();
   });
   const endDrag = e => {
     if (!dragging) return;
     dragging = false;
-    reel.classList.remove("dragging");
+    document.body.classList.remove("dragging");
     if (moved < 6) {
       // a tap: jump to the row that was clicked
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      const row = el && el.closest(".item");
-      if (row) { goTo(+row.dataset.i); return; }
+      const row = e.target.closest && e.target.closest(".item");
+      if (row) goTo(+row.dataset.i);
+      return;
     }
-    stepTarget = Math.round(pos);
-    animateTo(stepTarget, 300, settle);
+    target = Math.round(target);
+    kick();
   };
-  reel.addEventListener("pointerup", endDrag);
-  reel.addEventListener("pointercancel", endDrag);
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
 
   // Start on English
   render();
