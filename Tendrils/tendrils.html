@@ -387,6 +387,446 @@
         <h1 id="done-title">Thank you</h1>
         <p id="done-text"></p>
         <p class="stamp" id="done-stamp"></p>
+           <div id="profile-configurator-component" class="w-full max-w-[40%] sm:max-w-md mx-auto bg-transparent p-2 sm:p-4 transition-all text-xs sm:text-sm">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-700/60 mb-4">
+            <div>
+                <h2 class="text-base sm:text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-gear text-indigo-400"></i> Participant Profile
+                </h2>
+                <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Configure name, voice, and avatar.</p>
+            </div>
+            <span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] font-semibold rounded-full hidden sm:inline-block">Prototype</span>
+        </div>
+
+        <form id="profile-form" class="space-y-4" onsubmit="event.preventDefault();">
+
+            <!-- SECTION 1: DISPLAY NAME -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1">
+                        <span class="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold">1</span>
+                        Display Name
+                    </label>
+                </div>
+
+                <!-- Mode Switcher: Random vs Custom -->
+                <div class="grid grid-cols-2 gap-1 p-1 bg-slate-900/40 rounded-lg border border-slate-700/50">
+                    <button type="button" id="tab-random" onclick="setNamingMode('random')" 
+                        class="py-1 px-2 text-[10px] font-medium rounded transition-all flex items-center justify-center gap-1 bg-indigo-600 text-white">
+                        <i class="fa-solid fa-dice"></i> Random
+                    </button>
+                    <button type="button" id="tab-custom" onclick="setNamingMode('custom')" 
+                        class="py-1 px-2 text-[10px] font-medium rounded transition-all flex items-center justify-center gap-1 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-pen-to-square"></i> Custom
+                    </button>
+                </div>
+
+                <!-- Random Name Field -->
+                <div id="random-name-container" class="flex gap-1.5">
+                    <div class="relative flex-1">
+                        <input type="text" id="generated-name-input" readonly 
+                            class="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-2.5 py-1.5 text-white text-xs font-medium focus:outline-none cursor-default select-none pl-7" />
+                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 absolute left-2 top-2 text-xs"></i>
+                    </div>
+                    <button type="button" onclick="generateNewRandomName()" title="Regenerate Name"
+                        class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 active:scale-95 text-white rounded-lg transition flex items-center justify-center border border-slate-600">
+                        <i class="fa-solid fa-rotate text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Custom Name Field (Hidden by default) -->
+                <div id="custom-name-container" class="hidden">
+                    <div class="relative">
+                        <input type="text" id="custom-name-input" placeholder="Name or group (e.g., Mary & Joe)" 
+                            oninput="handleCustomNameInput()"
+                            class="w-full bg-slate-900/60 border border-slate-700 focus:border-indigo-500 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 text-xs font-medium focus:outline-none transition pl-7" />
+                        <i class="fa-solid fa-user text-slate-400 absolute left-2 top-2 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: VOICE SELECTION -->
+            <div class="space-y-2">
+                <label class="text-[11px] font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1">
+                    <span class="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold">2</span>
+                    Voice Persona
+                </label>
+
+                <div class="grid grid-cols-3 gap-1.5">
+                    <!-- Male Option -->
+                    <div>
+                        <input type="radio" id="voice-male" name="voice_option" value="Male" class="hidden custom-radio" onchange="updateVoiceSelection('Male')">
+                        <label for="voice-male" class="flex flex-col items-center justify-center p-1.5 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
+                            <div class="w-7 h-7 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mb-0.5 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-mars text-xs"></i>
+                            </div>
+                            <span class="text-[10px] font-medium text-slate-200">Male</span>
+                        </label>
+                    </div>
+
+                    <!-- Female Option -->
+                    <div>
+                        <input type="radio" id="voice-female" name="voice_option" value="Female" class="hidden custom-radio" onchange="updateVoiceSelection('Female')">
+                        <label for="voice-female" class="flex flex-col items-center justify-center p-1.5 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
+                            <div class="w-7 h-7 rounded-full bg-pink-500/10 text-pink-400 flex items-center justify-center mb-0.5 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-venus text-xs"></i>
+                            </div>
+                            <span class="text-[10px] font-medium text-slate-200">Female</span>
+                        </label>
+                    </div>
+
+                    <!-- Neutral / Group Option -->
+                    <div>
+                        <input type="radio" id="voice-neutral" name="voice_option" value="Neutral" checked class="hidden custom-radio" onchange="updateVoiceSelection('Neutral')">
+                        <label for="voice-neutral" class="flex flex-col items-center justify-center p-1.5 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
+                            <div class="w-7 h-7 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-0.5 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-people-holding-hands text-xs"></i>
+                            </div>
+                            <span class="text-[10px] font-medium text-slate-200">Neutral</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: AVATAR SELECTION & DISPLAY -->
+            <div class="space-y-2">
+                <label class="text-[11px] font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1">
+                    <span class="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold">3</span>
+                    Avatar Style
+                </label>
+
+                <!-- Avatar Mode Options -->
+                <div class="grid grid-cols-3 gap-1">
+                    <button type="button" id="btn-avatar-emoji" onclick="setAvatarType('emoji')" 
+                        class="px-1.5 py-1 text-[10px] font-medium rounded border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-icons"></i> Emoji
+                    </button>
+                    <button type="button" id="btn-avatar-initials" onclick="setAvatarType('initials')" 
+                        class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-font"></i> Initials
+                    </button>
+                    <button type="button" id="btn-avatar-photo" onclick="setAvatarType('photo')" 
+                        class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-camera"></i> Photo
+                    </button>
+                </div>
+
+                <!-- Camera Controls Container -->
+                <div id="photo-controls" class="hidden bg-slate-900/50 p-2 rounded-xl border border-slate-700 space-y-2">
+                    <div class="flex flex-wrap gap-1.5 justify-center">
+                        <label class="cursor-pointer bg-slate-700 hover:bg-slate-600 text-white text-[10px] py-1 px-2 rounded flex items-center gap-1 border border-slate-600 transition">
+                            <i class="fa-solid fa-upload"></i> Upload / Cam
+                            <input type="file" id="camera-file-input" accept="image/*" capture="user" onchange="handleFileInput(event)" class="hidden" />
+                        </label>
+                        
+                        <button type="button" id="btn-webcam-toggle" onclick="toggleWebcam()" 
+                            class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] py-1 px-2 rounded flex items-center gap-1 transition">
+                            <i class="fa-solid fa-video"></i> Live Cam
+                        </button>
+                    </div>
+
+                    <div id="webcam-stream-box" class="hidden flex-col items-center space-y-1.5 pt-1 border-t border-slate-800">
+                        <video id="webcam-video" autoplay playsinline class="w-32 h-24 bg-black rounded-lg object-cover border border-slate-600"></video>
+                        <button type="button" onclick="captureWebcamFrame()" 
+                            class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1">
+                            <i class="fa-solid fa-circle-dot"></i> Snap
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MAIN LIVE AVATAR DISPLAY CARD -->
+                <div class="border border-slate-700/60 rounded-xl p-3 flex flex-col items-center justify-center text-center relative overflow-hidden bg-transparent">
+                    <div class="relative mb-2">
+                        <div id="avatar-container" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-800 border-2 border-indigo-500/80 flex items-center justify-center overflow-hidden transition-all duration-300">
+                            <!-- Content injected by JS -->
+                        </div>
+                        <span id="voice-badge" class="absolute bottom-0 right-0 bg-emerald-600 text-white p-1 rounded-full text-[9px] shadow border border-slate-900" title="Selected Voice">
+                            <i class="fa-solid fa-people-holding-hands"></i>
+                        </span>
+                    </div>
+
+                    <h3 id="display-name-preview" class="text-xs sm:text-sm font-bold text-white tracking-wide truncate max-w-full">Lion-Pear</h3>
+                    <p id="voice-preview-label" class="text-[10px] text-indigo-400 font-medium">Voice: Neutral</p>
+                </div>
+            </div>
+
+            <!-- Submit / Export Action -->
+            <button type="button" onclick="getProfileSummary()" 
+                class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-medium py-2 px-3 text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-circle-check"></i> Save Settings
+            </button>
+        </form>
+
+        <div id="output-msg" class="hidden mt-2 p-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 rounded-lg text-[10px] font-mono break-all"></div>
+    </div>
+
+    <script>
+        // Data sources for random name generation
+        const ANIMALS = [
+            { name: 'Lion', emoji: '🦁' },
+            { name: 'Bear', emoji: '🐻' },
+            { name: 'Fox', emoji: '🦊' },
+            { name: 'Panda', emoji: '🐼' },
+            { name: 'Koala', emoji: '🐨' },
+            { name: 'Tiger', emoji: '🐯' },
+            { name: 'Eagle', emoji: '🦅' },
+            { name: 'Owl', emoji: '🦉' },
+            { name: 'Dolphin', emoji: '🐬' },
+            { name: 'Wolf', emoji: '🐺' }
+        ];
+
+        const FRUITS = [
+            { name: 'Pear', emoji: '🍐' },
+            { name: 'Apple', emoji: '🍎' },
+            { name: 'Banana', emoji: '🍌' },
+            { name: 'Peach', emoji: '🍑' },
+            { name: 'Cherry', emoji: '🍒' },
+            { name: 'Grape', emoji: '🍇' },
+            { name: 'Mango', emoji: '🥭' },
+            { name: 'Lemon', emoji: '🍋' },
+            { name: 'Kiwi', emoji: '🥝' },
+            { name: 'Melon', emoji: '🍈' }
+        ];
+
+        // Component State
+        let currentNamingMode = 'random'; // 'random' | 'custom'
+        let currentAvatarType = 'emoji';  // 'emoji' | 'initials' | 'photo'
+        let currentVoice = 'Neutral';
+        
+        let randomPair = { animal: ANIMALS[0], fruit: FRUITS[0] };
+        let customName = '';
+        let uploadedPhotoUrl = null;
+        let videoStream = null;
+
+        // Initialize component on DOM load
+        window.addEventListener('DOMContentLoaded', () => {
+            generateNewRandomName();
+            updateDisplay();
+        });
+
+        // Generate a new random Animal-Fruit pair
+        function generateNewRandomName() {
+            const randAnimal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+            const randFruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
+            randomPair = { animal: randAnimal, fruit: randFruit };
+            
+            document.getElementById('generated-name-input').value = `${randAnimal.name}-${randFruit.name}`;
+            updateDisplay();
+        }
+
+        // Switch Naming Mode (Random vs Custom)
+        function setNamingMode(mode) {
+            currentNamingMode = mode;
+            const tabRandom = document.getElementById('tab-random');
+            const tabCustom = document.getElementById('tab-custom');
+            const randomContainer = document.getElementById('random-name-container');
+            const customContainer = document.getElementById('custom-name-container');
+
+            if (mode === 'random') {
+                tabRandom.className = "py-2 px-3 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md";
+                tabCustom.className = "py-2 px-3 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white";
+                randomContainer.classList.remove('hidden');
+                customContainer.classList.add('hidden');
+            } else {
+                tabCustom.className = "py-2 px-3 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md";
+                tabRandom.className = "py-2 px-3 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white";
+                customContainer.classList.remove('hidden');
+                randomContainer.classList.add('hidden');
+            }
+            updateDisplay();
+        }
+
+        // Handle typing into custom name box
+        function handleCustomNameInput() {
+            customName = document.getElementById('custom-name-input').value.trim();
+            updateDisplay();
+        }
+
+        // Voice Radio Selection Handler
+        function updateVoiceSelection(voice) {
+            currentVoice = voice;
+            const badge = document.getElementById('voice-badge');
+            
+            if (voice === 'Male') {
+                badge.innerHTML = `<i class="fa-solid fa-mars"></i>`;
+                badge.className = "absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
+            } else if (voice === 'Female') {
+                badge.innerHTML = `<i class="fa-solid fa-venus"></i>`;
+                badge.className = "absolute bottom-0 right-0 bg-pink-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
+            } else {
+                badge.innerHTML = `<i class="fa-solid fa-people-holding-hands"></i>`;
+                badge.className = "absolute bottom-0 right-0 bg-emerald-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
+            }
+            
+            document.getElementById('voice-preview-label').textContent = `Voice: ${voice}`;
+        }
+
+        // Switch Avatar Mode (Emoji, Initials, Photo)
+        function setAvatarType(type) {
+            currentAvatarType = type;
+            const btnEmoji = document.getElementById('btn-avatar-emoji');
+            const btnInitials = document.getElementById('btn-avatar-initials');
+            const btnPhoto = document.getElementById('btn-avatar-photo');
+            const photoControls = document.getElementById('photo-controls');
+
+            // Reset active button styling
+            [btnEmoji, btnInitials, btnPhoto].forEach(btn => {
+                btn.className = "px-2 py-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white transition flex flex-col sm:flex-row items-center justify-center gap-1.5";
+            });
+
+            if (type === 'emoji') {
+                btnEmoji.className = "px-2 py-2 text-xs font-medium rounded-lg border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex flex-col sm:flex-row items-center justify-center gap-1.5";
+                photoControls.classList.add('hidden');
+                stopWebcam();
+            } else if (type === 'initials') {
+                btnInitials.className = "px-2 py-2 text-xs font-medium rounded-lg border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex flex-col sm:flex-row items-center justify-center gap-1.5";
+                photoControls.classList.add('hidden');
+                stopWebcam();
+            } else if (type === 'photo') {
+                btnPhoto.className = "px-2 py-2 text-xs font-medium rounded-lg border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex flex-col sm:flex-row items-center justify-center gap-1.5";
+                photoControls.classList.remove('hidden');
+            }
+            updateDisplay();
+        }
+
+        // Helper: Get active name string
+        function getActiveName() {
+            if (currentNamingMode === 'random') {
+                return `${randomPair.animal.name}-${randomPair.fruit.name}`;
+            }
+            return customName || 'Anonymous';
+        }
+
+        // Helper: Extract Initials from text
+        function getInitials(name) {
+            if (!name) return '??';
+            // Split by space, hyphen, or ampersand
+            const parts = name.split(/[\s\-&]+/).filter(Boolean);
+            if (parts.length === 1) {
+                return parts[0].substring(0, 2).toUpperCase();
+            }
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+
+        // Update Live Avatar Preview DOM
+        function updateDisplay() {
+            const activeName = getActiveName();
+            document.getElementById('display-name-preview').textContent = activeName;
+
+            const container = document.getElementById('avatar-container');
+
+            if (currentAvatarType === 'emoji') {
+                const animalEmoji = randomPair.animal.emoji;
+                const fruitEmoji = randomPair.fruit.emoji;
+                container.innerHTML = `
+                    <div class="flex items-center justify-center text-2xl sm:text-3xl select-none space-x-0.5">
+                        <span class="transform -rotate-6 hover:scale-125 transition">${animalEmoji}</span>
+                        <span class="transform rotate-6 hover:scale-125 transition">${fruitEmoji}</span>
+                    </div>
+                `;
+            } else if (currentAvatarType === 'initials') {
+                const initials = getInitials(activeName);
+                container.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white font-black text-2xl sm:text-3xl tracking-widest uppercase">
+                        ${initials}
+                    </div>
+                `;
+            } else if (currentAvatarType === 'photo') {
+                if (uploadedPhotoUrl) {
+                    container.innerHTML = `
+                        <img src="${uploadedPhotoUrl}" alt="Avatar Photo" class="w-full h-full object-cover" />
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center text-slate-500">
+                            <i class="fa-solid fa-camera text-2xl mb-1"></i>
+                            <span class="text-[10px]">No Photo</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Mobile Camera / File Upload Handler
+        function handleFileInput(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedPhotoUrl = event.target.result;
+                    setAvatarType('photo');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Toggle Live Desktop WebCam
+        async function toggleWebcam() {
+            const streamBox = document.getElementById('webcam-stream-box');
+            const video = document.getElementById('webcam-video');
+
+            if (videoStream) {
+                stopWebcam();
+                return;
+            }
+
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                video.srcObject = videoStream;
+                streamBox.classList.remove('hidden');
+                document.getElementById('btn-webcam-toggle').innerHTML = `<i class="fa-solid fa-stop"></i> Close Cam`;
+            } catch (err) {
+                alert("Camera access was denied or is not supported in this browser.");
+            }
+        }
+
+        // Stop WebCam Stream
+        function stopWebcam() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            const streamBox = document.getElementById('webcam-stream-box');
+            if (streamBox) streamBox.classList.add('hidden');
+            const toggleBtn = document.getElementById('btn-webcam-toggle');
+            if (toggleBtn) toggleBtn.innerHTML = `<i class="fa-solid fa-video"></i> Live Webcam`;
+        }
+
+        // Capture Still Frame from WebCam Stream
+        function captureWebcamFrame() {
+            const video = document.getElementById('webcam-video');
+            if (!videoStream) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 300;
+            canvas.height = video.videoHeight || 300;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            uploadedPhotoUrl = canvas.toDataURL('image/png');
+            stopWebcam();
+            updateDisplay();
+        }
+
+        // Prototype Export Function
+        function getProfileSummary() {
+            const summary = {
+                displayName: getActiveName(),
+                namingMode: currentNamingMode,
+                voice: currentVoice,
+                avatarType: currentAvatarType,
+                hasCustomPhoto: !!uploadedPhotoUrl
+            };
+            
+            const msgBox = document.getElementById('output-msg');
+            msgBox.classList.remove('hidden');
+            msgBox.textContent = `CONFIG EXPORT: ${JSON.stringify(summary, null, 2)}`;
+        }
+    </script>
+</body>
+</html>
         <button type="button" id="change" class="link">Change my answer</button>
         <button type="button" id="dummy-app-btn" class="btn" style="margin-top: 12px;">Continue to Sample App</button>
       </section>
