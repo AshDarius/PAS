@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12162b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VELSTEN">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<title>VELSTEN & Recording Consent</title>
+<style>
+  :root {
+    --row-h: 64px;
+    --reel-w: 280px;
+    --reel-h: 256px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%; margin: 0; touch-action: none;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  body {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 28px;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+             max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+    background: radial-gradient(circle at 50% 30%, #2b3350 0%, #12162b 60%, #0a0c18 100%);
+    color: #f2f4ff;
+    font-family: "Segoe UI", system-ui, -apple-system, "Noto Sans", "Noto Sans CJK SC", "Noto Sans Arabic", "Noto Sans Devanagari", sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.dragging { cursor: grabbing; }
+
+  #spinner-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .caption {
+    min-height: 2.4em; text-align: center; max-width: 90vw;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .caption.top    { font-size: clamp(28px, 6vw, 46px); font-weight: 700; letter-spacing: .5px;
+                    text-shadow: 0 2px 0 #0006, 0 8px 24px #6a8bff55; }
+  .caption.bottom { font-size: clamp(16px, 3.4vw, 24px); color: #b9c3ff; }
+  .swap           { opacity: 0; transform: translateY(8px) scale(.97); }
+
+  /* ---------- Spinner (flat) ---------- */
+  .stage {
+    position: relative;
+    width: min(92vw, 520px);
+    height: 300px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .housing {
+    position: absolute; inset: 14px 8%;
+    border-radius: 26px;
+    background: linear-gradient(180deg, #0b0e1d 0%, #1a2040 50%, #0b0e1d 100%);
+    box-shadow:
+      inset 0 0 40px #000c,
+      inset 0 2px 0 #ffffff14,
+      0 30px 50px -10px #000c,
+      0 0 0 3px #2a3260;
+  }
+
+  .reel {
+    position: relative;
+    width: var(--reel-w); height: var(--reel-h);
+    overflow: hidden;
+    border-radius: 6px;
+  }
+
+  .item {
+    position: absolute; left: 0; top: 50%;
+    width: 100%; height: var(--row-h);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 600; letter-spacing: .5px;
+    color: #1a1f3d;
+    background: linear-gradient(180deg, #ffffff 0%, #e9edff 45%, #c9d1f5 100%);
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #8e99d1;
+    will-change: transform;
+    backface-visibility: hidden;
+    transition: color .3s, background .3s;
+  }
+  .item.active {
+    color: #fff;
+    background: linear-gradient(180deg, #5b7bff 0%, #3a56e0 55%, #2a3fb0 100%);
+    text-shadow: 0 1px 0 #0006;
+  }
+
+  .shade {
+    position: absolute; z-index: 3; pointer-events: none;
+    width: var(--reel-w); height: var(--reel-h);
+    border-radius: 6px;
+    background:
+      linear-gradient(180deg,
+        rgba(5,7,18,.92) 0%, rgba(5,7,18,.55) 22%,
+        rgba(5,7,18,0) 38%, rgba(5,7,18,0) 62%,
+        rgba(5,7,18,.55) 78%, rgba(5,7,18,.92) 100%);
+  }
+  .gloss {
+    position: absolute; z-index: 4; pointer-events: none;
+    width: calc(var(--reel-w) - 30px); height: var(--reel-h);
+    background: linear-gradient(100deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 28%);
+    border-radius: 20px;
+    mix-blend-mode: screen;
+  }
+
+  .band {
+    position: absolute; z-index: 5; pointer-events: none;
+    width: calc(var(--reel-w) + 8px); height: calc(var(--row-h) + 4px);
+    border-top: 2px solid #ff4d5a66; border-bottom: 2px solid #ff4d5a66;
+    box-shadow: 0 0 22px #ff2d3d33;
+  }
+  .tri {
+    position: absolute; z-index: 6; pointer-events: none;
+    width: 40px; height: 52px;
+    background: linear-gradient(135deg, #ff7480 0%, #e5101f 55%, #8d0510 100%);
+    filter: drop-shadow(0 6px 6px #000a) drop-shadow(0 0 10px #ff2d3d88);
+    top: 50%; margin-top: -26px;
+  }
+  .tri.left  { left: calc(50% - var(--reel-w)/2 - 48px);  clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  .tri.right { right: calc(50% - var(--reel-w)/2 - 48px); clip-path: polygon(100% 0, 0 50%, 100% 100%);
+               background: linear-gradient(225deg, #ff7480 0%, #e5101f 55%, #8d0510 100%); }
+
+  .floor {
+    width: 260px; height: 24px; margin-top: -10px;
+    background: radial-gradient(ellipse at center, #6a8bff55 0%, transparent 70%);
+    filter: blur(6px);
+  }
+
+  /* Continue button */
+  button#continue-spinner {
+    font: inherit; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    min-width: 200px; padding: 14px 40px; border: 0; border-radius: 999px; cursor: pointer;
+    color: #fff;
+    background: linear-gradient(180deg, #6f8bff 0%, #3c57e6 60%, #2d44bd 100%);
+    box-shadow: 0 6px 0 #1e2f8a, 0 14px 24px #0009, inset 0 1px 0 #ffffff55;
+    transition: transform .1s, box-shadow .1s, filter .2s;
+  }
+  button#continue-spinner:hover  { filter: brightness(1.1); }
+  button#continue-spinner:active { transform: translateY(4px); box-shadow: 0 2px 0 #1e2f8a, 0 6px 12px #0009, inset 0 1px 0 #ffffff55; }
+  #continueLabel { display: inline-block; transition: opacity .35s ease, transform .35s ease; }
+
+  .hint-text {
+    font-size: 14px; color: #8a96cc; margin-top: -14px; text-align: center; max-width: min(90vw, 520px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+
+  /* ---------- Shared Consent / Confirmation Screen Styles ---------- */
+  .consent-page-bg {
+    --bg: #F3F6F7;
+    --surface: #FFFFFF;
+    --fg: #13222B;
+    --muted: #46596A;
+    --line: #CBD6DB;
+    --accent: #0A6B63;
+    --accent-fg: #FFFFFF;
+    --accent-soft: #DDF0ED;
+    --focus: #1F5FBF;
+    --font: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color-scheme: light;
+    box-sizing: border-box;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font);
+    font-size: 18px;
+    line-height: 1.6;
+    overflow-y: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    .consent-page-bg:not([data-theme="light"]) {
+      --bg: #0F1A20;
+      --surface: #172730;
+      --fg: #E8F0F2;
+      --muted: #A6B8C1;
+      --line: #2E434E;
+      --accent: #4FC7B8;
+      --accent-fg: #06201C;
+      --accent-soft: #123A35;
+      --focus: #7DB0FF;
+      color-scheme: dark;
+    }
+  }
+  .consent-page-bg[data-theme="dark"] {
+    --bg: #0F1A20;
+    --surface: #172730;
+    --fg: #E8F0F2;
+    --muted: #A6B8C1;
+    --line: #2E434E;
+    --accent: #4FC7B8;
+    --accent-fg: #06201C;
+    --accent-soft: #123A35;
+    --focus: #7DB0FF;
+    color-scheme: dark;
+  }
+  .consent-page-bg .app {
+    min-height: 100%;
+    max-width: 34rem;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .consent-page-bg .sr {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .consent-page-bg .content { padding-block: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+  .consent-page-bg .eyebrow {
+    margin: 0;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .consent-page-bg h1 { margin: 0; font-size: 32px; line-height: 1.15; text-wrap: balance; }
+  .consent-page-bg h2 { margin: 0 0 4px; font-size: 19px; line-height: 1.3; }
+  .consent-page-bg .block p { margin: 0; }
+  .consent-page-bg .legal { margin: 0; font-size: 15px; color: var(--muted); }
+
+  .consent-page-bg .actions {
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    padding-block: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .consent-page-bg fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .consent-page-bg .tile { display: block; position: relative; min-width: 0; }
+  .consent-page-bg .tile input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .consent-page-bg .tile-body {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 68px; padding: 8px 10px;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    font-size: 20px; font-weight: 700;
+    transition: background-color 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .consent-page-bg .mark {
+    flex: none; width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--muted);
+    display: grid; place-items: center;
+  }
+  .consent-page-bg .mark svg { width: 16px; height: 16px; opacity: 0; }
+  .consent-page-bg .tile input:checked + .tile-body .mark svg { opacity: 1; }
+  .consent-page-bg .tile input:checked + .tile-body .mark { border-color: currentColor; }
+  .consent-page-bg .tile input[value="agree"]:checked + .tile-body {
+    background: var(--accent); border-color: var(--accent); color: var(--accent-fg);
+  }
+  .consent-page-bg .tile input[value="decline"]:checked + .tile-body {
+    background: var(--surface); border-color: var(--fg); color: var(--fg);
+  }
+  .consent-page-bg .tile input:focus-visible + .tile-body { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+  .consent-page-bg .btn {
+    width: 100%; min-height: 64px; border: 0; border-radius: 14px;
+    font: inherit; font-size: 20px; font-weight: 700;
+    background: var(--accent); color: var(--accent-fg);
+    cursor: pointer;
+  }
+  .consent-page-bg .btn:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .consent-page-bg .btn:focus-visible, .consent-page-bg .link:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .consent-page-bg .hint { margin: 0; text-align: center; font-size: 15px; color: var(--muted); min-height: 1.6em; }
+
+  .consent-page-bg .done { display: flex; flex-direction: column; gap: 16px; padding-block: 40px; }
+  .consent-page-bg .done-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--accent); color: var(--accent-fg);
+    display: grid; place-items: center;
+  }
+  .consent-page-bg .done-icon svg { width: 32px; height: 32px; }
+  .consent-page-bg .done p { margin: 0; }
+  .consent-page-bg .stamp { font-size: 15px; color: var(--muted); }
+  .consent-page-bg .link {
+    align-self: flex-start; background: none; border: 0; padding: 10px 0; min-height: 44px;
+    font: inherit; font-size: 17px; font-weight: 700; color: var(--accent); text-decoration: underline; cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce) { .consent-page-bg .tile-body { transition: none; } }
+</style>
+</head>
+<body>
+
+  <!-- Screen 1: Language Spinner -->
+  <div id="spinner-screen">
+    <div class="caption top" id="top" lang="en" dir="auto">Welcome to VELSTEN</div>
+
+    <div class="stage">
+      <div class="housing"></div>
+      <div class="reel" id="reel"></div>
+      <div class="shade"></div>
+      <div class="gloss"></div>
+      <div class="band"></div>
+      <div class="tri left"></div>
+      <div class="tri right"></div>
+    </div>
+    <div class="floor"></div>
+
+    <div class="caption bottom" id="bottom" lang="en" dir="auto">Your language is English</div>
+
+    <button id="continue-spinner"><span id="continueLabel" lang="en" dir="auto">Continue</span></button>
+    <div class="hint-text" id="hint" lang="en" dir="auto">Drag, scroll, use the arrow keys or click to choose a language, then press Continue</div>
+  </div>
+
+  <!-- Screen 2: Recording Consent -->
+  <div id="consent-screen" class="consent-page-bg" hidden>
+    <div class="app">
+      <form id="consent-form" class="app-form" novalidate style="display:flex;flex-direction:column;flex:1">
+        <div class="content">
+          <p class="eyebrow" id="c-eyebrow">Recording consent</p>
+          <h1 id="c-title">Before we start, please read this</h1>
+
+          <div class="block">
+            <h2 id="c-h1">What we record</h2>
+            <p id="c-p1">This session may be recorded, including audio and video. We record it to keep an accurate record and to improve our service.</p>
+          </div>
+
+          <div class="block">
+            <h2 id="c-h2">How we protect it</h2>
+            <p id="c-p2">European data protection law (GDPR) says we may only record you with your clear consent. We store recordings securely, use them only for the reason above, and keep them no longer than needed.</p>
+          </div>
+
+          <div class="block">
+            <h2 id="c-h3">Your choice</h2>
+            <p id="c-p3">By choosing <strong>I agree</strong>, you consent to being recorded. This is your decision. You can withdraw consent at any time and ask us to show or delete your recording. If you choose <strong>No thanks</strong>, we will not record you.</p>
+          </div>
+
+          <p class="legal" id="c-legal">Basis: GDPR Article 6(1)(a) and Article 7, consent that is freely given, specific and withdrawable.</p>
+        </div>
+
+        <div class="actions">
+          <fieldset>
+            <legend class="sr" id="c-legend">Do you agree to be recorded?</legend>
+            <label class="tile">
+              <input type="radio" name="choice" id="choice-agree" value="agree">
+              <span class="tile-body">
+                <span class="mark" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></span>
+                <span id="c-agree-label">I agree</span>
+              </span>
+            </label>
+            <label class="tile">
+              <input type="radio" name="choice" id="choice-decline" value="decline">
+              <span class="tile-body">
+                <span class="mark" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></span>
+                <span id="c-decline-label">No thanks</span>
+              </span>
+            </label>
+          </fieldset>
+          <button type="submit" id="continue-consent" class="btn" disabled>Continue</button>
+          <p class="hint" id="c-hint" aria-live="polite">Choose an option to continue.</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Screen 3: Consent Confirmation -->
+  <div id="confirmation-screen" class="consent-page-bg" hidden>
+    <div class="app">
+      <section id="done" class="done" aria-live="polite">
+        <div class="done-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></div>
+        <h1 id="done-title">Thank you</h1>
+        <p id="done-text"></p>
+        <p class="stamp" id="done-stamp"></p>
+        <button type="button" id="change" class="link">Change my answer</button>
+        <button type="button" id="dummy-app-btn" class="btn" style="margin-top: 12px;">Continue to Sample App</button>
+      </section>
+    </div>
+  </div>
+
+<script>
+  const LANGS = [
+    { name: "English",    code: "en", top: "Welcome to VELSTEN",            bottom: "Your language is English",
+      button: "Continue",   hint: "Drag, scroll, use the arrow keys or click to choose a language, then press Continue" },
+    { name: "Español",    code: "es", top: "Bienvenido a VELSTEN",         bottom: "Tu idioma es español",
+      button: "Continuar",  hint: "Arrastra, desplázate, usa las flechas o haz clic para elegir un idioma y pulsa Continuar" },
+    { name: "Français",   code: "fr", top: "Bienvenue chez VELSTEN",          bottom: "Votre langue est le français",
+      button: "Continuer",  hint: "Faites glisser, faites défiler, utilisez les flèches ou cliquez pour choisir une langue, puis appuyez sur Continuer" },
+    { name: "Deutsch",    code: "de", top: "Willkommen bei VELSTEN",         bottom: "Ihre Sprache ist Deutsch",
+      button: "Weiter",     hint: "Ziehen, scrollen, Pfeiltasten benutzen oder klicken, um eine Sprache zu wählen, dann auf Weiter drücken" },
+    { name: "Italiano",   code: "it", top: "Benvenuto in VELSTEN",          bottom: "La tua lingua è l'italiano",
+      button: "Continua",   hint: "Trascina, scorri, usa le frecce o fai clic per scegliere una lingua, poi premi Continua" },
+    { name: "Português",  code: "pt", top: "Bem-vindo à VELSTEN",          bottom: "Seu idioma é português",
+      button: "Continuar",  hint: "Arraste, role, use as setas ou clique para escolher um idioma e depois pressione Continuar" },
+    { name: "日本語",      code: "ja", top: "VELSTENへようこそ",            bottom: "あなたの言語は日本語です",
+      button: "続ける",      hint: "ドラッグ、スクロール、矢印キー、またはクリックで言語を選び、「続ける」を押してください" },
+    { name: "中文",        code: "zh", top: "欢迎来到 VELSTEN",                bottom: "你的语言是中文",
+      button: "继续",        hint: "拖动、滚动、使用方向键或点击来选择语言，然后按“继续”" },
+    { name: "한국어",      code: "ko", top: "VELSTEN에 오신 것을 환영합니다",          bottom: "당신의 언어는 한국어입니다",
+      button: "계속",        hint: "드래그, 스크롤, 화살표 키 또는 클릭으로 언어를 선택한 다음 '계속'을 누르세요" },
+    { name: "العربية",    code: "ar", top: "مرحباً بك في VELSTEN",              bottom: "لغتك هي العربية",
+      button: "متابعة",      hint: "اسحب أو مرّر أو استخدم مفاتيح الأسهم أو انقر لااختيار لغة، ثم اضغط متابعة" },
+    { name: "हिन्दी",      code: "hi", top: "VELSTEN में आपका स्वागत है",           bottom: "आपकी भाषा हिन्दी है",
+      button: "जारी रखें",   hint: "भाषा चुनने के लिए ड्रैग करें, स्क्रॉल करें, ऐरो कीज़ का उपयोग करें या क्लिक करें, फिर जारी रखें दबाएँ" },
+    { name: "Русский",    code: "ru", top: "Добро пожаловать в VELSTEN",   bottom: "Ваш язык — русский",
+      button: "Продолжить",  hint: "Перетащите, прокрутите, используйте стрелки или щёлкните, чтобы выбрать язык, затем нажмите «Продолжить»" }
+  ];
+
+  const CONSENT_LOCALES = {
+    en: {
+      eyebrow: "Recording consent", title: "Before we start, please read this",
+      h1: "What we record", p1: "This session may be recorded, including audio and video. We record it to keep an accurate record and to improve our service.",
+      h2: "How we protect it", p2: "European data protection law (GDPR) says we may only record you with your clear consent. We store recordings securely, use them only for the reason above, and keep them no longer than needed.",
+      h3: "Your choice", p3: "By choosing <strong>I agree</strong>, you consent to being recorded. This is your decision. You can withdraw consent at any time and ask us to show or delete your recording. If you choose <strong>No thanks</strong>, we will not record you.",
+      legal: "Basis: GDPR Article 6(1)(a) and Article 7, consent that is freely given, specific and withdrawable.",
+      legend: "Do you agree to be recorded?", agree: "I agree", decline: "No thanks",
+      btnDefault: "Continue", btnAgree: "Continue", btnDecline: "Continue without recording",
+      hintDefault: "Choose an option to continue.", hintAgree: "You agree to be recorded. You can withdraw at any time.", hintDecline: "You will not be recorded.",
+      doneTitleAgree: "Thank you", doneTitleDecline: "No problem",
+      doneTextAgree: "You agreed to be recorded. You can withdraw your consent at any time.",
+      doneTextDecline: "You chose not to be recorded. Nothing will be recorded.",
+      doneStamp: "Answer saved ", change: "Change my answer", dummyApp: "Continue to Sample App"
+    },
+    es: {
+      eyebrow: "Consentimiento de grabación", title: "Antes de empezar, por favor lee esto",
+      h1: "Qué grabamos", p1: "Esta sesión puede ser grabada, incluyendo audio y video. Lo grabamos para mantener un registro preciso y mejorar nuestro servicio.",
+      h2: "Cómo lo protegemos", p2: "La ley de protección de datos europea (GDPR) establece que solo podemos grabarte con tu consentimiento explícito. Almacenamos las grabaciones de forma segura, las usamos solo para el propósito anterior y las conservamos solo el tiempo necesario.",
+      h3: "Tu elección", p3: "Al elegir <strong>De acuerdo</strong>, consientes ser grabado. Esta es tu decisión. Puedes retirar tu consentimiento en cualquier momento y pedirnos que mostremos o eliminemos tu grabación. Si eliges <strong>No, gracias</strong>, no te grabaremos.",
+      legal: "Base: Artículo 6(1)(a) y Artículo 7 del RGPD, consentimiento otorgado libremente, específico y revocable.",
+      legend: "¿Estás de acuerdo en ser grabado?", agree: "De acuerdo", decline: "No, gracias",
+      btnDefault: "Continuar", btnAgree: "Continuar", btnDecline: "Continuar sin grabar",
+      hintDefault: "Elige una opción para continuar.", hintAgree: "Aceptas ser grabado. Puedes retirarte en cualquier momento.", hintDecline: "No serás grabado.",
+      doneTitleAgree: "Gracias", doneTitleDecline: "No hay problema",
+      doneTextAgree: "Has aceptado ser grabado. Puedes retirar tu consentimiento en cualquier momento.",
+      doneTextDecline: "Has elegido no ser grabado. No se grabará nada.",
+      doneStamp: "Respuesta guardada ", change: "Cambiar mi respuesta", dummyApp: "Continuar a la aplicación de muestra"
+    },
+    fr: {
+      eyebrow: "Consentement à l'enregistrement", title: "Avant de commencer, veuillez lire ceci",
+      h1: "Ce que nous enregistrons", p1: "Cette session peut être enregistrée, y compris l'audio et la vidéo. Nous l'enregistrons pour conserver un dossier précis et améliorer notre service.",
+      h2: "Comment nous protégeons vos données", p2: "La loi européenne sur la protection des données (RGPD) stipule que nous ne pouvons vous enregistrer qu'avec votre consentement explicite. Nous stockons les enregistrements en toute sécurité, les utilisons uniquement pour la raison ci-dessus et ne les conservons pas plus longtemps que nécessaire.",
+      h3: "Votre choix", p3: "En choisissant <strong>J'accepte</strong>, vous consentez à être enregistré. C'est votre décision. Vous pouvez retirer votre consentement à tout moment et nous demander d'afficher ou de supprimer votre enregistrement. Si vous choisissez <strong>Non merci</strong>, nous ne vous enregistrerons pas.",
+      legal: "Base : Article 6(1)(a) et Article 7 du RGPD, consenti librement, spécifique et révocable.",
+      legend: "Consentez-vous à être enregistré ?", agree: "J'accepte", decline: "Non merci",
+      btnDefault: "Continuer", btnAgree: "Continuer", btnDecline: "Continuer sans enregistrement",
+      hintDefault: "Choisissez une option pour continuer.", hintAgree: "Vous acceptez d'être enregistré. Vous pouvez vous désister à tout moment.", hintDecline: "Vous ne serez pas enregistré.",
+      doneTitleAgree: "Merci", doneTitleDecline: "Pas de problème",
+      doneTextAgree: "Vous avez accepté d'être enregistré. Vous pouvez retirer votre consentement à tout moment.",
+      doneTextDecline: "Vous avez choisi de ne pas être enregistré. Rien ne sera enregistré.",
+      doneStamp: "Réponse enregistrée ", change: "Modifier ma réponse", dummyApp: "Continuer vers l'application exemple"
+    },
+    de: {
+      eyebrow: "Aufnahmeeinwilligung", title: "Bitte lesen Sie dies vor dem Start",
+      h1: "Was wir aufnehmen", p1: "Diese Sitzung kann aufgezeichnet werden, einschließlich Audio und Video. Wir zeichnen dies auf, um eine genaue Aufzeichnung zu führen und unseren Service zu verbessern.",
+      h2: "Wie wir sie schützen", p2: "Das europäische Datenschutzrecht (DSGVO) besagt, dass wir Sie nur mit Ihrer ausdrücklichen Einwilligung aufnehmen dürfen. Wir speichern Aufnahmen sicher, verwenden sie nur für den oben genannten Zweck und bewahren sie nicht länger als nötig auf.",
+      h3: "Ihre Wahl", p3: "Indem Sie <strong>Ich stimme zu</strong> wählen, erklären Sie sich mit der Aufzeichnung einverstanden. Dies ist Ihre Entscheidung. Sie können Ihre Einwilligung jederzeit widerrufen und verlangen, dass wir Ihre Aufnahme anzeigen oder löschen. Wenn Sie <strong>Nein danke</strong> wählen, zeichnen wir Sie nicht auf.",
+      legal: "Grundlage: DSGVO Artikel 6(1)(a) und Artikel 7, freiwillige, spezifische und widerrufbare Einwilligung.",
+      legend: "Stimmen Sie der Aufzeichnung zu?", agree: "Ich stimme zu", decline: "Nein danke",
+      btnDefault: "Weiter", btnAgree: "Weiter", btnDecline: "Weiter ohne Aufnahme",
+      hintDefault: "Wählen Sie eine Option, um fortzufahren.", hintAgree: "Sie stimmen der Aufzeichnung zu. Sie können jederzeit widerrufen.", hintDecline: "Sie werden nicht aufgezeichnet.",
+      doneTitleAgree: "Vielen Dank", doneTitleDecline: "Kein Problem",
+      doneTextAgree: "Sie haben der Aufzeichnung zugestimmt. Sie können Ihre Einwilligung jederzeit widerrufen.",
+      doneTextDecline: "Sie haben sich gegen eine Aufzeichnung entschieden. Es wird nichts aufgezeichnet.",
+      doneStamp: "Antwort gespeichert ", change: "Antwort ändern", dummyApp: "Weiter zur Beispiel-App"
+    },
+    it: {
+      eyebrow: "Consenso alla registrazione", title: "Prima di iniziare, leggi questo",
+      h1: "Cosa registriamo", p1: "Questa sessione potrebbe essere registrata, inclusi audio e video. Lo registriamo per mantenere un registro accurato e migliorare il nostro servizio.",
+      h2: "Come lo proteggiamo", p2: "La legge europea sulla protezione dei dati (GDPR) stabilisce che possiamo registrarti solo con il tuo chiaro consenso. Memorizziamo le registrazioni in modo sicuro, le usiamo solo per il motivo sopra indicato e le conserviamo solo per il tempo necessario.",
+      h3: "La tua scelta", p3: "Scegliendo <strong>Accetto</strong>, acconsenti a essere registrato. Questa è una tua decisione. Puoi revocare il consenso in qualsiasi momento e chiederci di mostrare o eliminare la tua registrazione. Se scegli <strong>No grazie</strong>, non ti registreremo.",
+      legal: "Base: Articolo 6(1)(a) e Articolo 7 del GDPR, consenso liberamente espresso, specifico e revocabile.",
+      legend: "Acconsenti a essere registrato?", agree: "Accetto", decline: "No grazie",
+      btnDefault: "Continua", btnAgree: "Continua", btnDecline: "Continua senza registrazione",
+      hintDefault: "Scegli un'opzione per continuare.", hintAgree: "Acconsenti a essere registrato. Puoi revocare in qualsiasi momento.", hintDecline: "Non verrai registrato.",
+      doneTitleAgree: "Grazie", doneTitleDecline: "Nessun problema",
+      doneTextAgree: "Hai acconsentito a essere registrato. Puoi revocare il consenso in qualsiasi momento.",
+      doneTextDecline: "Hai scelto di non essere registrato. Non verrà registrato nulla.",
+      doneStamp: "Risposta salvata ", change: "Modifica la mia risposta", dummyApp: "Continua all'app di esempio"
+    },
+    pt: {
+      eyebrow: "Consentimento de gravação", title: "Antes de começar, leia isto",
+      h1: "O que gravamos", p1: "Esta sessão pode ser gravada, incluindo áudio e vídeo. Gravamos para manter um registro preciso e melhorar nosso serviço.",
+      h2: "Como protegemos", p2: "A lei de proteção de dados europeia (GDPR) diz que só podemos gravá-lo com o seu consentimento claro. Armazenamos as gravações com segurança, usamos apenas para o motivo acima e mantemos pelo tempo necessário.",
+      h3: "Sua escolha", p3: "Ao escolher <strong>Concordo</strong>, você consente em ser gravado. Esta é sua decisão. Você pode retirar o consentimento a qualquer momento e pedir para exibir ou excluir sua gravação. Se escolher <strong>Não, obrigado</strong>, não o gravaremos.",
+      legal: "Base: Artigo 6(1)(a) e Artigo 7 do GDPR, consentimento livre, específico e retirável.",
+      legend: "Você concorda em ser gravado?", agree: "Concordo", decline: "Não, obrigado",
+      btnDefault: "Continuar", btnAgree: "Continuar", btnDecline: "Continuar sem gravar",
+      hintDefault: "Escolha uma opção para continuar.", hintAgree: "Você concorda em ser gravado. Você pode retirar a qualquer momento.", hintDecline: "Você não será gravado.",
+      doneTitleAgree: "Obrigado", doneTitleDecline: "Sem problemas",
+      doneTextAgree: "Você concordou em ser gravado. Você pode retirar seu consentimento a qualquer momento.",
+      doneTextDecline: "Você escolheu não ser gravado. Nada será gravado.",
+      doneStamp: "Resposta salva ", change: "Alterar minha resposta", dummyApp: "Continuar para o aplicativo de exemplo"
+    },
+    ja: {
+      eyebrow: "録音・録画の同意", title: "開始する前に、お読みください",
+      h1: "記録する内容", p1: "このセッションでは、音声やビデオを含めて録音・録画される場合があります。正確な記録を保持し、サービスを改善するために記録します。",
+      h2: "保護の方法", p2: "欧州データ保護規則（GDPR）に基づき、お客様の明確な同意がある場合にのみ録音・録画を行います。記録は安全に保管し、上記の目的でのみ使用し、必要な期間を超えて保持することはありません。",
+      h3: "お客様の選択", p3: "<strong>同意する</strong>を選択すると、録音・録画に同意したことになります。これはお客様の決定です。いつでも同意を撤回し、記録の表示または削除を求めることができます。<strong>結構です</strong>を選択した場合、録音・録画は行われません。",
+      legal: "根拠：GDPR第6条(1)(a)および第7条に基づく、自由意志による、具体的かつ撤回可能な同意。",
+      legend: "録音・録画に同意しますか？", agree: "同意する", decline: "結構です",
+      btnDefault: "続ける", btnAgree: "続ける", btnDecline: "記録せずに続ける",
+      hintDefault: "続けるにはオプションを選択してください。", hintAgree: "録音・録画に同意しました。いつでも撤回できます。", hintDecline: "録音・録画されません。",
+      doneTitleAgree: "ありがとうございます", doneTitleDecline: "問題ありません",
+      doneTextAgree: "録音・録画に同意しました。いつでも同意を撤回できます。",
+      doneTextDecline: "録音・録画しないことを選択しました。何も記録されません。",
+      doneStamp: "回答が保存されました ", change: "回答を変更する", dummyApp: "サンプルアプリへ進む"
+    },
+    zh: {
+      eyebrow: "录制同意", title: "在开始之前，请阅读以下内容",
+      h1: "我们记录的内容", p1: "本次会议可能会被录制，包括音频和视频。我们记录它是为了保持准确的记录并改进我们的服务。",
+      h2: "如何保护", p2: "欧洲数据保护法 (GDPR) 规定，只有在您明确同意的情况下，我们才能对您进行录制。我们安全地存储录音，仅将其用于上述原因，并且保存时间不超过需要的时间。",
+      h3: "您的选择", p3: "通过选择<strong>我同意</strong>，即表示您同意被录制。这是您的决定。您可以随时撤回同意并要求我们显示或删除您的录音。如果您选择<strong>不用了</strong>，我们将不会录制您。",
+      legal: "依据：GDPR 第 6(1)(a) 条和第 7 条，自由给予、具体且可撤回的同意。",
+      legend: "您同意被录制吗？", agree: "我同意", decline: "不用了",
+      btnDefault: "继续", btnAgree: "继续", btnDecline: "不录制继续",
+      hintDefault: "请选择一个选项继续。", hintAgree: "您同意被录制。您可以随时撤回。", hintDecline: "您将不会被录制。",
+      doneTitleAgree: "谢谢", doneTitleDecline: "没问题",
+      doneTextAgree: "您已同意被录制。您可以随时撤回您的同意。",
+      doneTextDecline: "您选择不被录制。将不会记录任何内容。",
+      doneStamp: "回答已保存于 ", change: "修改我的回答", dummyApp: "继续前往示例应用"
+    },
+    ko: {
+      eyebrow: "녹음/녹화 동의", title: "시작하기 전에 읽어주세요",
+      h1: "기록하는 내용", p1: "이 세션은 오디오 및 비디오를 포함하여 녹음/녹화될 수 있습니다. 정확한 기록을 유지하고 서비스를 개선하기 위해 기록합니다.",
+      h2: "보호 방법", p2: "유럽 개인정보 보호법(GDPR)에 따라 귀하의 명확한 동의가 있는 경우에만 녹음/녹화할 수 있습니다. 기록은 안전하게 보관되며 위의 목적으로만 사용되고 필요한 기간을 초과하여 보관되지 않습니다.",
+      h3: "귀하의 선택", p3: "<strong>동의함</strong>을 선택하면 녹음/녹화에 동의하는 것입니다. 이는 귀하의 결정입니다. 언제든지 동의를 철회하고 기록의 표시 또는 삭제를 요청할 수 있습니다. <strong>괜찮습니다</strong>를 선택하시면 녹음/녹화되지 않습니다.",
+      legal: "근거: GDPR 제6조(1)(a) 및 제7조, 자발적이고 구체적이며 철회 가능한 동의.",
+      legend: "녹음/녹화에 동의하십니까?", agree: "동의함", decline: "괜찮습니다",
+      btnDefault: "계속", btnAgree: "계속", btnDecline: "녹화 없이 계속",
+      hintDefault: "계속하려면 옵션을 선택하세요.", hintAgree: "녹음/녹화에 동의하셨습니다. 언제든지 철회할 수 있습니다.", hintDecline: "녹음/녹화되지 않습니다.",
+      doneTitleAgree: "감사합니다", doneTitleDecline: "문제없습니다",
+      doneTextAgree: "녹음/녹화에 동의하셨습니다. 언제든지 동의를 철회하실 수 있습니다.",
+      doneTextDecline: "녹음/녹화하지 않도록 선택하셨습니다. 아무것도 기록되지 않습니다.",
+      doneStamp: "답변 저장됨 ", change: "답변 변경", dummyApp: "샘플 앱으로 계속"
+    },
+    ar: {
+      eyebrow: "موافقة التسجيل", title: "قبل أن نبدأ، يرجى قراءة هذا",
+      h1: "ما نسجله", p1: "قد يتم تسجيل هذه الجلسة، بما في ذلك الصوت والفيديو. نسجلها للحفاظ على سجل دقيق ولتحسين خدمتنا.",
+      h2: "كيف نحميها", p2: "تنص قانون حماية البيانات الأوروبي (GDPR) على أننا قد نسجلك فقط بموافقتك الواضحة. نقوم بتخزين التسجيلات بأمان، ونستخدمها فقط للسبب أعلاه، ولا نحتفظ بها لفترة أطول من اللازم.",
+      h3: "اختيارك", p3: "باختيار <strong>أوافق</strong>، فإنك توافق على التسجيل. هذا قرارك. يمكنك سحب موافقتك في أي وقت والطلب منا عرض أو حذف تسجيلك. إذا اخترت <strong>لا شكراً</strong>، فلن نسجلك.",
+      legal: "الأساس: المادة 6(1)(أ) والمادة 7 من اللائحة العامة لحماية البيانات (GDPR)، موافقة مقدمة بحرية ومحددة وقابلة للسحب.",
+      legend: "هل توافق على تسجيلك؟", agree: "أوافق", decline: "لا شكراً",
+      btnDefault: "متابعة", btnAgree: "متابعة", btnDecline: "متابعة بدون تسجيل",
+      hintDefault: "اختر خياراً للمتابعة.", hintAgree: "أنت توافق على التسجيل. يمكنك الانسحاب في أي وقت.", hintDecline: "لن يتم تسجيلك.",
+      doneTitleAgree: "شكراً لك", doneTitleDecline: "لا مشكلة",
+      doneTextAgree: "لقد وافقت على التسجيل. يمكنك سحب موافقتك في أي وقت.",
+      doneTextDecline: "لقد اخترت عدم التسجيل. لن يتم تسجيل أي شيء.",
+      doneStamp: "تم حفظ الإجابة ", change: "تغيير إجابتي", dummyApp: "تابع إلى التطبيق التجريبي"
+    },
+    hi: {
+      eyebrow: "रिकॉर्डिंग सहमति", title: "शुरू करने से पहले, कृपया इसे पढ़ें",
+      h1: "हम क्या रिकॉर्ड करते हैं", p1: "ऑडियो और वीडियो सहित इस सत्र को रिकॉर्ड किया जा सकता है। हम इसे सटीक रिकॉर्ड रखने और अपनी सेवा में सुधार करने के लिए रिकॉर्ड करते हैं।",
+      h2: "हम इसकी सुरक्षा कैसे करते हैं", p2: "यूरोपीय डेटा संरक्षण कानून (GDPR) कहता है कि हम केवल आपकी स्पष्ट सहमति से ही आपको रिकॉर्ड कर सकते हैं। हम रिकॉर्डिंग को सुरक्षित रूप से संग्रहीत करते हैं, उनका उपयोग केवल उपर्युक्त कारण के लिए करते हैं, और उन्हें आवश्यकता से अधिक समय तक नहीं रखते हैं.",
+      h3: "आपकी पसंद", p3: "<strong>मैं सहमत हूँ</strong> चुनकर, आप रिकॉर्ड होने की सहमति देते हैं। यह आपका निर्णय है। आप किसी भी समय सहमति वापस ले सकते हैं और हमें अपनी रिकॉर्डिंग दिखाने या हटाने के लिए कह सकते हैं। यदि आप <strong>नहीं धन्यवाद</strong> चुनते हैं, तो हम आपको रिकॉर्ड नहीं करेंगे।",
+      legal: "आधार: GDPR अनुच्छेद 6(1)(a) और अनुच्छेद 7, सहमति जो स्वतंत्र रूप से दी गई, विशिष्ट और वापस लेने योग्य है।",
+      legend: "क्या आप रिकॉर्ड होने के लिए सहमत हैं?", agree: "मैं सहमत हूँ", decline: "नहीं धन्यवाद",
+      btnDefault: "जारी रखें", btnAgree: "जारी रखें", btnDecline: "रिकॉर्डिंग के बिना जारी रखें",
+      hintDefault: "जारी रखने के लिए एक विकल्प चुनें।", hintAgree: "आप रिकॉर्ड होने के लिए सहमत हैं। आप किसी भी समय वापस ले सकते हैं।", hintDecline: "आपको रिकॉर्ड नहीं किया जाएगा।",
+      doneTitleAgree: "धन्यवाद", doneTitleDecline: "कोई बात नहीं",
+      doneTextAgree: "आप रिकॉर्ड होने के लिए सहमत हो गए। आप किसी भी समय अपनी सहमति वापस ले सकते हैं।",
+      doneTextDecline: "आपने रिकॉर्ड न होने का विकल्प चुना। कुछ भी रिकॉर्ड नहीं किया जाएगा।",
+      doneStamp: "उत्तर सहेजा गया ", change: "मेरा उत्तर बदलें", dummyApp: "सैंपल ऐप पर आगे बढ़ें"
+    },
+    ru: {
+      eyebrow: "Согласие на запись", title: "Прежде чем начать, пожалуйста, прочтите это",
+      h1: "Что мы записываем", p1: "Эта сессия может записываться, включая аудио и видео. Мы записываем ее для ведения точного учета и улучшения нашего сервиса.",
+      h2: "Как мы защищаем данные", p2: "Европейское законодательство о защите данных (GDPR) гласит, что мы можем записывать вас только с вашего четкого согласия. Мы надежно храним записи, используем их только для вышеуказанной цели и храним не дольше, чем необходимо.",
+      h3: "Ваш выбор", p3: "Выбирая <strong>Я согласен</strong>, вы даете согласие на запись. Это ваше решение. Вы можете отозвать согласие в любое время и попросить показать или удалить вашу запись. Если вы выбираете <strong>Нет, спасибо</strong>, мы не будем вас записывать.",
+      legal: "Основание: Статья 6(1)(a) и Статья 7 GDPR, согласие, данное добровольно, конкретно и с возможностью отзыва.",
+      legend: "Согласны ли вы на запись?", agree: "Я согласен", decline: "Нет, спасибо",
+      btnDefault: "Продолжить", btnAgree: "Продолжить", btnDecline: "Продолжить без записи",
+      hintDefault: "Выберите вариант для продолжения.", hintAgree: "Вы согласны на запись. Вы можете отозвать согласие в любое время.", hintDecline: "Запись производиться не будет.",
+      doneTitleAgree: "Спасибо", doneTitleDecline: "Без проблем",
+      doneTextAgree: "Вы согласились на запись. Вы можете отозвать свое согласие в любой момент.",
+      doneTextDecline: "Вы решили отказаться от записи. Ничего записываться не будет.",
+      doneStamp: "Ответ сохранен ", change: "Изменить мой ответ", dummyApp: "Перейти к примеру приложения"
+    }
+  };
+
+  const N = LANGS.length;
+  const H = 64;
+  const reel = document.getElementById("reel");
+  const topEl = document.getElementById("top");
+  const bottomEl = document.getElementById("bottom");
+  const hintEl = document.getElementById("hint");
+  const continueBtnSpinner = document.getElementById("continue-spinner");
+  const continueLabel = document.getElementById("continueLabel");
+
+  const mod = (a, n) => ((a % n) + n) % n;
+
+  const items = LANGS.map((l, i) => {
+    const el = document.createElement("div");
+    el.className = "item";
+    el.textContent = l.name;
+    el.lang = l.code;
+    el.dataset.i = i;
+    reel.appendChild(el);
+    return el;
+  });
+
+  let pos = 0;
+  let target = 0;
+  let current = 0;
+  let dragging = false;
+  let moved = 0;
+  let wheelActive = false, wheelTimer = null;
+  let needsSettle = false;
+  let running = false, last = 0;
+
+  function render() {
+    items.forEach((el, i) => {
+      let d = mod(i - pos, N);
+      if (d > N / 2) d -= N;
+      const visible = Math.abs(d) < 3;
+      el.style.display = visible ? "flex" : "none";
+      if (visible) el.style.transform = `translate3d(0, ${(d * H - H / 2).toFixed(2)}px, 0)`;
+    });
+  }
+
+  const swapEls = [topEl, bottomEl, hintEl, continueLabel];
+  function showLanguage(i) {
+    current = i;
+    items.forEach((el, k) => el.classList.toggle("active", k === i));
+    const L = LANGS[i];
+    swapEls.forEach(el => el.classList.add("swap"));
+    setTimeout(() => {
+      topEl.textContent = L.top;
+      bottomEl.textContent = L.bottom;
+      hintEl.textContent = L.hint;
+      continueLabel.textContent = L.button;
+      swapEls.forEach(el => { el.lang = L.code; el.classList.remove("swap"); });
+    }, 300);
+  }
+
+  function clearActive() { items.forEach(el => el.classList.remove("active")); }
+
+  function loop(now) {
+    const dt = Math.min(64, Math.max(0, now - last));
+    last = now;
+    const diff = target - pos;
+    if (Math.abs(diff) < 0.0015) {
+      pos = target;
+      render();
+      running = false;
+      if (needsSettle && !dragging && !wheelActive) {
+        needsSettle = false;
+        showLanguage(mod(Math.round(pos), N));
+      }
+      return;
+    }
+    const tau = dragging ? 40 : 90;
+    pos += diff * (1 - Math.exp(-dt / tau));
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  function kick() {
+    if (!needsSettle) { needsSettle = true; clearActive(); }
+    if (!running) {
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+  }
+
+  function step(dir) {
+    target = Math.round(target) + dir;
+    kick();
+  }
+
+  function goTo(i) {
+    let diff = mod(i - Math.round(target), N);
+    if (diff > N / 2) diff -= N;
+    if (diff === 0 && !needsSettle) return;
+    target = Math.round(target) + diff;
+    kick();
+  }
+
+  // Launch Screen 2 (Consent Form) from Spinner Continue
+  function proceed() {
+    const L = LANGS[current];
+    const code = L.code;
+
+    applyConsentLanguage(code);
+
+    document.getElementById("spinner-screen").style.display = "none";
+    const consentScreen = document.getElementById("consent-screen");
+    consentScreen.hidden = false;
+    document.getElementById("confirmation-screen").hidden = true;
+    window.scrollTo(0, 0);
+
+    document.dispatchEvent(new CustomEvent("languagechosen", { detail: { code: L.code, name: L.name } }));
+  }
+  continueBtnSpinner.addEventListener("click", proceed);
+
+  // Apply localization to both Consent and Confirmation screens
+  function applyConsentLanguage(code) {
+    const t = CONSENT_LOCALES[code] || CONSENT_LOCALES['en'];
+
+    const consentScreen = document.getElementById("consent-screen");
+    consentScreen.setAttribute("lang", code);
+    consentScreen.setAttribute("dir", code === 'ar' ? 'rtl' : 'ltr');
+
+    const confirmationScreen = document.getElementById("confirmation-screen");
+    confirmationScreen.setAttribute("lang", code);
+    confirmationScreen.setAttribute("dir", code === 'ar' ? 'rtl' : 'ltr');
+
+    document.getElementById("c-eyebrow").textContent = t.eyebrow;
+    document.getElementById("c-title").textContent = t.title;
+    document.getElementById("c-h1").textContent = t.h1;
+    document.getElementById("c-p1").textContent = t.p1;
+    document.getElementById("c-h2").textContent = t.h2;
+    document.getElementById("c-p2").textContent = t.p2;
+    document.getElementById("c-h3").textContent = t.h3;
+    document.getElementById("c-p3").innerHTML = t.p3;
+    document.getElementById("c-legal").textContent = t.legal;
+    document.getElementById("c-legend").textContent = t.legend;
+    document.getElementById("c-agree-label").textContent = t.agree;
+    document.getElementById("c-decline-label").textContent = t.decline;
+    document.getElementById("change").textContent = t.change;
+    document.getElementById("dummy-app-btn").textContent = t.dummyApp;
+
+    window._consentTexts = t;
+    refreshConsentUI();
+  }
+
+  // Spinner Input Handlers
+  document.addEventListener("keydown", e => {
+    if (document.getElementById("spinner-screen").style.display === "none") return;
+    if (e.code === "ArrowUp")   { e.preventDefault(); step(-1); }
+    if (e.code === "ArrowDown") { e.preventDefault(); step(+1); }
+  });
+
+  window.addEventListener("wheel", e => {
+    if (document.getElementById("spinner-screen").style.display === "none") return;
+    e.preventDefault();
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    else if (e.deltaMode === 2) dy *= window.innerHeight;
+    dy = Math.max(-150, Math.min(150, dy));
+    target += dy / 100;
+    wheelActive = true;
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => {
+      wheelActive = false;
+      target = Math.round(target);
+      kick();
+    }, 140);
+    kick();
+  }, { passive: false });
+
+  let startY = 0, startTarget = 0;
+  window.addEventListener("pointerdown", e => {
+    if (document.getElementById("spinner-screen").style.display === "none") return;
+    if (e.target.closest("button")) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragging = true; moved = 0;
+    startY = e.clientY; startTarget = target;
+  });
+  window.addEventListener("pointermove", e => {
+    if (document.getElementById("spinner-screen").style.display === "none") return;
+    if (!dragging) return;
+    const dy = e.clientY - startY;
+    moved = Math.max(moved, Math.abs(dy));
+    if (moved < 6) return;
+    document.body.classList.add("dragging");
+    target = startTarget - dy / H;
+    kick();
+  });
+  const endDrag = e => {
+    if (document.getElementById("spinner-screen").style.display === "none") return;
+    if (!dragging) return;
+    dragging = false;
+    document.body.classList.remove("dragging");
+    if (moved < 6) {
+      const row = e.target.closest && e.target.closest(".item");
+      if (row) goTo(+row.dataset.i);
+      return;
+    }
+    target = Math.round(target);
+    kick();
+  };
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
+
+  // Consent Form Logic
+  const form = document.getElementById('consent-form');
+  const btnConsent = document.getElementById('continue-consent');
+  const hintConsent = document.getElementById('c-hint');
+  const radios = form.querySelectorAll('input[name="choice"]');
+
+  function currentConsentChoice() {
+    var el = form.querySelector('input[name="choice"]:checked');
+    return el ? el.value : null;
+  }
+
+  function refreshConsentUI() {
+    const t = window._consentTexts || CONSENT_LOCALES['en'];
+    var c = currentConsentChoice();
+    btnConsent.disabled = !c;
+    if (c === 'agree') {
+      btnConsent.textContent = t.btnAgree;
+      hintConsent.textContent = t.hintAgree;
+    } else if (c === 'decline') {
+      btnConsent.textContent = t.btnDecline;
+      hintConsent.textContent = t.hintDecline;
+    } else {
+      btnConsent.textContent = t.btnDefault;
+      hintConsent.textContent = t.hintDefault;
+    }
+  }
+
+  radios.forEach(function (r) { r.addEventListener('change', refreshConsentUI); });
+
+  // Submit consent form -> launch Screen 3 (Confirmation Screen as a new screen)
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const t = window._consentTexts || CONSENT_LOCALES['en'];
+    var c = currentConsentChoice();
+    if (!c) return;
+    var when = new Date().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+    document.getElementById('done-title').textContent = c === 'agree' ? t.doneTitleAgree : t.doneTitleDecline;
+    document.getElementById('done-text').textContent = c === 'agree' ? t.doneTextAgree : t.doneTextDecline;
+    document.getElementById('done-stamp').textContent = t.doneStamp + when;
+    document.getElementById('change').textContent = t.change;
+    document.getElementById('dummy-app-btn').textContent = t.dummyApp;
+
+    // Switch from Consent screen to Confirmation screen
+    document.getElementById('consent-screen').hidden = true;
+    document.getElementById('confirmation-screen').hidden = false;
+    window.scrollTo(0, 0);
+  });
+
+  // "Change my answer" button -> launches Screen 2 (Consent Screen) with previous selection retained
+  document.getElementById('change').addEventListener('click', function () {
+    document.getElementById('confirmation-screen').hidden = true;
+    document.getElementById('consent-screen').hidden = false;
+    window.scrollTo(0, 0);
+  });
+
+  // Dummy app button action placeholder
+  document.getElementById('dummy-app-btn').addEventListener('click', function () {
+    window.location.href = 'translator.html';
+  });
+
+  // Start on English
+  render();
+  showLanguage(0);
+</script>
+</body>
+</html>
