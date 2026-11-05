@@ -500,13 +500,13 @@
 
                 <div class="grid grid-cols-3 gap-1">
                     <!-- Voice buttons use the same selected and unselected styling as the avatar style buttons. -->
-                    <button type="button" id="voice-male" aria-pressed="false" onclick="updateVoiceSelection('Masculine')" class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center text-center">
+                    <button type="button" id="voice-male" aria-pressed="false" onclick="updateVoiceSelection('Masculine')" class="px-2 py-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white transition flex flex-col sm:flex-row items-center justify-center gap-1.5">
                         <span id="voice-masculine-label">Masculine</span>
                     </button>
-                    <button type="button" id="voice-female" aria-pressed="false" onclick="updateVoiceSelection('Feminine')" class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center text-center">
+                    <button type="button" id="voice-female" aria-pressed="false" onclick="updateVoiceSelection('Feminine')" class="px-2 py-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white transition flex flex-col sm:flex-row items-center justify-center gap-1.5">
                         <span id="voice-feminine-label">Feminine</span>
                     </button>
-                    <button type="button" id="voice-neutral" aria-pressed="true" onclick="updateVoiceSelection('Neutral')" class="px-1.5 py-1 text-[10px] font-medium rounded border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex items-center justify-center text-center">
+                    <button type="button" id="voice-neutral" aria-pressed="true" onclick="updateVoiceSelection('Neutral')" class="px-2 py-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white transition flex flex-col sm:flex-row items-center justify-center gap-1.5">
                         <span id="voice-neutral-label">Neutral</span>
                     </button>
                 </div>
@@ -687,11 +687,12 @@
             updateDisplay();
         }
 
-        // Voice selection uses the same class styling as the working avatar style buttons.
+        // Voice buttons deliberately reuse the exact class strings used by setAvatarType().
         function updateVoiceSelection(voice) {
             currentVoice = voice;
-            const selectedClass = "px-1.5 py-1 text-[10px] font-medium rounded border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex items-center justify-center text-center";
-            const unselectedClass = "px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center text-center";
+
+            const selectedClass = "px-2 py-2 text-xs font-medium rounded-lg border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex flex-col sm:flex-row items-center justify-center gap-1.5";
+            const unselectedClass = "px-2 py-2 text-xs font-medium rounded-lg border border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white transition flex flex-col sm:flex-row items-center justify-center gap-1.5";
 
             [
                 ["voice-male", "Masculine"],
