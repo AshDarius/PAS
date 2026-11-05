@@ -293,14 +293,15 @@
     transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
     transform: scale(1);
   }
-  #profile-configurator-component input.custom-radio:checked + label {
-    background: #ddd6fe;
-    border-color: #a78bfa;
-    color: #4c1d95;
-    box-shadow: 0 0 0 2px rgba(167,139,250,.20), 0 0 14px rgba(167,139,250,.18);
+  #profile-configurator-component label.voice-option-selected {
+    background-color: #ddd6fe !important;
+    background-image: none !important;
+    border-color: #a78bfa !important;
+    color: #4c1d95 !important;
+    box-shadow: 0 0 0 2px rgba(167,139,250,.20), 0 0 14px rgba(167,139,250,.18) !important;
     animation: voiceChoiceSelected 360ms ease-out;
   }
-  #profile-configurator-component input.custom-radio:checked + label span { color: #4c1d95; }
+  #profile-configurator-component label.voice-option-selected span { color: #4c1d95 !important; }
   #profile-configurator-component input.custom-radio:focus-visible + label { outline: 2px solid rgb(129,140,248); outline-offset: 2px; }
   @keyframes voiceChoiceSelected {
     0% { transform: scale(1); }
@@ -681,6 +682,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             generateNewRandomName();
             updateDisplay();
+            updateVoiceSelection(currentVoice);
         });
 
         // Generate a new random Animal-Fruit pair
@@ -724,7 +726,14 @@
         // Voice Radio Selection Handler
         function updateVoiceSelection(voice) {
             currentVoice = voice;
-            // Keep the selected voice in profile data only. Do not display a gender marker.
+            // Apply the visible selected state directly. The voice category remains
+            // in profile data only and is never shown on the avatar.
+            document.querySelectorAll('#profile-configurator-component input[name="voice_option"]').forEach(input => {
+                const label = document.querySelector('#profile-configurator-component label[for="' + input.id + '"]');
+                if (label) {
+                    label.classList.toggle('voice-option-selected', input.checked);
+                }
+            });
             const preview = document.getElementById('voice-preview-label');
             if (preview) preview.textContent = '';
         }
