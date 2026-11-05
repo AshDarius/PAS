@@ -289,29 +289,6 @@
     cursor: pointer;
   }
   .consent-page-bg .btn:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
-  #profile-configurator-component input.custom-radio + label {
-    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-    transform: scale(1);
-  }
-  #profile-configurator-component label.voice-option-selected {
-    background-color: #ddd6fe !important;
-    background-image: none !important;
-    border-color: #a78bfa !important;
-    color: #4c1d95 !important;
-    box-shadow: 0 0 0 2px rgba(167,139,250,.20), 0 0 14px rgba(167,139,250,.18) !important;
-    animation: voiceChoiceSelected 360ms ease-out;
-  }
-  #profile-configurator-component label.voice-option-selected span { color: #4c1d95 !important; }
-  #profile-configurator-component input.custom-radio:focus-visible + label { outline: 2px solid rgb(129,140,248); outline-offset: 2px; }
-  @keyframes voiceChoiceSelected {
-    0% { transform: scale(1); }
-    45% { transform: scale(1.06); }
-    100% { transform: scale(1); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #profile-configurator-component input.custom-radio + label { transition: none; }
-    #profile-configurator-component input.custom-radio:checked + label { animation: none; }
-  }
   .consent-page-bg .btn:focus-visible, .consent-page-bg .link:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
   .consent-page-bg .hint { margin: 0; text-align: center; font-size: 15px; color: var(--muted); min-height: 1.6em; }
 
@@ -521,30 +498,17 @@
                     <span id="profile-voice-label">Voice Persona</span>
                 </label>
 
-                <div class="grid grid-cols-3 gap-1.5">
-                    <!-- Masculine Voice -->
-                    <div>
-                        <input type="radio" id="voice-male" name="voice_option" value="Masculine" class="hidden custom-radio" onchange="updateVoiceSelection('Masculine')">
-                        <label for="voice-male" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <span id="voice-masculine-label" class="text-xs font-medium text-slate-200">Masculine</span>
-                        </label>
-                    </div>
-
-                    <!-- Feminine Voice -->
-                    <div>
-                        <input type="radio" id="voice-female" name="voice_option" value="Feminine" class="hidden custom-radio" onchange="updateVoiceSelection('Feminine')">
-                        <label for="voice-female" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <span id="voice-feminine-label" class="text-xs font-medium text-slate-200">Feminine</span>
-                        </label>
-                    </div>
-
-                    <!-- Neutral Voice -->
-                    <div>
-                        <input type="radio" id="voice-neutral" name="voice_option" value="Neutral" checked class="hidden custom-radio" onchange="updateVoiceSelection('Neutral')">
-                        <label for="voice-neutral" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <span id="voice-neutral-label" class="text-xs font-medium text-slate-200">Neutral</span>
-                        </label>
-                    </div>
+                <div class="grid grid-cols-3 gap-1">
+                    <!-- Voice buttons use the same selected and unselected styling as the avatar style buttons. -->
+                    <button type="button" id="voice-male" aria-pressed="false" onclick="updateVoiceSelection('Masculine')" class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center text-center">
+                        <span id="voice-masculine-label">Masculine</span>
+                    </button>
+                    <button type="button" id="voice-female" aria-pressed="false" onclick="updateVoiceSelection('Feminine')" class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center text-center">
+                        <span id="voice-feminine-label">Feminine</span>
+                    </button>
+                    <button type="button" id="voice-neutral" aria-pressed="true" onclick="updateVoiceSelection('Neutral')" class="px-1.5 py-1 text-[10px] font-medium rounded border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex items-center justify-center text-center">
+                        <span id="voice-neutral-label">Neutral</span>
+                    </button>
                 </div>
             </div>
 
@@ -723,17 +687,25 @@
             updateDisplay();
         }
 
-        // Voice Radio Selection Handler
+        // Voice selection uses the same class styling as the working avatar style buttons.
         function updateVoiceSelection(voice) {
             currentVoice = voice;
-            // Apply the visible selected state directly. The voice category remains
-            // in profile data only and is never shown on the avatar.
-            document.querySelectorAll('#profile-configurator-component input[name="voice_option"]').forEach(input => {
-                const label = document.querySelector('#profile-configurator-component label[for="' + input.id + '"]');
-                if (label) {
-                    label.classList.toggle('voice-option-selected', input.checked);
-                }
+            const selectedClass = "px-1.5 py-1 text-[10px] font-medium rounded border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex items-center justify-center text-center";
+            const unselectedClass = "px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center text-center";
+
+            [
+                ["voice-male", "Masculine"],
+                ["voice-female", "Feminine"],
+                ["voice-neutral", "Neutral"]
+            ].forEach(([id, value]) => {
+                const button = document.getElementById(id);
+                if (!button) return;
+                const selected = value === voice;
+                button.className = selected ? selectedClass : unselectedClass;
+                button.setAttribute("aria-pressed", selected ? "true" : "false");
             });
+
+            // Voice category is stored in the profile only, never shown on the avatar.
             const preview = document.getElementById('voice-preview-label');
             if (preview) preview.textContent = '';
         }
