@@ -372,7 +372,7 @@
               </div>
               <div>
                 <h4 class="font-medium text-slate-200">Global_Product_Brief_Q3.pdf</h4>
-                <p class="text-[11px] text-slate-400">Translated to EN, ES, JP • 2.4 MB</p>
+                <p id="docBriefMeta" class="text-[11px] text-slate-400">Translated to EN, ES, JP • 2.4 MB</p>
               </div>
             </div>
             <button class="text-slate-400 hover:text-indigo-400 p-2"><i class="fa-solid fa-download"></i></button>
@@ -385,7 +385,7 @@
               </div>
               <div>
                 <h4 class="font-medium text-slate-200">Live_Transcript_Stream_Summary.docx</h4>
-                <p class="text-[11px] text-slate-400">Auto-generated • Updated 2m ago</p>
+                <p id="docTranscriptMeta" class="text-[11px] text-slate-400">Auto-generated • Updated 2m ago</p>
               </div>
             </div>
             <button class="text-slate-400 hover:text-indigo-400 p-2"><i class="fa-solid fa-download"></i></button>
@@ -416,6 +416,8 @@
     let isHeadsetMode = true; // true = Headset, false = Open Speaker
     let isAgreed = false;
     let micInterval = null;
+
+    const wp = (key) => (window.wavepingText && window.wavepingText[key]) || key;
 
     // Element References
     const voiceToggle = document.getElementById('voiceToggle');
@@ -448,15 +450,15 @@
     voiceToggle.addEventListener('change', (e) => {
       isVoiceEnabled = e.target.checked;
       if (isVoiceEnabled) {
-        voiceStatusText.textContent = "Voice Output: ON";
+        voiceStatusText.textContent = wp("voiceOn");
         voiceStatusText.className = "text-indigo-300 font-semibold";
         voiceIcon.className = "fa-solid fa-volume-high text-indigo-400";
-        showToast("Voice playback active (" + (isHeadsetMode ? "Headset" : "Speakers") + ")", "fa-volume-high", "text-indigo-400");
+        showToast(wp("voiceActive") + " (" + (isHeadsetMode ? wp("headset") : wp("speakers")) + ")", "fa-volume-high", "text-indigo-400");
       } else {
-        voiceStatusText.textContent = "Voice Output: OFF";
+        voiceStatusText.textContent = wp("voiceOff");
         voiceStatusText.className = "text-slate-400";
         voiceIcon.className = "fa-solid fa-volume-xmark text-slate-500";
-        showToast("Voice output muted", "fa-volume-xmark", "text-slate-400");
+        showToast(wp("voiceMuted"), "fa-volume-xmark", "text-slate-400");
       }
     });
 
@@ -465,12 +467,12 @@
       isHeadsetMode = !isHeadsetMode;
       if (isHeadsetMode) {
         audioModeIcon.className = "fa-solid fa-headset text-indigo-400";
-        audioModeLabel.textContent = "Headset Mode";
-        showToast("Audio output routed to Headset", "fa-headset", "text-indigo-400");
+        audioModeLabel.textContent = wp("headset");
+        showToast(wp("routeHeadset"), "fa-headset", "text-indigo-400");
       } else {
         audioModeIcon.className = "fa-solid fa-bullhorn text-amber-400";
-        audioModeLabel.textContent = "Open Speaker";
-        showToast("Audio output routed to Open Speakers", "fa-bullhorn", "text-amber-400");
+        audioModeLabel.textContent = wp("speaker");
+        showToast(wp("routeSpeakers"), "fa-bullhorn", "text-amber-400");
       }
     }
 
@@ -480,17 +482,17 @@
       if (isMainMicOn) {
         mainMicToggleBtn.className = "px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
         mainMicIcon.className = "fa-solid fa-microphone text-emerald-400 animate-pulse";
-        mainMicText.textContent = "Mic: LIVE";
+        mainMicText.textContent = wp("micLive");
         micBadgeDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
         startMicMeterAnimation();
-        showToast("Microphone UNMUTED - Audio stream active", "fa-microphone", "text-emerald-400");
+        showToast(wp("micUnmutedToast"), "fa-microphone", "text-emerald-400");
       } else {
         mainMicToggleBtn.className = "px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
         mainMicIcon.className = "fa-solid fa-microphone-slash text-red-400";
-        mainMicText.textContent = "Mic: MUTED";
+        mainMicText.textContent = wp("micMuted");
         micBadgeDot.className = "w-2 h-2 rounded-full bg-red-500";
         stopMicMeterAnimation();
-        showToast("Microphone MUTED", "fa-microphone-slash", "text-red-400");
+        showToast(wp("micMutedToast"), "fa-microphone-slash", "text-red-400");
       }
     }
 
@@ -522,7 +524,7 @@
       if (!isMainMicOn) {
         toggleMainMic();
       }
-      showToast("Listening to voice input...", "fa-waveform", "text-emerald-400");
+      showToast(wp("listening"), "fa-waveform", "text-emerald-400");
       
       const sampleVoicePrompts = [
         "Could you clarify the multi-lingual stream latency?",
@@ -549,12 +551,12 @@
       isAgreed = !isAgreed;
       if (isAgreed) {
         agreeBtn.className = "flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-800 text-emerald-400 text-xs sm:text-sm font-medium border border-emerald-500/50 shadow-sm transition active:scale-95";
-        agreeText.textContent = "Agreed ✓";
-        showToast("Terms & Translation accuracy acknowledged", "fa-circle-check", "text-emerald-400");
+        agreeText.textContent = wp("agreed");
+        showToast(wp("termsAcknowledged"), "fa-circle-check", "text-emerald-400");
       } else {
         agreeBtn.className = "flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-medium border border-emerald-500/40 shadow-sm transition active:scale-95";
-        agreeText.textContent = "Agree";
-        showToast("Agreement status reset", "fa-circle-info", "text-indigo-400");
+        agreeText.textContent = wp("agree");
+        showToast(wp("agreementReset"), "fa-circle-info", "text-indigo-400");
       }
     });
 
@@ -566,7 +568,7 @@
 
     // 7. Close & Minimize Controls
     closeMainBtn.addEventListener('click', () => {
-      if (confirm("Are you sure you want to close WavePing  Viewer Translation?")) {
+      if (confirm(wp("confirmClose"))) {
         mainAppWindow.style.opacity = "0";
         mainAppWindow.style.transform = "scale(0.95)";
         setTimeout(() => {
@@ -589,7 +591,7 @@
     });
 
     minimizeBtn.addEventListener('click', () => {
-      showToast("WavePing  docked to mini viewer mode", "fa-window-minimize", "text-indigo-400");
+      showToast(wp("minimized"), "fa-window-minimize", "text-indigo-400");
     });
 
     // 8. User Message Submission
@@ -687,13 +689,13 @@
       const hiddenBlock = btn.parentElement.nextElementSibling;
       if (hiddenBlock) {
         hiddenBlock.classList.toggle('hidden');
-        btn.textContent = hiddenBlock.classList.contains('hidden') ? "Show Original" : "Hide Original";
+        btn.textContent = hiddenBlock.classList.contains('hidden') ? wp("showOriginal") : wp("hideOriginal");
       }
     }
 
     function playAudioSnippet(btn) {
       if (!isVoiceEnabled) {
-        showToast("Enable 'Voice Output' to hear audio", "fa-volume-xmark", "text-amber-400");
+        showToast(wp("enableVoice"), "fa-volume-xmark", "text-amber-400");
         return;
       }
       btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Playing...`;
@@ -756,7 +758,7 @@
 
   (function () {
     const text = {
-      en: ["Participant","LIVE","Auto Detect","Voice Output: OFF","Headset Mode","Mic: OFF","Docs","Agree","Session encrypted • AI Live Interpretation Active","Host","Original: English","Show Original","Guest Speaker","You (Viewer)","Speak (Voice Input)","Simulate Incoming","Send","Session Documents & Transcripts","Close"],
+      en: ["Participant","LIVE","Auto Detect",wp("voiceOff"),wp("headset"),"Mic: OFF","Docs",wp("agree"),"Session encrypted • AI Live Interpretation Active","Host","Original: English",wp("showOriginal"),"Guest Speaker",wp("viewer"),"Speak (Voice Input)","Simulate Incoming","Send","Session Documents & Transcripts","Close"],
       es: ["Participante","EN VIVO","Detección automática","Salida de voz: DESACTIVADA","Modo auriculares","Micrófono: APAGADO","Documentos","Aceptar","Sesión cifrada • Interpretación IA activa","Anfitrión","Original: inglés","Mostrar original","Invitado","Tú (espectador)","Hablar (entrada de voz)","Simular entrada","Enviar","Documentos y transcripciones","Cerrar"],
       fr: ["Participant","EN DIRECT","Détection automatique","Sortie vocale : désactivée","Mode casque","Micro : arrêt","Documents","Accepter","Session chiffrée • Interprétation IA active","Hôte","Original : anglais","Afficher l’original","Invité","Vous (spectateur)","Parler (entrée vocale)","Simuler une arrivée","Envoyer","Documents et transcriptions","Fermer"],
       de: ["Teilnehmer","LIVE","Automatisch erkennen","Sprachausgabe: AUS","Kopfhörermodus","Mikrofon: AUS","Dokumente","Zustimmen","Sitzung verschlüsselt • KI-Interpretation aktiv","Gastgeber","Original: Englisch","Original anzeigen","Gastredner","Du (Zuschauer)","Sprechen (Spracheingabe)","Eingang simulieren","Senden","Sitzungsdokumente und Transkripte","Schließen"],
@@ -772,6 +774,22 @@
     let profile = null;
     try { profile = JSON.parse(sessionStorage.getItem("wavepingParticipant") || "null"); } catch (e) {}
     const code = (profile && profile.language) || sessionStorage.getItem("wavepingLanguage") || "en";
+    const extra = {
+      en:{guest:"Guest",voiceOn:"Voice Output: ON",voiceOff:"Voice Output: OFF",voiceActive:"Voice playback active",voiceMuted:"Voice output muted",headset:"Headset Mode",speakers:"Speakers",speaker:"Open Speaker",routeHeadset:"Audio output routed to headset",routeSpeakers:"Audio output routed to speakers",micLive:"Mic: LIVE",micMuted:"Mic: MUTED",micUnmutedToast:"Microphone unmuted. Audio stream active.",micMutedToast:"Microphone muted.",listening:"Listening to voice input...",termsAcknowledged:"Terms and translation accuracy acknowledged.",agreed:"Agreed ✓",agree:"Agree",agreementReset:"Agreement status reset.",confirmClose:"Are you sure you want to close WavePing Viewer Translation?",sessionClosed:"WavePing Session Closed",streamEnded:"The live translation stream has ended.",reopen:"Re-open Session",minimized:"WavePing docked to mini viewer mode.",viewer:"You (Viewer)",translating:"Translating voice and text for the stream...",translated:"Translated",showOriginal:"Show Original",hideOriginal:"Hide Original",enableVoice:"Enable Voice Output to hear audio.",playing:"Playing...",listen:"Listen",speechTranslated:"Speech translated from",docBrief:"Translated into English, Spanish and Japanese • 2.4 MB",docTranscript:"Automatically generated • Updated 2 minutes ago",placeholder:"Type a message or use Speak to convert voice to text...",simulateTitle:"Simulate incoming translation"},
+      es:{guest:"Invitado",voiceOn:"Salida de voz: ACTIVADA",voiceOff:"Salida de voz: DESACTIVADA",voiceActive:"Reproducción de voz activa",voiceMuted:"Salida de voz silenciada",headset:"Modo auriculares",speakers:"Altavoces",speaker:"Altavoz abierto",routeHeadset:"Audio dirigido a los auriculares",routeSpeakers:"Audio dirigido a los altavoces",micLive:"Micrófono: EN VIVO",micMuted:"Micrófono: SILENCIADO",micUnmutedToast:"Micrófono activado. Audio en directo.",micMutedToast:"Micrófono silenciado.",listening:"Escuchando la entrada de voz...",termsAcknowledged:"Términos y precisión de la traducción reconocidos.",agreed:"Aceptado ✓",agree:"Aceptar",agreementReset:"Se restableció el estado de aceptación.",confirmClose:"¿Seguro que quieres cerrar el visor de traducción WavePing?",sessionClosed:"Sesión de WavePing cerrada",streamEnded:"La transmisión de traducción en directo ha terminado.",reopen:"Volver a abrir la sesión",minimized:"WavePing se minimizó al modo de visor.",viewer:"Tú (espectador)",translating:"Traduciendo voz y texto para la transmisión...",translated:"Traducido",showOriginal:"Mostrar original",hideOriginal:"Ocultar original",enableVoice:"Activa la salida de voz para escuchar el audio.",playing:"Reproduciendo...",listen:"Escuchar",speechTranslated:"Discurso traducido de",docBrief:"Traducido al inglés, español y japonés • 2,4 MB",docTranscript:"Generado automáticamente • Actualizado hace 2 minutos",placeholder:"Escribe un mensaje o usa Hablar para convertir voz en texto...",simulateTitle:"Simular traducción entrante"},
+      fr:{guest:"Invité",voiceOn:"Sortie vocale : ACTIVÉE",voiceOff:"Sortie vocale : DÉSACTIVÉE",voiceActive:"Lecture vocale active",voiceMuted:"Sortie vocale coupée",headset:"Mode casque",speakers:"Haut-parleurs",speaker:"Haut-parleur ouvert",routeHeadset:"Audio envoyé vers le casque",routeSpeakers:"Audio envoyé vers les haut-parleurs",micLive:"Micro : EN DIRECT",micMuted:"Micro : MUET",micUnmutedToast:"Micro activé. Flux audio actif.",micMutedToast:"Micro coupé.",listening:"Écoute de l'entrée vocale...",termsAcknowledged:"Conditions et précision de la traduction reconnues.",agreed:"Accepté ✓",agree:"Accepter",agreementReset:"L'accord a été réinitialisé.",confirmClose:"Voulez-vous vraiment fermer le traducteur WavePing ?",sessionClosed:"Session WavePing fermée",streamEnded:"Le flux de traduction en direct est terminé.",reopen:"Rouvrir la session",minimized:"WavePing réduit en mode mini-visionneuse.",viewer:"Vous (spectateur)",translating:"Traduction de la voix et du texte pour le flux...",translated:"Traduit",showOriginal:"Afficher l'original",hideOriginal:"Masquer l'original",enableVoice:"Activez la sortie vocale pour écouter l'audio.",playing:"Lecture...",listen:"Écouter",speechTranslated:"Intervention traduite de",docBrief:"Traduit en anglais, espagnol et japonais • 2,4 Mo",docTranscript:"Généré automatiquement • Mis à jour il y a 2 min",placeholder:"Écrivez un message ou utilisez Parler pour convertir la voix en texte...",simulateTitle:"Simuler une traduction entrante"},
+      de:{guest:"Gast",voiceOn:"Sprachausgabe: EIN",voiceOff:"Sprachausgabe: AUS",voiceActive:"Sprachwiedergabe aktiv",voiceMuted:"Sprachausgabe stummgeschaltet",headset:"Kopfhörermodus",speakers:"Lautsprecher",speaker:"Lautsprecherbetrieb",routeHeadset:"Audio an Kopfhörer weitergeleitet",routeSpeakers:"Audio an Lautsprecher weitergeleitet",micLive:"Mikrofon: LIVE",micMuted:"Mikrofon: STUMM",micUnmutedToast:"Mikrofon aktiviert. Audiostream aktiv.",micMutedToast:"Mikrofon stummgeschaltet.",listening:"Spracheingabe wird angehört...",termsAcknowledged:"Bedingungen und Übersetzungsgenauigkeit bestätigt.",agreed:"Zugestimmt ✓",agree:"Zustimmen",agreementReset:"Zustimmungsstatus zurückgesetzt.",confirmClose:"Möchten Sie den WavePing-Übersetzer wirklich schließen?",sessionClosed:"WavePing-Sitzung geschlossen",streamEnded:"Der Live-Übersetzungsstream wurde beendet.",reopen:"Sitzung erneut öffnen",minimized:"WavePing in den Mini-Viewer-Modus versetzt.",viewer:"Du (Zuschauer)",translating:"Sprache und Text werden für den Stream übersetzt...",translated:"Übersetzt",showOriginal:"Original anzeigen",hideOriginal:"Original ausblenden",enableVoice:"Aktiviere die Sprachausgabe, um Audio zu hören.",playing:"Wird abgespielt...",listen:"Anhören",speechTranslated:"Beitrag übersetzt von",docBrief:"Übersetzt ins Englische, Spanische und Japanische • 2,4 MB",docTranscript:"Automatisch erstellt • Vor 2 Minuten aktualisiert",placeholder:"Nachricht eingeben oder Sprechen zur Spracheingabe verwenden...",simulateTitle:"Eingehende Übersetzung simulieren"},
+      it:{guest:"Ospite",voiceOn:"Uscita vocale: ATTIVA",voiceOff:"Uscita vocale: DISATTIVATA",voiceActive:"Riproduzione vocale attiva",voiceMuted:"Uscita vocale disattivata",headset:"Modalità cuffie",speakers:"Altoparlanti",speaker:"Altoparlante aperto",routeHeadset:"Audio inviato alle cuffie",routeSpeakers:"Audio inviato agli altoparlanti",micLive:"Microfono: ATTIVO",micMuted:"Microfono: DISATTIVATO",micUnmutedToast:"Microfono attivato. Flusso audio attivo.",micMutedToast:"Microfono disattivato.",listening:"Ascolto dell'input vocale...",termsAcknowledged:"Termini e accuratezza della traduzione riconosciuti.",agreed:"Accettato ✓",agree:"Accetta",agreementReset:"Stato di accettazione ripristinato.",confirmClose:"Vuoi chiudere il traduttore WavePing?",sessionClosed:"Sessione WavePing chiusa",streamEnded:"Il flusso di traduzione in diretta è terminato.",reopen:"Riapri sessione",minimized:"WavePing ridotto alla modalità mini visualizzatore.",viewer:"Tu (spettatore)",translating:"Traduzione di voce e testo per il flusso...",translated:"Tradotto",showOriginal:"Mostra originale",hideOriginal:"Nascondi originale",enableVoice:"Attiva l'uscita vocale per ascoltare l'audio.",playing:"Riproduzione...",listen:"Ascolta",speechTranslated:"Intervento tradotto di",docBrief:"Tradotto in inglese, spagnolo e giapponese • 2,4 MB",docTranscript:"Generato automaticamente • Aggiornato 2 minuti fa",placeholder:"Scrivi un messaggio o usa Parla per convertire la voce in testo...",simulateTitle:"Simula traduzione in arrivo"},
+      pt:{guest:"Convidado",voiceOn:"Saída de voz: ATIVADA",voiceOff:"Saída de voz: DESATIVADA",voiceActive:"Reprodução de voz ativa",voiceMuted:"Saída de voz silenciada",headset:"Modo fone de ouvido",speakers:"Alto-falantes",speaker:"Alto-falante aberto",routeHeadset:"Áudio direcionado ao fone de ouvido",routeSpeakers:"Áudio direcionado aos alto-falantes",micLive:"Microfone: AO VIVO",micMuted:"Microfone: MUDO",micUnmutedToast:"Microfone ativado. Fluxo de áudio ativo.",micMutedToast:"Microfone silenciado.",listening:"Ouvindo a entrada de voz...",termsAcknowledged:"Termos e precisão da tradução reconhecidos.",agreed:"Aceito ✓",agree:"Concordar",agreementReset:"Status de concordância redefinido.",confirmClose:"Tem certeza de que deseja fechar o tradutor WavePing?",sessionClosed:"Sessão WavePing encerrada",streamEnded:"A transmissão de tradução ao vivo terminou.",reopen:"Reabrir sessão",minimized:"WavePing minimizado para o modo de visualização.",viewer:"Você (espectador)",translating:"Traduzindo voz e texto para a transmissão...",translated:"Traduzido",showOriginal:"Mostrar original",hideOriginal:"Ocultar original",enableVoice:"Ative a saída de voz para ouvir o áudio.",playing:"Reproduzindo...",listen:"Ouvir",speechTranslated:"Fala traduzida de",docBrief:"Traduzido para inglês, espanhol e japonês • 2,4 MB",docTranscript:"Gerado automaticamente • Atualizado há 2 minutos",placeholder:"Digite uma mensagem ou use Falar para converter voz em texto...",simulateTitle:"Simular tradução recebida"},
+      ja:{guest:"ゲスト",voiceOn:"音声出力：オン",voiceOff:"音声出力：オフ",voiceActive:"音声再生中",voiceMuted:"音声出力をミュート",headset:"ヘッドセットモード",speakers:"スピーカー",speaker:"スピーカーモード",routeHeadset:"音声をヘッドセットに出力",routeSpeakers:"音声をスピーカーに出力",micLive:"マイク：オン",micMuted:"マイク：ミュート",micUnmutedToast:"マイクがオンです。音声ストリームは有効です。",micMutedToast:"マイクをミュートしました。",listening:"音声入力を聞き取っています...",termsAcknowledged:"利用条件と翻訳精度を確認しました。",agreed:"同意済み ✓",agree:"同意する",agreementReset:"同意状態をリセットしました。",confirmClose:"WavePing翻訳画面を閉じますか？",sessionClosed:"WavePingセッション終了",streamEnded:"リアルタイム翻訳ストリームが終了しました。",reopen:"セッションを再開",minimized:"WavePingをミニ表示モードにしました。",viewer:"あなた（閲覧者）",translating:"音声とテキストをストリーム用に翻訳しています...",translated:"翻訳",showOriginal:"原文を表示",hideOriginal:"原文を隠す",enableVoice:"音声を聞くには音声出力をオンにしてください。",playing:"再生中...",listen:"聞く",speechTranslated:"翻訳元",docBrief:"英語・スペイン語・日本語に翻訳 • 2.4 MB",docTranscript:"自動生成 • 2分前に更新",placeholder:"メッセージを入力するか、話すボタンで音声をテキストに変換...",simulateTitle:"受信翻訳をシミュレート"},
+      zh:{guest:"访客",voiceOn:"语音输出：开启",voiceOff:"语音输出：关闭",voiceActive:"语音播放已开启",voiceMuted:"语音输出已静音",headset:"耳机模式",speakers:"扬声器",speaker:"扬声器模式",routeHeadset:"音频已切换到耳机",routeSpeakers:"音频已切换到扬声器",micLive:"麦克风：开启",micMuted:"麦克风：静音",micUnmutedToast:"麦克风已开启，音频流正在运行。",micMutedToast:"麦克风已静音。",listening:"正在聆听语音输入...",termsAcknowledged:"已确认条款和翻译准确性。",agreed:"已同意 ✓",agree:"同意",agreementReset:"已重置同意状态。",confirmClose:"确定要关闭 WavePing 翻译窗口吗？",sessionClosed:"WavePing 会话已关闭",streamEnded:"实时翻译流已结束。",reopen:"重新打开会话",minimized:"WavePing 已切换到迷你查看模式。",viewer:"你（观看者）",translating:"正在为直播翻译语音和文本...",translated:"译文",showOriginal:"显示原文",hideOriginal:"隐藏原文",enableVoice:"开启语音输出以收听音频。",playing:"正在播放...",listen:"收听",speechTranslated:"发言翻译自",docBrief:"已翻译为英语、西班牙语和日语 • 2.4 MB",docTranscript:"自动生成 • 2 分钟前更新",placeholder:"输入消息，或使用说话按钮将语音转换为文字...",simulateTitle:"模拟接收翻译"},
+      ko:{guest:"게스트",voiceOn:"음성 출력: 켜짐",voiceOff:"음성 출력: 꺼짐",voiceActive:"음성 재생 활성화",voiceMuted:"음성 출력 음소거",headset:"헤드셋 모드",speakers:"스피커",speaker:"스피커 모드",routeHeadset:"헤드셋으로 오디오 출력",routeSpeakers:"스피커로 오디오 출력",micLive:"마이크: 켜짐",micMuted:"마이크: 음소거",micUnmutedToast:"마이크가 켜졌습니다. 오디오 스트림이 활성화되었습니다.",micMutedToast:"마이크가 음소거되었습니다.",listening:"음성 입력을 듣는 중...",termsAcknowledged:"약관 및 번역 정확성을 확인했습니다.",agreed:"동의함 ✓",agree:"동의",agreementReset:"동의 상태가 초기화되었습니다.",confirmClose:"WavePing 번역 창을 닫으시겠습니까?",sessionClosed:"WavePing 세션 종료",streamEnded:"실시간 번역 스트림이 종료되었습니다.",reopen:"세션 다시 열기",minimized:"WavePing이 미니 뷰어 모드로 전환되었습니다.",viewer:"나 (뷰어)",translating:"스트림용 음성과 텍스트를 번역하는 중...",translated:"번역됨",showOriginal:"원문 보기",hideOriginal:"원문 숨기기",enableVoice:"오디오를 들으려면 음성 출력을 켜세요.",playing:"재생 중...",listen:"듣기",speechTranslated:"번역된 발언:",docBrief:"영어, 스페인어, 일본어로 번역됨 • 2.4MB",docTranscript:"자동 생성 • 2분 전에 업데이트",placeholder:"메시지를 입력하거나 말하기를 사용해 음성을 텍스트로 변환하세요...",simulateTitle:"수신 번역 시뮬레이션"},
+      ar:{guest:"ضيف",voiceOn:"الإخراج الصوتي: يعمل",voiceOff:"الإخراج الصوتي: متوقف",voiceActive:"تشغيل الصوت نشط",voiceMuted:"تم كتم الإخراج الصوتي",headset:"وضع سماعة الرأس",speakers:"مكبرات الصوت",speaker:"وضع مكبر الصوت",routeHeadset:"تم توجيه الصوت إلى سماعة الرأس",routeSpeakers:"تم توجيه الصوت إلى مكبرات الصوت",micLive:"الميكروفون: يعمل",micMuted:"الميكروفون: مكتوم",micUnmutedToast:"تم تشغيل الميكروفون. تدفق الصوت نشط.",micMutedToast:"تم كتم الميكروفون.",listening:"جارٍ الاستماع إلى الإدخال الصوتي...",termsAcknowledged:"تم الإقرار بالشروط ودقة الترجمة.",agreed:"تمت الموافقة ✓",agree:"موافقة",agreementReset:"تمت إعادة تعيين حالة الموافقة.",confirmClose:"هل تريد إغلاق مترجم WavePing؟",sessionClosed:"تم إغلاق جلسة WavePing",streamEnded:"انتهى بث الترجمة المباشر.",reopen:"إعادة فتح الجلسة",minimized:"تم تصغير WavePing إلى وضع العرض المصغر.",viewer:"أنت (المشاهد)",translating:"جارٍ ترجمة الصوت والنص للبث...",translated:"مترجم",showOriginal:"إظهار النص الأصلي",hideOriginal:"إخفاء النص الأصلي",enableVoice:"فعّل الإخراج الصوتي لسماع الصوت.",playing:"جارٍ التشغيل...",listen:"استماع",speechTranslated:"ترجمة حديث",docBrief:"تُرجم إلى الإنجليزية والإسبانية واليابانية • 2.4 ميغابايت",docTranscript:"تم الإنشاء تلقائيًا • تم التحديث قبل دقيقتين",placeholder:"اكتب رسالة أو استخدم التحدث لتحويل الصوت إلى نص...",simulateTitle:"محاكاة ترجمة واردة"},
+      hi:{guest:"अतिथि",voiceOn:"आवाज़ आउटपुट: चालू",voiceOff:"आवाज़ आउटपुट: बंद",voiceActive:"आवाज़ प्लेबैक सक्रिय",voiceMuted:"आवाज़ आउटपुट म्यूट है",headset:"हेडसेट मोड",speakers:"स्पीकर",speaker:"स्पीकर मोड",routeHeadset:"ऑडियो हेडसेट पर भेजा गया",routeSpeakers:"ऑडियो स्पीकर पर भेजा गया",micLive:"माइक: चालू",micMuted:"माइक: म्यूट",micUnmutedToast:"माइक्रोफ़ोन चालू है। ऑडियो स्ट्रीम सक्रिय है।",micMutedToast:"माइक्रोफ़ोन म्यूट है।",listening:"आवाज़ इनपुट सुना जा रहा है...",termsAcknowledged:"शर्तों और अनुवाद की सटीकता को स्वीकार किया गया।",agreed:"सहमत ✓",agree:"सहमत",agreementReset:"सहमति की स्थिति रीसेट की गई।",confirmClose:"क्या आप WavePing अनुवादक बंद करना चाहते हैं?",sessionClosed:"WavePing सत्र बंद",streamEnded:"लाइव अनुवाद स्ट्रीम समाप्त हो गई है।",reopen:"सत्र फिर खोलें",minimized:"WavePing मिनी व्यूअर मोड में चला गया।",viewer:"आप (दर्शक)",translating:"स्ट्रीम के लिए आवाज़ और टेक्स्ट का अनुवाद हो रहा है...",translated:"अनुवादित",showOriginal:"मूल दिखाएँ",hideOriginal:"मूल छिपाएँ",enableVoice:"ऑडियो सुनने के लिए आवाज़ आउटपुट चालू करें।",playing:"चल रहा है...",listen:"सुनें",speechTranslated:"इसका अनुवाद",docBrief:"अंग्रेज़ी, स्पेनिश और जापानी में अनुवादित • 2.4 MB",docTranscript:"स्वतः बनाया गया • 2 मिनट पहले अपडेट",placeholder:"संदेश लिखें या आवाज़ को टेक्स्ट में बदलने के लिए बोलें...",simulateTitle:"आने वाले अनुवाद का अनुकरण"},
+      ru:{guest:"Гость",voiceOn:"Голосовой вывод: ВКЛ",voiceOff:"Голосовой вывод: ВЫКЛ",voiceActive:"Воспроизведение голоса включено",voiceMuted:"Голосовой вывод отключён",headset:"Режим наушников",speakers:"Динамики",speaker:"Режим динамика",routeHeadset:"Звук направлен в наушники",routeSpeakers:"Звук направлен на динамики",micLive:"Микрофон: В ЭФИРЕ",micMuted:"Микрофон: ВЫКЛ",micUnmutedToast:"Микрофон включён. Аудиопоток активен.",micMutedToast:"Микрофон отключён.",listening:"Прослушивание голосового ввода...",termsAcknowledged:"Условия и точность перевода подтверждены.",agreed:"Согласовано ✓",agree:"Согласен",agreementReset:"Статус согласия сброшен.",confirmClose:"Закрыть окно перевода WavePing?",sessionClosed:"Сеанс WavePing закрыт",streamEnded:"Прямая трансляция перевода завершена.",reopen:"Открыть сеанс снова",minimized:"WavePing свёрнут в режим мини-просмотра.",viewer:"Вы (зритель)",translating:"Перевод речи и текста для трансляции...",translated:"Перевод",showOriginal:"Показать оригинал",hideOriginal:"Скрыть оригинал",enableVoice:"Включите голосовой вывод, чтобы услышать звук.",playing:"Воспроизведение...",listen:"Слушать",speechTranslated:"Речь переведена от",docBrief:"Переведено на английский, испанский и японский • 2,4 МБ",docTranscript:"Создано автоматически • Обновлено 2 минуты назад",placeholder:"Введите сообщение или используйте голосовой ввод...",simulateTitle:"Симуляция входящего перевода"}
+    };
+    window.wavepingText = extra[code] || extra.en;
+    window.wavepingTargetLanguage = (document.getElementById("targetLang") && document.getElementById("targetLang").value) || "EN";
     const labels = text[code] || text.en;
     document.documentElement.lang = text[code] ? code : "en";
     document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
@@ -798,6 +816,15 @@
     put("#docsModalTitle", labels[17]);
     const closeButton = document.getElementById("docsCloseButton");
     if (closeButton) closeButton.textContent = labels[18];
+
+    const briefMeta = document.getElementById("docBriefMeta");
+    if (briefMeta) briefMeta.textContent = window.wavepingText.docBrief;
+    const transcriptMeta = document.getElementById("docTranscriptMeta");
+    if (transcriptMeta) transcriptMeta.textContent = window.wavepingText.docTranscript;
+    const input = document.getElementById("userInput");
+    if (input) input.placeholder = window.wavepingText.placeholder;
+    const simulateButton = document.querySelector('button[title="Simulate incoming translation"]');
+    if (simulateButton) simulateButton.title = window.wavepingText.simulateTitle;
     const identity = document.getElementById("participantIdentity");
     if (identity) {
       const avatar = document.createElement("div");
