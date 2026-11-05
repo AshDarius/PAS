@@ -1308,7 +1308,7 @@
 
   // Dummy app button action placeholder
   document.getElementById('dummy-app-btn').addEventListener('click', function () {
-    if (!sessionStorage.getItem('wavepingParticipant')) getProfileSummary();
+    getProfileSummary();
     window.location.href = './translator.html';
   });
 
