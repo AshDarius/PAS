@@ -89,7 +89,7 @@
             </h1>
             <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">TRANSLATE v2.4</span>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">Real-time Multi-lingual Stream Synthesis</p>
+          <p id="translatorSubtitle" class="text-xs text-slate-400 hidden sm:block">Real-time Multi-lingual Stream Synthesis</p>
           <p id="participantIdentity" class="text-[11px] text-indigo-300 mt-1" aria-live="polite">Participant: Guest</p>
         </div>
       </div>
@@ -98,7 +98,7 @@
       <div class="hidden md:flex items-center gap-3 bg-slate-950/60 px-3 py-1.5 rounded-full border border-slate-800">
         <div class="flex items-center gap-1.5 text-xs text-slate-300 font-medium">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>LIVE</span>
+          <span id="liveLabel">LIVE</span>
         </div>
         <div class="h-3 w-[1px] bg-slate-700"></div>
         <div class="flex items-center gap-2 text-xs">
@@ -300,9 +300,7 @@
         </div>
         <!-- Local User Avatar -->
         <div class="relative shrink-0">
-          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400 shadow">
-            ME
-          </div>
+          <div id="localUserAvatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400 shadow">ME</div>
         </div>
       </div>
 
