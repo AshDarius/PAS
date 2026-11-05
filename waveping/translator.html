@@ -338,13 +338,13 @@
           <input type="text" id="userInput" placeholder="Type a message or use 'Speak' to convert voice to text..." class="w-full bg-slate-950/80 text-slate-100 placeholder-slate-500 text-xs sm:text-sm rounded-xl px-4 py-2.5 outline-none border border-slate-800 focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition">
           <button type="button" onclick="simulateIncomingSpeaker()" title="Simulate incoming translation" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 text-xs flex items-center gap-1 bg-slate-900 px-2 py-1 rounded border border-slate-800 transition">
             <i class="fa-solid fa-dice"></i>
-            <span class="hidden sm:inline">Simulate Incoming</span>
+            <span id="simulateIncomingLabel" class="hidden sm:inline">Simulate Incoming</span>
           </button>
         </div>
 
         <!-- Send Button -->
         <button type="submit" class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition active:scale-95 shrink-0">
-          <span>Send</span>
+          <span id="sendLabel">Send</span>
           <i class="fa-solid fa-paper-plane text-xs"></i>
         </button>
       </form>
@@ -393,7 +393,7 @@
         </div>
         <!-- Modal Footer -->
         <div class="p-3 bg-slate-950/60 border-t border-slate-800 text-right">
-          <button onclick="toggleDocsModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl transition">
+          <button id="docsCloseButton" onclick="toggleDocsModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl transition">
             Close
           </button>
         </div>
@@ -777,6 +777,7 @@
     document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
     const put = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
     put("#participantIdentity", labels[0] + ": " + ((profile && profile.displayName) || "Guest") + ((profile && profile.voice) ? " · " + profile.voice : ""));
+    put("#translatorSubtitle", labels[0]);
     put(".hidden.md\\:flex span", labels[1]);
     put("#sourceLang option[value='Auto']", labels[2]);
     put("#voiceStatusText", labels[3]);
@@ -794,7 +795,7 @@
     put("#simulateIncomingLabel", labels[15]);
     put("#sendLabel", labels[16]);
     put("#docsModalTitle", labels[17]);
-    const closeButton = document.querySelector("#docsModal button[onclick='toggleDocsModal()']");
+    const closeButton = document.getElementById("docsCloseButton");
     if (closeButton) closeButton.textContent = labels[18];
     const identity = document.getElementById("participantIdentity");
     if (identity) {
