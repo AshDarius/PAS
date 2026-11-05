@@ -847,6 +847,9 @@
         function getProfileSummary() {
             const summary = {
                 displayName: getActiveName(),
+                language: window.wavepingLanguage || sessionStorage.getItem('wavepingLanguage') || 'en',
+                avatarEmoji: randomPair.animal.emoji + ' ' + randomPair.fruit.emoji,
+                avatarInitials: getInitials(getActiveName()),
                 namingMode: currentNamingMode,
                 voice: currentVoice,
                 avatarType: currentAvatarType,
@@ -1229,6 +1232,8 @@
   function proceed() {
     const L = LANGS[current];
     const code = L.code;
+    window.wavepingLanguage = code;
+    try { sessionStorage.setItem('wavepingLanguage', code); } catch (error) {}
 
     applyConsentLanguage(code);
 
