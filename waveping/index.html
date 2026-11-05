@@ -430,17 +430,18 @@
         <h1 id="done-title">Thank you</h1>
         <p id="done-text"></p>
         <p class="stamp" id="done-stamp"></p>
+        <button type="button" id="change" class="link">Change my answer</button>
            <div id="profile-configurator-component" class="w-full max-w-xl mx-auto bg-transparent p-2 sm:p-4 transition-all text-xs sm:text-sm">
         
         <!-- Header -->
         <div class="flex items-center justify-between pb-3 border-b border-slate-700/60 mb-4">
             <div>
-                <h2 class="text-base sm:text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
-                    <i class="fa-solid fa-user-gear text-indigo-400"></i> Participant Profile
+                <h2 id="profile-title" class="text-base sm:text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-gear text-indigo-400"></i> <span id="profile-title-text">Participant Profile</span>
                 </h2>
-                <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Configure name, voice, and avatar.</p>
+                <p id="profile-subtitle" class="text-[10px] sm:text-xs text-slate-400 mt-0.5">Configure name, voice, and avatar.</p>
             </div>
-            <span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] font-semibold rounded-full hidden sm:inline-block">Prototype</span>
+            <span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] font-semibold rounded-full hidden sm:inline-block"><span id="profile-prototype-text">Prototype</span></span>
         </div>
 
         <form id="profile-form" class="space-y-4" onsubmit="event.preventDefault();">
@@ -450,7 +451,7 @@
                 <div class="flex items-center justify-between">
                     <label class="text-[11px] font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1">
                         <span class="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold">1</span>
-                        Display Name
+                        <span id="profile-display-name-label">Display Name</span>
                     </label>
                 </div>
 
@@ -458,11 +459,11 @@
                 <div class="grid grid-cols-2 gap-1 p-1 bg-slate-900/40 rounded-lg border border-slate-700/50">
                     <button type="button" id="tab-random" onclick="setNamingMode('random')" 
                         class="py-1 px-2 text-[10px] font-medium rounded transition-all flex items-center justify-center gap-1 bg-indigo-600 text-white">
-                        <i class="fa-solid fa-dice"></i> Random
+                        <i class="fa-solid fa-dice"></i> <span id="profile-random-label">Random</span>
                     </button>
                     <button type="button" id="tab-custom" onclick="setNamingMode('custom')" 
                         class="py-1 px-2 text-[10px] font-medium rounded transition-all flex items-center justify-center gap-1 text-slate-400 hover:text-white">
-                        <i class="fa-solid fa-pen-to-square"></i> Custom
+                        <i class="fa-solid fa-pen-to-square"></i> <span id="profile-custom-label">Custom</span>
                     </button>
                 </div>
 
@@ -494,7 +495,7 @@
             <div class="space-y-2">
                 <label class="text-[11px] font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1">
                     <span class="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold">2</span>
-                    Voice Persona
+                    <span id="profile-voice-label">Voice Persona</span>
                 </label>
 
                 <div class="grid grid-cols-3 gap-1.5">
@@ -502,7 +503,7 @@
                     <div>
                         <input type="radio" id="voice-male" name="voice_option" value="Masculine" class="hidden custom-radio" onchange="updateVoiceSelection('Masculine')">
                         <label for="voice-male" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <span class="text-xs font-medium text-slate-200">Masculine</span>
+                            <span id="voice-masculine-label" class="text-xs font-medium text-slate-200">Masculine</span>
                         </label>
                     </div>
 
@@ -510,7 +511,7 @@
                     <div>
                         <input type="radio" id="voice-female" name="voice_option" value="Feminine" class="hidden custom-radio" onchange="updateVoiceSelection('Feminine')">
                         <label for="voice-female" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <span class="text-xs font-medium text-slate-200">Feminine</span>
+                            <span id="voice-feminine-label" class="text-xs font-medium text-slate-200">Feminine</span>
                         </label>
                     </div>
 
@@ -518,7 +519,7 @@
                     <div>
                         <input type="radio" id="voice-neutral" name="voice_option" value="Neutral" checked class="hidden custom-radio" onchange="updateVoiceSelection('Neutral')">
                         <label for="voice-neutral" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <span class="text-xs font-medium text-slate-200">Neutral</span>
+                            <span id="voice-neutral-label" class="text-xs font-medium text-slate-200">Neutral</span>
                         </label>
                     </div>
                 </div>
@@ -528,22 +529,22 @@
             <div class="space-y-2">
                 <label class="text-[11px] font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-1">
                     <span class="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] font-bold">3</span>
-                    Avatar Style
+                    <span id="profile-avatar-label">Avatar Style</span>
                 </label>
 
                 <!-- Avatar Mode Options -->
                 <div class="grid grid-cols-3 gap-1">
                     <button type="button" id="btn-avatar-emoji" onclick="setAvatarType('emoji')" 
                         class="px-1.5 py-1 text-[10px] font-medium rounded border border-indigo-500 bg-indigo-600/20 text-indigo-300 transition flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-icons"></i> Emoji
+                        <i class="fa-solid fa-icons"></i> <span id="avatar-emoji-label">Emoji</span>
                     </button>
                     <button type="button" id="btn-avatar-initials" onclick="setAvatarType('initials')" 
                         class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-font"></i> Initials
+                        <i class="fa-solid fa-font"></i> <span id="avatar-initials-label">Initials</span>
                     </button>
                     <button type="button" id="btn-avatar-photo" onclick="setAvatarType('photo')" 
                         class="px-1.5 py-1 text-[10px] font-medium rounded border border-slate-700 bg-slate-900/30 text-slate-400 hover:text-white transition flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-camera"></i> Photo
+                        <i class="fa-solid fa-camera"></i> <span id="avatar-photo-label">Photo</span>
                     </button>
                 </div>
 
@@ -551,13 +552,13 @@
                 <div id="photo-controls" class="hidden bg-slate-900/50 p-2 rounded-xl border border-slate-700 space-y-2">
                     <div class="flex flex-wrap gap-1.5 justify-center">
                         <label class="cursor-pointer bg-slate-700 hover:bg-slate-600 text-white text-[10px] py-1 px-2 rounded flex items-center gap-1 border border-slate-600 transition">
-                            <i class="fa-solid fa-upload"></i> Upload / Cam
+                            <i class="fa-solid fa-upload"></i> <span id="avatar-upload-label">Upload / Cam</span>
                             <input type="file" id="camera-file-input" accept="image/*" capture="user" onchange="handleFileInput(event)" class="hidden" />
                         </label>
                         
                         <button type="button" id="btn-webcam-toggle" onclick="toggleWebcam()" 
                             class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] py-1 px-2 rounded flex items-center gap-1 transition">
-                            <i class="fa-solid fa-video"></i> Live Cam
+                            <i class="fa-solid fa-video"></i> <span id="avatar-live-label">Live Cam</span>
                         </button>
                     </div>
 
@@ -565,7 +566,7 @@
                         <video id="webcam-video" autoplay playsinline class="w-32 h-24 bg-black rounded-lg object-cover border border-slate-600"></video>
                         <button type="button" onclick="captureWebcamFrame()" 
                             class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1">
-                            <i class="fa-solid fa-circle-dot"></i> Snap
+                            <i class="fa-solid fa-circle-dot"></i> <span id="avatar-snap-label">Snap</span>
                         </button>
                     </div>
                 </div>
@@ -589,7 +590,7 @@
             <!-- Submit / Export Action -->
             <button type="button" onclick="getProfileSummary()" 
                 class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-medium py-2 px-3 text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-circle-check"></i> Save Settings
+                <i class="fa-solid fa-circle-check"></i> <span id="profile-save-label">Save Settings</span>
             </button>
         </form>
 
@@ -686,7 +687,8 @@
             badge.innerHTML = '<i class="fa-solid fa-wave-square" aria-hidden="true"></i>';
             badge.className = "absolute bottom-0 right-0 bg-indigo-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
             
-            document.getElementById('voice-preview-label').textContent = `Voice: ${voice}`;
+            const p = window._profileTexts || PROFILE_LOCALES.en;
+            document.getElementById('voice-preview-label').textContent = p.voicePrefix + ': ' + p[voice.toLowerCase()];
         }
 
         // Switch Avatar Mode (Emoji, Initials, Photo)
@@ -768,7 +770,7 @@
                     container.innerHTML = `
                         <div class="flex flex-col items-center justify-center text-slate-500">
                             <i class="fa-solid fa-camera text-2xl mb-1"></i>
-                            <span class="text-[10px]">No Photo</span>
+                            <span id="avatar-no-photo-label" class="text-[10px]">No Photo</span>
                         </div>
                     `;
                 }
@@ -802,9 +804,11 @@
                 videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
                 video.srcObject = videoStream;
                 streamBox.classList.remove('hidden');
-                document.getElementById('btn-webcam-toggle').innerHTML = `<i class="fa-solid fa-stop"></i> Close Cam`;
+                const p = window._profileTexts || PROFILE_LOCALES.en;
+                document.getElementById('btn-webcam-toggle').innerHTML = '<i class="fa-solid fa-stop"></i> ' + p.close;
             } catch (err) {
-                alert("Camera access was denied or is not supported in this browser.");
+                const p = window._profileTexts || PROFILE_LOCALES.en;
+                alert(p.profileError);
             }
         }
 
@@ -817,7 +821,10 @@
             const streamBox = document.getElementById('webcam-stream-box');
             if (streamBox) streamBox.classList.add('hidden');
             const toggleBtn = document.getElementById('btn-webcam-toggle');
-            if (toggleBtn) toggleBtn.innerHTML = `<i class="fa-solid fa-video"></i> Live Webcam`;
+            if (toggleBtn) {
+                const p = window._profileTexts || PROFILE_LOCALES.en;
+                toggleBtn.innerHTML = '<i class="fa-solid fa-video"></i> ' + p.live;
+            }
         }
 
         // Capture Still Frame from WebCam Stream
@@ -852,17 +859,16 @@
                 sessionStorage.setItem('wavepingParticipant', JSON.stringify(summary));
                 const msgBox = document.getElementById('output-msg');
                 msgBox.classList.remove('hidden');
-                msgBox.textContent = 'Profile saved for this WavePing session.';
+                msgBox.textContent = (window._profileTexts || PROFILE_LOCALES.en).profileSaved;
             } catch (error) {
                 const msgBox = document.getElementById('output-msg');
                 msgBox.classList.remove('hidden');
-                msgBox.textContent = 'Profile could not be saved in this browser session. You can still continue.';
+                msgBox.textContent = (window._profileTexts || PROFILE_LOCALES.en).profileError;
             }
             return summary;
         }
     </script>
-        <button type="button" id="change" class="link">Change my answer</button>
-        <button type="button" id="dummy-app-btn" class="btn" style="margin-top: 12px;">Continue to Sample App</button>
+        <button type="button" id="dummy-app-btn" class="btn" style="margin-top: 12px;">Continue</button>
       </section>
     </div>
   </div>
@@ -1066,6 +1072,60 @@
     }
   };
 
+
+  const PROFILE_LOCALES = {
+    en: { title:"Participant Profile", subtitle:"Configure name, voice, and avatar.", prototype:"Prototype", displayName:"Display Name", random:"Random", custom:"Custom", placeholder:"Name or group (e.g., Mary & Joe)", voice:"Voice Persona", masculine:"Masculine", feminine:"Feminine", neutral:"Neutral", avatar:"Avatar Style", emoji:"Emoji", initials:"Initials", photo:"Photo", upload:"Upload / Cam", live:"Live Cam", close:"Close Cam", snap:"Snap", noPhoto:"No Photo", save:"Save Settings", voicePrefix:"Voice", selectedVoice:"Selected Voice", regenerate:"Regenerate Name", profileSaved:"Profile saved for this WavePing session.", profileError:"Profile could not be saved in this browser session. You can still continue.", continue:"Continue" },
+    es: { title:"Perfil del participante", subtitle:"Configura el nombre, la voz y el avatar.", prototype:"Prototipo", displayName:"Nombre para mostrar", random:"Aleatorio", custom:"Personalizado", placeholder:"Nombre o grupo (p. ej., María y José)", voice:"Tipo de voz", masculine:"Masculina", feminine:"Femenina", neutral:"Neutra", avatar:"Estilo de avatar", emoji:"Emoji", initials:"Iniciales", photo:"Foto", upload:"Subir / Cámara", live:"Cámara en vivo", close:"Cerrar cámara", snap:"Capturar", noPhoto:"Sin foto", save:"Guardar ajustes", voicePrefix:"Voz", selectedVoice:"Voz seleccionada", regenerate:"Generar otro nombre", profileSaved:"Perfil guardado para esta sesión de WavePing.", profileError:"No se pudo guardar el perfil en esta sesión del navegador. Puedes continuar.", continue:"Continuar" },
+    fr: { title:"Profil du participant", subtitle:"Configurez le nom, la voix et l’avatar.", prototype:"Prototype", displayName:"Nom affiché", random:"Aléatoire", custom:"Personnalisé", placeholder:"Nom ou groupe (ex. Marie et Jean)", voice:"Type de voix", masculine:"Masculine", feminine:"Féminine", neutral:"Neutre", avatar:"Style d’avatar", emoji:"Emoji", initials:"Initiales", photo:"Photo", upload:"Importer / Caméra", live:"Caméra en direct", close:"Fermer la caméra", snap:"Capturer", noPhoto:"Aucune photo", save:"Enregistrer les réglages", voicePrefix:"Voix", selectedVoice:"Voix sélectionnée", regenerate:"Générer un autre nom", profileSaved:"Profil enregistré pour cette session WavePing.", profileError:"Impossible d’enregistrer le profil dans cette session du navigateur. Vous pouvez continuer.", continue:"Continuer" },
+    de: { title:"Teilnehmerprofil", subtitle:"Name, Stimme und Avatar festlegen.", prototype:"Prototyp", displayName:"Anzeigename", random:"Zufällig", custom:"Benutzerdefiniert", placeholder:"Name oder Gruppe (z. B. Maria und Josef)", voice:"Stimmtyp", masculine:"Maskulin", feminine:"Feminin", neutral:"Neutral", avatar:"Avatarstil", emoji:"Emoji", initials:"Initialen", photo:"Foto", upload:"Hochladen / Kamera", live:"Live-Kamera", close:"Kamera schließen", snap:"Aufnehmen", noPhoto:"Kein Foto", save:"Einstellungen speichern", voicePrefix:"Stimme", selectedVoice:"Ausgewählte Stimme", regenerate:"Neuen Namen erstellen", profileSaved:"Profil für diese WavePing-Sitzung gespeichert.", profileError:"Das Profil konnte in dieser Browsersitzung nicht gespeichert werden. Sie können fortfahren.", continue:"Weiter" },
+    it: { title:"Profilo partecipante", subtitle:"Configura nome, voce e avatar.", prototype:"Prototipo", displayName:"Nome visualizzato", random:"Casuale", custom:"Personalizzato", placeholder:"Nome o gruppo (es. Maria e Giovanni)", voice:"Tipo di voce", masculine:"Maschile", feminine:"Femminile", neutral:"Neutra", avatar:"Stile avatar", emoji:"Emoji", initials:"Iniziali", photo:"Foto", upload:"Carica / Fotocamera", live:"Fotocamera live", close:"Chiudi fotocamera", snap:"Scatta", noPhoto:"Nessuna foto", save:"Salva impostazioni", voicePrefix:"Voce", selectedVoice:"Voce selezionata", regenerate:"Genera un altro nome", profileSaved:"Profilo salvato per questa sessione WavePing.", profileError:"Impossibile salvare il profilo in questa sessione del browser. Puoi continuare.", continue:"Continua" },
+    pt: { title:"Perfil do participante", subtitle:"Configure o nome, a voz e o avatar.", prototype:"Protótipo", displayName:"Nome de exibição", random:"Aleatório", custom:"Personalizado", placeholder:"Nome ou grupo (ex.: Maria e João)", voice:"Tipo de voz", masculine:"Masculina", feminine:"Feminina", neutral:"Neutra", avatar:"Estilo do avatar", emoji:"Emoji", initials:"Iniciais", photo:"Foto", upload:"Enviar / Câmera", live:"Câmera ao vivo", close:"Fechar câmera", snap:"Capturar", noPhoto:"Sem foto", save:"Salvar configurações", voicePrefix:"Voz", selectedVoice:"Voz selecionada", regenerate:"Gerar outro nome", profileSaved:"Perfil salvo para esta sessão do WavePing.", profileError:"Não foi possível salvar o perfil nesta sessão do navegador. Você ainda pode continuar.", continue:"Continuar" },
+    ja: { title:"参加者プロフィール", subtitle:"名前、音声、アバターを設定します。", prototype:"試作版", displayName:"表示名", random:"ランダム", custom:"カスタム", placeholder:"名前またはグループ名", voice:"音声タイプ", masculine:"男性的", feminine:"女性的", neutral:"中性的", avatar:"アバターのスタイル", emoji:"絵文字", initials:"イニシャル", photo:"写真", upload:"アップロード / カメラ", live:"ライブカメラ", close:"カメラを閉じる", snap:"撮影", noPhoto:"写真なし", save:"設定を保存", voicePrefix:"音声", selectedVoice:"選択中の音声", regenerate:"別の名前を生成", profileSaved:"このWavePingセッションにプロフィールを保存しました。", profileError:"このブラウザーセッションにプロフィールを保存できませんでした。そのまま続行できます。", continue:"続ける" },
+    zh: { title:"参与者资料", subtitle:"设置名称、语音和头像。", prototype:"原型", displayName:"显示名称", random:"随机", custom:"自定义", placeholder:"姓名或群组名称", voice:"语音类型", masculine:"男性化", feminine:"女性化", neutral:"中性", avatar:"头像样式", emoji:"表情符号", initials:"姓名首字母", photo:"照片", upload:"上传 / 相机", live:"实时相机", close:"关闭相机", snap:"拍摄", noPhoto:"没有照片", save:"保存设置", voicePrefix:"语音", selectedVoice:"已选语音", regenerate:"生成其他名称", profileSaved:"资料已保存到本次 WavePing 会话。", profileError:"无法在此浏览器会话中保存资料。您仍可继续。", continue:"继续" },
+    ko: { title:"참가자 프로필", subtitle:"이름, 음성 및 아바타를 설정합니다.", prototype:"프로토타입", displayName:"표시 이름", random:"무작위", custom:"직접 입력", placeholder:"이름 또는 그룹", voice:"음성 유형", masculine:"남성적", feminine:"여성적", neutral:"중성적", avatar:"아바타 스타일", emoji:"이모지", initials:"이니셜", photo:"사진", upload:"업로드 / 카메라", live:"실시간 카메라", close:"카메라 닫기", snap:"촬영", noPhoto:"사진 없음", save:"설정 저장", voicePrefix:"음성", selectedVoice:"선택한 음성", regenerate:"다른 이름 만들기", profileSaved:"이 WavePing 세션에 프로필이 저장되었습니다.", profileError:"이 브라우저 세션에 프로필을 저장할 수 없습니다. 계속 진행할 수 있습니다.", continue:"계속" },
+    ar: { title:"ملف المشارك", subtitle:"إعداد الاسم والصوت والصورة الرمزية.", prototype:"نموذج أولي", displayName:"الاسم المعروض", random:"عشوائي", custom:"مخصص", placeholder:"اسم أو مجموعة", voice:"نوع الصوت", masculine:"ذكوري", feminine:"أنثوي", neutral:"محايد", avatar:"نمط الصورة الرمزية", emoji:"رمز تعبيري", initials:"الأحرف الأولى", photo:"صورة", upload:"تحميل / كاميرا", live:"كاميرا مباشرة", close:"إغلاق الكاميرا", snap:"التقاط", noPhoto:"لا توجد صورة", save:"حفظ الإعدادات", voicePrefix:"الصوت", selectedVoice:"الصوت المحدد", regenerate:"إنشاء اسم آخر", profileSaved:"تم حفظ الملف لهذه الجلسة من WavePing.", profileError:"تعذر حفظ الملف في جلسة المتصفح هذه. يمكنك المتابعة.", continue:"متابعة" },
+    hi: { title:"प्रतिभागी प्रोफ़ाइल", subtitle:"नाम, आवाज़ और अवतार सेट करें।", prototype:"प्रोटोटाइप", displayName:"दिखाने वाला नाम", random:"रैंडम", custom:"कस्टम", placeholder:"नाम या समूह", voice:"आवाज़ का प्रकार", masculine:"पुरुष जैसी", feminine:"महिला जैसी", neutral:"तटस्थ", avatar:"अवतार शैली", emoji:"इमोजी", initials:"आद्याक्षर", photo:"फ़ोटो", upload:"अपलोड / कैमरा", live:"लाइव कैमरा", close:"कैमरा बंद करें", snap:"फ़ोटो लें", noPhoto:"कोई फ़ोटो नहीं", save:"सेटिंग सहेजें", voicePrefix:"आवाज़", selectedVoice:"चुनी गई आवाज़", regenerate:"दूसरा नाम बनाएँ", profileSaved:"इस WavePing सत्र के लिए प्रोफ़ाइल सहेजी गई।", profileError:"इस ब्राउज़र सत्र में प्रोफ़ाइल सहेजी नहीं जा सकी। आप फिर भी जारी रख सकते हैं।", continue:"जारी रखें" },
+    ru: { title:"Профиль участника", subtitle:"Настройте имя, голос и аватар.", prototype:"Прототип", displayName:"Отображаемое имя", random:"Случайное", custom:"Своё имя", placeholder:"Имя или группа", voice:"Тип голоса", masculine:"Мужской", feminine:"Женский", neutral:"Нейтральный", avatar:"Стиль аватара", emoji:"Эмодзи", initials:"Инициалы", photo:"Фото", upload:"Загрузить / Камера", live:"Камера", close:"Закрыть камеру", snap:"Снимок", noPhoto:"Нет фото", save:"Сохранить настройки", voicePrefix:"Голос", selectedVoice:"Выбранный голос", regenerate:"Создать другое имя", profileSaved:"Профиль сохранён для этого сеанса WavePing.", profileError:"Не удалось сохранить профиль в этом сеансе браузера. Вы всё равно можете продолжить.", continue:"Продолжить" }
+  };
+
+  function applyProfileLanguage(code) {
+    const p = PROFILE_LOCALES[code] || PROFILE_LOCALES.en;
+    const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+    setText("profile-title-text", p.title);
+    setText("profile-subtitle", p.subtitle);
+    setText("profile-prototype-text", p.prototype);
+    setText("profile-display-name-label", p.displayName);
+    setText("profile-random-label", p.random);
+    setText("profile-custom-label", p.custom);
+    setText("profile-voice-label", p.voice);
+    setText("voice-masculine-label", p.masculine);
+    setText("voice-feminine-label", p.feminine);
+    setText("voice-neutral-label", p.neutral);
+    setText("profile-avatar-label", p.avatar);
+    setText("avatar-emoji-label", p.emoji);
+    setText("avatar-initials-label", p.initials);
+    setText("avatar-photo-label", p.photo);
+    setText("avatar-upload-label", p.upload);
+    setText("avatar-live-label", p.live);
+    setText("avatar-snap-label", p.snap);
+    setText("avatar-no-photo-label", p.noPhoto);
+    setText("profile-save-label", p.save);
+    setText("voice-preview-label", p.voicePrefix + ": " + p[currentVoice.toLowerCase()]);
+    const customInput = document.getElementById("custom-name-input");
+    if (customInput) customInput.placeholder = p.placeholder;
+    const voiceLabel = document.getElementById("voice-preview-label");
+    if (voiceLabel) voiceLabel.textContent = p.voicePrefix + ": " + p[currentVoice.toLowerCase()];
+    const voiceBadge = document.getElementById("voice-badge");
+    if (voiceBadge) voiceBadge.title = p.selectedVoice;
+    const randomButton = document.querySelector('button[onclick="generateNewRandomName()"]');
+    if (randomButton) randomButton.title = p.regenerate;
+    const cameraButton = document.getElementById("btn-webcam-toggle");
+    if (cameraButton && !videoStream) cameraButton.innerHTML = '<i class="fa-solid fa-video"></i> ' + p.live;
+    const continueButton = document.getElementById("dummy-app-btn");
+    if (continueButton) continueButton.textContent = p.continue;
+    window._profileTexts = p;
+  }
+
   const N = LANGS.length;
   const H = 64;
   const reel = document.getElementById("reel");
@@ -1207,7 +1267,8 @@
     document.getElementById("c-agree-label").textContent = t.agree;
     document.getElementById("c-decline-label").textContent = t.decline;
     document.getElementById("change").textContent = t.change;
-    document.getElementById("dummy-app-btn").textContent = t.dummyApp;
+    document.getElementById("dummy-app-btn").textContent = (PROFILE_LOCALES[code] || PROFILE_LOCALES.en).continue;
+    applyProfileLanguage(code);
 
     window._consentTexts = t;
     refreshConsentUI();
