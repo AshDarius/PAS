@@ -1,4 +1,4 @@
-const CACHE_NAME = 'waveping-shell-v9';
+const CACHE_NAME = 'waveping-shell-v10';
 const APP_FILES = ['./', './index.html', './translator.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', event => {
@@ -16,11 +16,17 @@ self.addEventListener('fetch', event => {
 
   // Always check the network first so GitHub Pages updates reach installed PWAs.
   const freshRequest = new Request(event.request, { cache: 'no-store' });
-  event.respondWith(fetch(freshRequest).then(response => {
-    if (response.ok) {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    try {
+      const response = await fetch(freshRequest);
+      if (response.ok) {
+        await cache.put(event.request, response.clone());
+      }
+      return response;
+    } catch (error) {
+      const cached = await cache.match(event.request);
+      return cached || Response.error();
     }
-    return response;
-  }).catch(() => caches.match(event.request)));
+  })());
 });
