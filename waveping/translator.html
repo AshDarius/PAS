@@ -649,7 +649,7 @@
         ? `<img src="${escapeHTML(profile.avatarData)}" alt="${escapeHTML(displayName)}" class="w-full h-full object-cover">`
         : profile.avatarType === "emoji"
           ? escapeHTML(profile.avatarEmoji || "👤")
-          : escapeHTML(profile.avatarInitials || displayName.split(/[\\s&-]+/).filter(Boolean).map(part => part[0]).slice(0, 2).join("").toUpperCase() || "G");
+          : escapeHTML(profile.avatarInitials || displayName.split(/[\s&-]+/).filter(Boolean).map(part => part[0]).slice(0, 2).join("").toUpperCase() || "G");
 
       const msgHTML = `
         <div class="flex items-start justify-end gap-2 max-w-2xl ml-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -916,7 +916,7 @@
       } else if (profile && profile.avatarType === "emoji") {
         avatar.textContent = profile.avatarEmoji || "👤";
       } else {
-        avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\\s&-]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
+        avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\s&-]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
       }
       identity.parentNode.insertBefore(avatar, identity);
       avatar.style.display = "inline-flex";
