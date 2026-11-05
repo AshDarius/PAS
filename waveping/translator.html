@@ -630,10 +630,31 @@
     });
 
     // 8. User Message Submission
+    // Send sound is stored beside translator.html in the waveping folder.
+    const sendMessageSound = new Audio("./WavePingMessage.wav");
+    sendMessageSound.preload = "auto";
+    sendMessageSound.volume = 0.65;
+
+    function playSendMessageSound() {
+      try {
+        sendMessageSound.pause();
+        sendMessageSound.currentTime = 0;
+        const playback = sendMessageSound.play();
+        if (playback && typeof playback.catch === "function") {
+          playback.catch(() => {});
+        }
+      } catch (error) {
+        // A missing or unsupported sound file must not prevent sending the message.
+      }
+    }
+
     function handleSendMessage(e) {
       e.preventDefault();
       const text = userInput.value.trim();
       if (!text) return;
+
+      // Play directly from the Send action so the browser permits playback.
+      playSendMessageSound();
 
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
