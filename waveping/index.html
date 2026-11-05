@@ -1373,7 +1373,7 @@
     document.getElementById('done-text').textContent = c === 'agree' ? t.doneTextAgree : t.doneTextDecline;
     document.getElementById('done-stamp').textContent = t.doneStamp + when;
     document.getElementById('change').textContent = t.change;
-    document.getElementById('dummy-app-btn').textContent = t.dummyApp;
+    document.getElementById('dummy-app-btn').textContent = (PROFILE_LOCALES[document.getElementById("confirmation-screen").getAttribute("lang")] || PROFILE_LOCALES.en).continue;
 
     // Switch from Consent screen to Confirmation screen
     document.getElementById('consent-screen').hidden = true;
