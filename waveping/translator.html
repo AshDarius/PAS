@@ -918,7 +918,15 @@
     if (simulateButton) simulateButton.title = window.wavepingText.simulateTitle;
     const identity = document.getElementById("participantIdentity");
     const viewerLabel = document.getElementById("viewerLabel");
-    if (viewerLabel) viewerLabel.textContent = ((profile && profile.displayName) || "Guest") + " (You)";
+    const selfLabels = {
+      en: "You", es: "Tú", fr: "Vous", de: "Du",
+      it: "Tu", pt: "Você", ja: "あなた", zh: "你",
+      ko: "나", ar: "أنت", hi: "आप", ru: "Вы"
+    };
+    const selfLabel = selfLabels[code] || selfLabels.en;
+    if (viewerLabel) {
+      viewerLabel.textContent = ((profile && profile.displayName) || "Guest") + " (" + selfLabel + ")";
+    }
     if (identity) {
       const avatar = document.createElement("div");
       avatar.id = "participantAvatar";
