@@ -289,7 +289,7 @@
         <div class="flex flex-col items-end max-w-[85%]">
           <div class="flex items-center gap-2 mb-1 px-1">
             <span class="text-[10px] text-slate-600">10:45 AM</span>
-            <span id="viewerLabel" class="text-xs font-semibold text-indigo-400">You (Viewer)</span>
+            <span id="viewerLabel" class="text-xs font-semibold text-indigo-400">Guest (You)</span>
           </div>
           <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-indigo-900/20">
             <p class="leading-relaxed">Can you clarify if multi-party auto-detection works automatically for all connected mics?</p>
@@ -301,7 +301,47 @@
         </div>
         <!-- Local User Avatar -->
         <div class="relative shrink-0">
-          <div id="localUserAvatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400 shadow">ME</div>
+          <div id="localUserAvatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400 shadow overflow-hidden">ME</div>
+        </div>
+      </div>
+
+      <!-- SAMPLE GROUP CHAT: A participant addresses KALTA directly. -->
+      <div class="flex items-start gap-2 max-w-2xl group">
+        <div class="relative shrink-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-xs font-bold text-white border-2 border-cyan-400/60">MC</div>
+          <span class="absolute -bottom-1 -right-1 bg-cyan-700 text-[9px] font-bold text-white px-1 rounded border border-slate-900">EN</span>
+        </div>
+        <div class="flex flex-col items-start max-w-[85%]">
+          <div class="flex items-center gap-2 mb-1 px-1">
+            <span class="text-xs font-semibold text-cyan-300">Maya Chen</span>
+            <span class="text-[10px] text-slate-500">Participant</span>
+            <span class="text-[10px] text-slate-600">10:46 AM</span>
+          </div>
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-cyan-500">
+            <p class="leading-relaxed">KALTA, how do I ask a question when the group is speaking different languages?</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KALTA: AI assistant participating in the group conversation. -->
+      <div class="flex items-start gap-2 max-w-2xl group">
+        <div class="relative shrink-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-xs font-bold text-white border-2 border-violet-400/70">K</div>
+          <span class="absolute -bottom-1 -right-1 bg-violet-700 text-[9px] font-bold text-white px-1 rounded border border-slate-900">AI</span>
+        </div>
+        <div class="flex flex-col items-start max-w-[85%]">
+          <div class="flex items-center gap-2 mb-1 px-1">
+            <span class="text-xs font-semibold text-violet-300">KALTA</span>
+            <span class="text-[10px] text-slate-500">AI Participant</span>
+            <span class="text-[10px] text-slate-600">10:46 AM</span>
+          </div>
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-violet-500">
+            <p class="leading-relaxed">Just address me by name. For example, say “KALTA, please explain that last point” or “KALTA, translate the main idea.” I can answer questions, clarify comments, and summarize the discussion. My reply appears here as another group message and is translated for the participants, just like everyone else's messages.</p>
+            <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-violet-300/90 flex items-center gap-1.5 font-medium bg-violet-500/10 p-2 rounded-lg border border-violet-500/20">
+              <i class="fa-solid fa-language text-violet-400 text-xs"></i>
+              <span><strong>How to use KALTA:</strong> Mention “KALTA” in your message, then ask for an explanation, translation, summary, or clarification. This is a sample conversation; live AI responses and translation are not connected in this prototype.</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -603,12 +643,20 @@
 
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+      const profile = window.wavepingParticipantProfile || {};
+      const displayName = profile.displayName || "Guest";
+      const avatarMarkup = profile.avatarType === "photo" && profile.avatarData
+        ? `<img src="${escapeHTML(profile.avatarData)}" alt="${escapeHTML(displayName)}" class="w-full h-full object-cover">`
+        : profile.avatarType === "emoji"
+          ? escapeHTML(profile.avatarEmoji || "👤")
+          : escapeHTML(profile.avatarInitials || displayName.split(/[\\s&-]+/).filter(Boolean).map(part => part[0]).slice(0, 2).join("").toUpperCase() || "G");
+
       const msgHTML = `
-        <div class="flex items-start justify-end gap-3 max-w-2xl ml-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div class="flex items-start justify-end gap-2 max-w-2xl ml-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div class="flex flex-col items-end max-w-[85%]">
             <div class="flex items-center gap-2 mb-1 px-1">
               <span class="text-[10px] text-slate-600">${timeStr}</span>
-              <span class="text-xs font-semibold text-indigo-400">${wp("viewer")}</span>
+              <span class="text-xs font-semibold text-indigo-400">${escapeHTML(displayName)} (You)</span>
             </div>
             <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-indigo-900/20">
               <p class="leading-relaxed">${escapeHTML(text)}</p>
@@ -618,10 +666,8 @@
               </div>
             </div>
           </div>
-          <div class="relative shrink-0">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400">
-              ME
-            </div>
+          <div class="relative shrink-0 w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400 overflow-hidden">
+            ${avatarMarkup}
           </div>
         </div>
       `;
@@ -742,6 +788,7 @@
     // Read the participant profile saved by index.html in this browser tab.
     try {
       const profile = JSON.parse(sessionStorage.getItem('wavepingParticipant') || 'null');
+      window.wavepingParticipantProfile = profile;
       const identity = document.getElementById('participantIdentity');
       if (profile && identity) {
         identity.textContent = 'Participant: ' + (profile.displayName || 'Guest');
@@ -856,6 +903,8 @@
     const simulateButton = document.querySelector('button[title="Simulate incoming translation"]');
     if (simulateButton) simulateButton.title = window.wavepingText.simulateTitle;
     const identity = document.getElementById("participantIdentity");
+    const viewerLabel = document.getElementById("viewerLabel");
+    if (viewerLabel) viewerLabel.textContent = ((profile && profile.displayName) || "Guest") + " (You)";
     if (identity) {
       const avatar = document.createElement("div");
       avatar.id = "participantAvatar";
@@ -869,7 +918,12 @@
       } else {
         avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\\s&-]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
       }
-      identity.parentNode.insertBefore(avatar, identity); avatar.style.display="inline-flex"; avatar.style.verticalAlign="middle"; identity.style.display="inline-block"; identity.style.marginLeft="8px";
+      identity.parentNode.insertBefore(avatar, identity);
+      avatar.style.display = "inline-flex";
+      avatar.style.verticalAlign = "middle";
+      avatar.style.marginRight = "4px";
+      identity.style.display = "inline-block";
+      identity.style.marginLeft = "0";
       const localAvatar = document.querySelector("#localUserAvatar");
       if (localAvatar) {
         localAvatar.innerHTML = "";
