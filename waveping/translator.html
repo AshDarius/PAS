@@ -744,8 +744,7 @@
       const profile = JSON.parse(sessionStorage.getItem('wavepingParticipant') || 'null');
       const identity = document.getElementById('participantIdentity');
       if (profile && identity) {
-        identity.textContent = 'Participant: ' + (profile.displayName || 'Guest') +
-          (profile.voice ? ' · Voice: ' + profile.voice : '');
+        identity.textContent = 'Participant: ' + (profile.displayName || 'Guest');
       }
     } catch (error) {
       console.warn('Participant profile could not be loaded:', error);
