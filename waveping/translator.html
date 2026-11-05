@@ -932,14 +932,19 @@
       } else {
         avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\s&-]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
       }
-      identity.parentNode.insertBefore(avatar, identity);
-      avatar.style.display = "inline-flex";
-      avatar.style.verticalAlign = "middle";
-      avatar.style.marginRight = "8px";
-      identity.style.display = "inline-flex";
-      identity.style.alignItems = "center";
-      identity.style.minHeight = "48px";
+      // Place the participant avatar in the top header row, beside the WavePing logo.
+      // Keep the participant name and selected voice on their own line below the title.
+      const titleGroup = identity.parentElement && identity.parentElement.parentElement;
+      if (titleGroup && titleGroup.children.length >= 2) {
+        avatar.style.display = "inline-flex";
+        avatar.style.verticalAlign = "middle";
+        avatar.style.marginRight = "0";
+        avatar.style.marginLeft = "0";
+        titleGroup.insertBefore(avatar, titleGroup.children[1]);
+      }
+      identity.style.display = "block";
       identity.style.marginLeft = "0";
+      identity.style.minHeight = "0";
       const localAvatar = document.querySelector("#localUserAvatar");
       if (localAvatar) {
         localAvatar.innerHTML = "";
