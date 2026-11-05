@@ -777,8 +777,9 @@
     document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
     const put = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
     put("#participantIdentity", labels[0] + ": " + ((profile && profile.displayName) || "Guest") + ((profile && profile.voice) ? " · " + profile.voice : ""));
-    put("#translatorSubtitle", labels[0]);
-    put(".hidden.md\\:flex span", labels[1]);
+    const subtitles={en:"Real-time multi-lingual stream",es:"Transmisión multilingüe en tiempo real",fr:"Flux multilingue en temps réel",de:"Mehrsprachiger Stream in Echtzeit",it:"Flusso multilingue in tempo reale",pt:"Transmissão multilíngue em tempo real",ja:"リアルタイム多言語ストリーム",zh:"实时多语言流",ko:"실시간 다국어 스트림",ar:"بث متعدد اللغات في الوقت الفعلي",hi:"रीयल-टाइम बहुभाषी स्ट्रीम",ru:"Многоязычная трансляция в реальном времени"};
+    put("#translatorSubtitle", subtitles[code] || subtitles.en);
+    put("#liveLabel", labels[1]);
     put("#sourceLang option[value='Auto']", labels[2]);
     put("#voiceStatusText", labels[3]);
     put("#audioModeLabel", labels[4]);
@@ -811,7 +812,7 @@
       } else {
         avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\\s\\-&]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
       }
-      identity.parentNode.insertBefore(avatar, identity);
+      identity.parentNode.insertBefore(avatar, identity); avatar.style.display="inline-flex"; avatar.style.verticalAlign="middle"; identity.style.display="inline-block"; identity.style.marginLeft="8px";
       const localAvatar = document.querySelector("#localUserAvatar");
       if (localAvatar) {
         localAvatar.innerHTML = "";
