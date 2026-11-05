@@ -843,7 +843,7 @@
       } else if (profile && profile.avatarType === "emoji") {
         avatar.textContent = profile.avatarEmoji || "👤";
       } else {
-        avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\\s\\-&]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
+        avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\\s&-]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
       }
       identity.parentNode.insertBefore(avatar, identity); avatar.style.display="inline-flex"; avatar.style.verticalAlign="middle"; identity.style.display="inline-block"; identity.style.marginLeft="8px";
       const localAvatar = document.querySelector("#localUserAvatar");
