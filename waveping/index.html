@@ -289,6 +289,9 @@
     cursor: pointer;
   }
   .consent-page-bg .btn:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  #profile-configurator-component input.custom-radio:checked + label { background: rgba(79,70,229,.28); border-color: rgb(99,102,241); color: rgb(224,231,255); box-shadow: 0 0 0 1px rgba(99,102,241,.18); }
+  #profile-configurator-component input.custom-radio:checked + label span { color: rgb(224,231,255); }
+  #profile-configurator-component input.custom-radio:focus-visible + label { outline: 2px solid rgb(129,140,248); outline-offset: 2px; }
   .consent-page-bg .btn:focus-visible, .consent-page-bg .link:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
   .consent-page-bg .hint { margin: 0; text-align: center; font-size: 15px; color: var(--muted); min-height: 1.6em; }
 
@@ -577,13 +580,11 @@
                         <div id="avatar-container" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-slate-800 border-2 border-indigo-500/80 flex items-center justify-center overflow-hidden transition-all duration-300">
                             <!-- Content injected by JS -->
                         </div>
-                        <span id="voice-badge" class="absolute bottom-0 right-0 bg-emerald-600 text-white p-1 rounded-full text-[9px] shadow border border-slate-900" title="Selected Voice">
-                            <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
-                        </span>
+                        
                     </div>
 
                     <h3 id="display-name-preview" class="text-xs sm:text-sm font-bold text-white tracking-wide truncate max-w-full">Lion-Pear</h3>
-                    <p id="voice-preview-label" class="text-[10px] text-indigo-400 font-medium">Voice: Neutral</p>
+                    <p id="voice-preview-label" class="hidden" aria-hidden="true"></p>
                 </div>
             </div>
 
@@ -625,6 +626,28 @@
             { name: 'Melon', emoji: '🍈' }
         ];
 
+        const RANDOM_NAME_LOCALES = {
+          en:{animals:["Lion","Bear","Fox","Panda","Koala","Tiger","Eagle","Owl","Dolphin","Wolf"],fruits:["Pear","Apple","Banana","Peach","Cherry","Grape","Mango","Lemon","Kiwi","Melon"]},
+          es:{animals:["León","Oso","Zorro","Panda","Koala","Tigre","Águila","Búho","Delfín","Lobo"],fruits:["Pera","Manzana","Plátano","Melocotón","Cereza","Uva","Mango","Limón","Kiwi","Melón"]},
+          fr:{animals:["Lion","Ours","Renard","Panda","Koala","Tigre","Aigle","Hibou","Dauphin","Loup"],fruits:["Poire","Pomme","Banane","Pêche","Cerise","Raisin","Mangue","Citron","Kiwi","Melon"]},
+          de:{animals:["Löwe","Bär","Fuchs","Panda","Koala","Tiger","Adler","Eule","Delfin","Wolf"],fruits:["Birne","Apfel","Banane","Pfirsich","Kirsche","Traube","Mango","Zitrone","Kiwi","Melone"]},
+          it:{animals:["Leone","Orso","Volpe","Panda","Koala","Tigre","Aquila","Gufo","Delfino","Lupo"],fruits:["Pera","Mela","Banana","Pesca","Ciliegia","Uva","Mango","Limone","Kiwi","Melone"]},
+          pt:{animals:["Leão","Urso","Raposa","Panda","Coala","Tigre","Águia","Coruja","Golfinho","Lobo"],fruits:["Pera","Maçã","Banana","Pêssego","Cereja","Uva","Manga","Limão","Kiwi","Melão"]},
+          ja:{animals:["ライオン","クマ","キツネ","パンダ","コアラ","トラ","ワシ","フクロウ","イルカ","オオカミ"],fruits:["洋ナシ","リンゴ","バナナ","モモ","サクランボ","ブドウ","マンゴー","レモン","キウイ","メロン"]},
+          zh:{animals:["狮子","熊","狐狸","熊猫","考拉","老虎","鹰","猫头鹰","海豚","狼"],fruits:["梨","苹果","香蕉","桃子","樱桃","葡萄","芒果","柠檬","猕猴桃","甜瓜"]},
+          ko:{animals:["사자","곰","여우","판다","코알라","호랑이","독수리","부엉이","돌고래","늑대"],fruits:["배","사과","바나나","복숭아","체리","포도","망고","레몬","키위","멜론"]},
+          ar:{animals:["أسد","دب","ثعلب","باندا","كوالا","نمر","نسر","بومة","دلفين","ذئب"],fruits:["كمثرى","تفاح","موز","خوخ","كرز","عنب","مانجو","ليمون","كيوي","شمام"]},
+          hi:{animals:["शेर","भालू","लोमड़ी","पांडा","कोआला","बाघ","गरुड़","उल्लू","डॉल्फ़िन","भेड़िया"],fruits:["नाशपाती","सेब","केला","आड़ू","चेरी","अंगूर","आम","नींबू","कीवी","खरबूजा"]},
+          ru:{animals:["Лев","Медведь","Лиса","Панда","Коала","Тигр","Орёл","Сова","Дельфин","Волк"],fruits:["Груша","Яблоко","Банан","Персик","Вишня","Виноград","Манго","Лимон","Киви","Дыня"]}
+        };
+        function getRandomNameLanguage(){return window.wavepingLanguage || sessionStorage.getItem('wavepingLanguage') || 'en';}
+        function getTranslatedRandomName(){
+          const locale=RANDOM_NAME_LOCALES[getRandomNameLanguage()] || RANDOM_NAME_LOCALES.en;
+          const ai=ANIMALS.findIndex(x=>x.name===randomPair.animal.name);
+          const fi=FRUITS.findIndex(x=>x.name===randomPair.fruit.name);
+          return (locale.animals[ai] || randomPair.animal.name) + '-' + (locale.fruits[fi] || randomPair.fruit.name);
+        }
+
         // Component State
         let currentNamingMode = 'random'; // 'random' | 'custom'
         let currentAvatarType = 'emoji';  // 'emoji' | 'initials' | 'photo'
@@ -647,7 +670,7 @@
             const randFruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
             randomPair = { animal: randAnimal, fruit: randFruit };
             
-            document.getElementById('generated-name-input').value = `${randAnimal.name}-${randFruit.name}`;
+            document.getElementById('generated-name-input').value = getTranslatedRandomName();
             updateDisplay();
         }
 
@@ -682,13 +705,9 @@
         // Voice Radio Selection Handler
         function updateVoiceSelection(voice) {
             currentVoice = voice;
-            const badge = document.getElementById('voice-badge');
-            
-            badge.innerHTML = '<i class="fa-solid fa-wave-square" aria-hidden="true"></i>';
-            badge.className = "absolute bottom-0 right-0 bg-indigo-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
-            
-            const p = window._profileTexts || PROFILE_LOCALES.en;
-            document.getElementById('voice-preview-label').textContent = p.voicePrefix + ': ' + p[voice.toLowerCase()];
+            // Keep the selected voice in profile data only. Do not display a gender marker.
+            const preview = document.getElementById('voice-preview-label');
+            if (preview) preview.textContent = '';
         }
 
         // Switch Avatar Mode (Emoji, Initials, Photo)
@@ -722,7 +741,7 @@
         // Helper: Get active name string
         function getActiveName() {
             if (currentNamingMode === 'random') {
-                return `${randomPair.animal.name}-${randomPair.fruit.name}`;
+                return getTranslatedRandomName();
             }
             return customName || 'Anonymous';
         }
@@ -742,6 +761,8 @@
         function updateDisplay() {
             const activeName = getActiveName();
             document.getElementById('display-name-preview').textContent = activeName;
+            const randomNameInput = document.getElementById('generated-name-input');
+            if (randomNameInput && currentNamingMode === 'random') randomNameInput.value = activeName;
 
             const container = document.getElementById('avatar-container');
 
@@ -749,9 +770,9 @@
                 const animalEmoji = randomPair.animal.emoji;
                 const fruitEmoji = randomPair.fruit.emoji;
                 container.innerHTML = `
-                    <div class="flex items-center justify-center text-2xl sm:text-3xl select-none space-x-0.5">
-                        <span class="transform -rotate-6 hover:scale-125 transition">${animalEmoji}</span>
-                        <span class="transform rotate-6 hover:scale-125 transition">${fruitEmoji}</span>
+                    <div class="flex items-center justify-center text-2xl sm:text-3xl select-none">
+                        <span class="relative z-10 -mr-1.5 transform -rotate-6 hover:scale-110 transition">${animalEmoji}</span>
+                        <span class="relative z-0 -ml-1.5 transform rotate-6 hover:scale-110 transition">${fruitEmoji}</span>
                     </div>
                 `;
             } else if (currentAvatarType === 'initials') {
@@ -1113,13 +1134,11 @@
     setText("avatar-snap-label", p.snap);
     setText("avatar-no-photo-label", p.noPhoto);
     setText("profile-save-label", p.save);
-    setText("voice-preview-label", p.voicePrefix + ": " + p[currentVoice.toLowerCase()]);
+    setText("voice-preview-label", "");
     const customInput = document.getElementById("custom-name-input");
     if (customInput) customInput.placeholder = p.placeholder;
     const voiceLabel = document.getElementById("voice-preview-label");
-    if (voiceLabel) voiceLabel.textContent = p.voicePrefix + ": " + p[currentVoice.toLowerCase()];
-    const voiceBadge = document.getElementById("voice-badge");
-    if (voiceBadge) voiceBadge.title = p.selectedVoice;
+    if (voiceLabel) voiceLabel.textContent = "";
     const randomButton = document.querySelector('button[onclick="generateNewRandomName()"]');
     if (randomButton) randomButton.title = p.regenerate;
     const cameraButton = document.getElementById("btn-webcam-toggle");
@@ -1127,6 +1146,7 @@
     const continueButton = document.getElementById("dummy-app-btn");
     if (continueButton) continueButton.textContent = p.continue;
     window._profileTexts = p;
+    if (typeof updateDisplay === "function") updateDisplay();
   }
 
   const N = LANGS.length;
