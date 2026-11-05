@@ -349,7 +349,7 @@
         </div>
         <div class="flex items-center gap-2">
           <span class="font-medium text-indigo-300">Carlos</span>
-          <span>is speaking (ES)...</span>
+          <span id="liveTypingText">is speaking (ES)...</span>
           <div class="flex gap-1 items-center">
             <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-ping"></span>
           </div>
@@ -889,6 +889,21 @@
     const subtitles={en:"Real-time multi-lingual stream",es:"Transmisión multilingüe en tiempo real",fr:"Flux multilingue en temps réel",de:"Mehrsprachiger Stream in Echtzeit",it:"Flusso multilingue in tempo reale",pt:"Transmissão multilíngue em tempo real",ja:"リアルタイム多言語ストリーム",zh:"实时多语言流",ko:"실시간 다국어 스트림",ar:"بث متعدد اللغات في الوقت الفعلي",hi:"रीयल-टाइम बहुभाषी स्ट्रीम",ru:"Многоязычная трансляция в реальном времени"};
     put("#translatorSubtitle", subtitles[code] || subtitles.en);
     put("#liveLabel", labels[1]);
+    const speakingLabels = {
+      en: "is speaking (ES)...",
+      es: "está hablando (ES)...",
+      fr: "parle (ES)...",
+      de: "spricht (ES)...",
+      it: "sta parlando (ES)...",
+      pt: "está falando (ES)...",
+      ja: "話しています (ES)...",
+      zh: "正在发言 (ES)...",
+      ko: "말하는 중 (ES)...",
+      ar: "يتحدث (ES)...",
+      hi: "बोल रहे हैं (ES)...",
+      ru: "говорит (ES)..."
+    };
+    put("#liveTypingText", speakingLabels[code] || speakingLabels.en);
     put("#sourceLang option[value='Auto']", labels[2]);
     put("#voiceStatusText", labels[3]);
     put("#audioModeLabel", labels[4]);
