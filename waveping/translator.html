@@ -105,17 +105,11 @@
         <div class="flex items-center gap-2 text-xs">
           <select id="sourceLang" class="bg-slate-800/90 text-slate-200 text-xs rounded-md px-2 py-1 outline-none border border-slate-700 cursor-pointer hover:border-slate-600 transition">
             <option value="Auto">Auto Detect</option>
-            <option value="EN">English (US)</option>
-            <option value="ES">Spanish (ES)</option>
-            <option value="JA">Japanese (JP)</option>
-            <option value="FR">French (FR)</option>
+            <option value="EN">English (US)</option><option value="ES">Spanish (ES)</option><option value="FR">French (FR)</option><option value="DE">German (DE)</option><option value="IT">Italian (IT)</option><option value="PT">Portuguese (PT)</option><option value="JA">Japanese (JP)</option><option value="ZH">Chinese (ZH)</option><option value="KO">Korean (KO)</option><option value="AR">Arabic (AR)</option><option value="HI">Hindi (HI)</option><option value="RU">Russian (RU)</option>
           </select>
           <i class="fa-solid fa-arrow-right-long text-slate-500 text-xs"></i>
           <select id="targetLang" class="bg-indigo-900/40 text-indigo-200 font-medium text-xs rounded-md px-2 py-1 outline-none border border-indigo-700/50 cursor-pointer hover:border-indigo-500 transition">
-            <option value="EN">English (EN)</option>
-            <option value="ES">Spanish (ES)</option>
-            <option value="JA">Japanese (JP)</option>
-            <option value="DE">German (DE)</option>
+            <option value="EN">English (EN)</option><option value="ES">Spanish (ES)</option><option value="FR">French (FR)</option><option value="DE">German (DE)</option><option value="IT">Italian (IT)</option><option value="PT">Portuguese (PT)</option><option value="JA">Japanese (JP)</option><option value="ZH">Chinese (ZH)</option><option value="KO">Korean (KO)</option><option value="AR">Arabic (AR)</option><option value="HI">Hindi (HI)</option><option value="RU">Russian (RU)</option>
           </select>
         </div>
       </div>
@@ -860,9 +854,14 @@
       ru:{guest:"Гость",voiceOn:"Голосовой вывод: ВКЛ",voiceOff:"Голосовой вывод: ВЫКЛ",voiceActive:"Воспроизведение голоса включено",voiceMuted:"Голосовой вывод отключён",headset:"Режим наушников",speakers:"Динамики",speaker:"Режим динамика",routeHeadset:"Звук направлен в наушники",routeSpeakers:"Звук направлен на динамики",micLive:"Микрофон: В ЭФИРЕ",micMuted:"Микрофон: ВЫКЛ",micUnmutedToast:"Микрофон включён. Аудиопоток активен.",micMutedToast:"Микрофон отключён.",listening:"Прослушивание голосового ввода...",termsAcknowledged:"Условия и точность перевода подтверждены.",agreed:"Согласовано ✓",agree:"Согласен",agreementReset:"Статус согласия сброшен.",confirmClose:"Закрыть окно перевода WavePing?",sessionClosed:"Сеанс WavePing закрыт",streamEnded:"Прямая трансляция перевода завершена.",reopen:"Открыть сеанс снова",minimized:"WavePing свёрнут в режим мини-просмотра.",viewer:"Вы (зритель)",translating:"Перевод речи и текста для трансляции...",translated:"Перевод",showOriginal:"Показать оригинал",hideOriginal:"Скрыть оригинал",enableVoice:"Включите голосовой вывод, чтобы услышать звук.",playing:"Воспроизведение...",listen:"Слушать",speechTranslated:"Речь переведена от",docBrief:"Переведено на английский, испанский и японский • 2,4 МБ",docTranscript:"Создано автоматически • Обновлено 2 минуты назад",placeholder:"Введите сообщение или используйте голосовой ввод...",simulateTitle:"Симуляция входящего перевода"}
     };
     window.wavepingText = extra[code] || extra.en;
-    window.wavepingTargetLanguage = (document.getElementById("targetLang") && document.getElementById("targetLang").value) || "EN";
+    window.wavepingTargetLanguage = code.toUpperCase();
     const targetLanguageSelect = document.getElementById("targetLang");
     if (targetLanguageSelect) {
+      const preferredTarget = code.toUpperCase();
+      if ([...targetLanguageSelect.options].some(option => option.value === preferredTarget)) {
+        targetLanguageSelect.value = preferredTarget;
+      }
+      window.wavepingTargetLanguage = targetLanguageSelect.value;
       targetLanguageSelect.addEventListener("change", () => {
         window.wavepingTargetLanguage = targetLanguageSelect.value;
       });
@@ -871,7 +870,22 @@
     document.documentElement.lang = text[code] ? code : "en";
     document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
     const put = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
-    put("#participantIdentity", labels[0] + ": " + ((profile && profile.displayName) || "Guest") + ((profile && profile.voice) ? " · " + profile.voice : ""));
+    const voiceLabels = {
+      en:{Masculine:"Masculine",Feminine:"Feminine",Neutral:"Neutral"},
+      es:{Masculine:"Masculino",Feminine:"Femenino",Neutral:"Neutro"},
+      fr:{Masculine:"Masculin",Feminine:"Féminin",Neutral:"Neutre"},
+      de:{Masculine:"Maskulin",Feminine:"Feminin",Neutral:"Neutral"},
+      it:{Masculine:"Maschile",Feminine:"Femminile",Neutral:"Neutro"},
+      pt:{Masculine:"Masculino",Feminine:"Feminino",Neutral:"Neutro"},
+      ja:{Masculine:"男性",Feminine:"女性",Neutral:"中性"},
+      zh:{Masculine:"男性",Feminine:"女性",Neutral:"中性"},
+      ko:{Masculine:"남성",Feminine:"여성",Neutral:"중성"},
+      ar:{Masculine:"ذكر",Feminine:"أنثى",Neutral:"محايد"},
+      hi:{Masculine:"पुरुष",Feminine:"महिला",Neutral:"तटस्थ"},
+      ru:{Masculine:"Мужской",Feminine:"Женский",Neutral:"Нейтральный"}
+    };
+    const selectedVoice = profile && profile.voice ? (voiceLabels[code] || voiceLabels.en)[profile.voice] || profile.voice : "";
+    put("#participantIdentity", labels[0] + ": " + ((profile && profile.displayName) || "Guest") + (selectedVoice ? " · " + selectedVoice : ""));
     const subtitles={en:"Real-time multi-lingual stream",es:"Transmisión multilingüe en tiempo real",fr:"Flux multilingue en temps réel",de:"Mehrsprachiger Stream in Echtzeit",it:"Flusso multilingue in tempo reale",pt:"Transmissão multilíngue em tempo real",ja:"リアルタイム多言語ストリーム",zh:"实时多语言流",ko:"실시간 다국어 스트림",ar:"بث متعدد اللغات في الوقت الفعلي",hi:"रीयल-टाइम बहुभाषी स्ट्रीम",ru:"Многоязычная трансляция в реальном времени"};
     put("#translatorSubtitle", subtitles[code] || subtitles.en);
     put("#liveLabel", labels[1]);
@@ -908,7 +922,7 @@
     if (identity) {
       const avatar = document.createElement("div");
       avatar.id = "participantAvatar";
-      avatar.className = "w-8 h-8 rounded-full bg-slate-800 border border-indigo-400/60 flex items-center justify-center text-sm overflow-hidden shrink-0";
+      avatar.className = "w-12 h-12 rounded-full bg-slate-800 border-2 border-indigo-400/60 flex items-center justify-center text-base overflow-hidden shrink-0";
       if (profile && profile.avatarType === "photo" && profile.avatarData) {
         const img = document.createElement("img");
         img.src = profile.avatarData; img.alt = profile.displayName || "Participant"; img.className = "w-full h-full object-cover";
@@ -921,8 +935,10 @@
       identity.parentNode.insertBefore(avatar, identity);
       avatar.style.display = "inline-flex";
       avatar.style.verticalAlign = "middle";
-      avatar.style.marginRight = "4px";
-      identity.style.display = "inline-block";
+      avatar.style.marginRight = "8px";
+      identity.style.display = "inline-flex";
+      identity.style.alignItems = "center";
+      identity.style.minHeight = "48px";
       identity.style.marginLeft = "0";
       const localAvatar = document.querySelector("#localUserAvatar");
       if (localAvatar) {
