@@ -1,4 +1,4 @@
-const CACHE_NAME = 'waveping-shell-v8';
+const CACHE_NAME = 'waveping-shell-v9';
 const APP_FILES = ['./', './index.html', './translator.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', event => {
