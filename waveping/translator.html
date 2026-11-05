@@ -922,7 +922,7 @@
     if (identity) {
       const avatar = document.createElement("div");
       avatar.id = "participantAvatar";
-      avatar.className = "w-12 h-12 rounded-full bg-slate-800 border-2 border-indigo-400/60 flex items-center justify-center text-base overflow-hidden shrink-0";
+      avatar.className = "relative shrink-0 w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400 overflow-hidden";
       if (profile && profile.avatarType === "photo" && profile.avatarData) {
         const img = document.createElement("img");
         img.src = profile.avatarData; img.alt = profile.displayName || "Participant"; img.className = "w-full h-full object-cover";
