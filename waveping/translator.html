@@ -790,6 +790,12 @@
     };
     window.wavepingText = extra[code] || extra.en;
     window.wavepingTargetLanguage = (document.getElementById("targetLang") && document.getElementById("targetLang").value) || "EN";
+    const targetLanguageSelect = document.getElementById("targetLang");
+    if (targetLanguageSelect) {
+      targetLanguageSelect.addEventListener("change", () => {
+        window.wavepingTargetLanguage = targetLanguageSelect.value;
+      });
+    }
     const labels = text[code] || text.en;
     document.documentElement.lang = text[code] ? code : "en";
     document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
