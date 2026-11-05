@@ -755,6 +755,76 @@
         navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Service worker registration failed:', error));
       });
     }
+
+  <script>
+  (function () {
+    const text = {
+      en: ["Participant","LIVE","Auto Detect","Voice Output: OFF","Headset Mode","Mic: OFF","Docs","Agree","Session encrypted • AI Live Interpretation Active","Host","Original: English","Show Original","Guest Speaker","You (Viewer)","Speak (Voice Input)","Simulate Incoming","Send","Session Documents & Transcripts","Close"],
+      es: ["Participante","EN VIVO","Detección automática","Salida de voz: DESACTIVADA","Modo auriculares","Micrófono: APAGADO","Documentos","Aceptar","Sesión cifrada • Interpretación IA activa","Anfitrión","Original: inglés","Mostrar original","Invitado","Tú (espectador)","Hablar (entrada de voz)","Simular entrada","Enviar","Documentos y transcripciones","Cerrar"],
+      fr: ["Participant","EN DIRECT","Détection automatique","Sortie vocale : désactivée","Mode casque","Micro : arrêt","Documents","Accepter","Session chiffrée • Interprétation IA active","Hôte","Original : anglais","Afficher l’original","Invité","Vous (spectateur)","Parler (entrée vocale)","Simuler une arrivée","Envoyer","Documents et transcriptions","Fermer"],
+      de: ["Teilnehmer","LIVE","Automatisch erkennen","Sprachausgabe: AUS","Kopfhörermodus","Mikrofon: AUS","Dokumente","Zustimmen","Sitzung verschlüsselt • KI-Interpretation aktiv","Gastgeber","Original: Englisch","Original anzeigen","Gastredner","Du (Zuschauer)","Sprechen (Spracheingabe)","Eingang simulieren","Senden","Sitzungsdokumente und Transkripte","Schließen"],
+      it: ["Partecipante","IN DIRETTA","Rilevamento automatico","Uscita vocale: DISATTIVATA","Modalità cuffie","Microfono: SPENTO","Documenti","Accetta","Sessione crittografata • Interpretazione IA attiva","Presentatore","Originale: inglese","Mostra originale","Ospite","Tu (spettatore)","Parla (input vocale)","Simula ingresso","Invia","Documenti e trascrizioni","Chiudi"],
+      pt: ["Participante","AO VIVO","Detecção automática","Saída de voz: DESLIGADA","Modo fone de ouvido","Microfone: DESLIGADO","Documentos","Concordar","Sessão criptografada • Interpretação IA ativa","Apresentador","Original: inglês","Mostrar original","Convidado","Você (espectador)","Falar (entrada de voz)","Simular entrada","Enviar","Documentos e transcrições","Fechar"],
+      ja: ["参加者","ライブ","自動検出","音声出力：オフ","ヘッドセットモード","マイク：オフ","文書","同意する","セッション暗号化済み • AI通訳が有効","ホスト","原文：英語","原文を表示","ゲストスピーカー","あなた（閲覧者）","話す（音声入力）","受信をシミュレート","送信","セッション文書と文字起こし","閉じる"],
+      zh: ["参与者","直播","自动检测","语音输出：关闭","耳机模式","麦克风：关闭","文档","同意","会话已加密 • AI 实时口译已启用","主持人","原文：英语","显示原文","嘉宾发言者","你（观看者）","说话（语音输入）","模拟接收","发送","会话文档和文字记录","关闭"],
+      ko: ["참가자","실시간","자동 감지","음성 출력: 꺼짐","헤드셋 모드","마이크: 꺼짐","문서","동의","세션 암호화됨 • AI 실시간 통역 활성화","호스트","원문: 영어","원문 보기","초대 연사","나 (뷰어)","말하기 (음성 입력)","수신 시뮬레이션","보내기","세션 문서 및 대화 기록","닫기"],
+      ar: ["المشارك","مباشر","اكتشاف تلقائي","الإخراج الصوتي: متوقف","وضع سماعة الرأس","الميكروفون: متوقف","المستندات","موافقة","الجلسة مشفرة • الترجمة الفورية نشطة","المضيف","الأصل: الإنجليزية","إظهار النص الأصلي","المتحدث الضيف","أنت (المشاهد)","تحدث (إدخال صوتي)","محاكاة استقبال","إرسال","مستندات الجلسة والنصوص","إغلاق"],
+      hi: ["प्रतिभागी","लाइव","स्वतः पहचानें","आवाज़ आउटपुट: बंद","हेडसेट मोड","माइक: बंद","दस्तावेज़","सहमत","सत्र एन्क्रिप्टेड • AI लाइव व्याख्या सक्रिय","होस्ट","मूल: अंग्रेज़ी","मूल दिखाएँ","अतिथि वक्ता","आप (दर्शक)","बोलें (आवाज़ इनपुट)","आने वाला संदेश दिखाएँ","भेजें","सत्र दस्तावेज़ और प्रतिलेख","बंद करें"],
+      ru: ["Участник","В ЭФИРЕ","Автоопределение","Голосовой вывод: ВЫКЛ","Режим наушников","Микрофон: ВЫКЛ","Документы","Согласен","Сеанс зашифрован • ИИ-перевод активен","Ведущий","Оригинал: английский","Показать оригинал","Приглашённый докладчик","Вы (зритель)","Говорить (голосовой ввод)","Имитировать входящее","Отправить","Документы и расшифровки сеанса","Закрыть"]
+    };
+    let profile = null;
+    try { profile = JSON.parse(sessionStorage.getItem("wavepingParticipant") || "null"); } catch (e) {}
+    const code = (profile && profile.language) || sessionStorage.getItem("wavepingLanguage") || "en";
+    const labels = text[code] || text.en;
+    document.documentElement.lang = text[code] ? code : "en";
+    document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
+    const put = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
+    put("#participantIdentity", labels[0] + ": " + ((profile && profile.displayName) || "Guest") + ((profile && profile.voice) ? " · " + profile.voice : ""));
+    put(".hidden.md\\:flex span", labels[1]);
+    put("#sourceLang option[value='Auto']", labels[2]);
+    put("#voiceStatusText", labels[3]);
+    put("#audioModeLabel", labels[4]);
+    put("#mainMicText", labels[5]);
+    put("#docsBtn span", labels[6]);
+    put("#agreeText", labels[7]);
+    put("#sessionBannerText", labels[8]);
+    put("#hostRoleText", labels[9]);
+    put("#originalLabel", labels[10]);
+    put("#showOriginalButton", labels[11]);
+    put("#guestSpeakerRole", labels[12]);
+    put("#viewerLabel", labels[13]);
+    put("#speakInputBtn span", labels[14]);
+    put("#simulateIncomingLabel", labels[15]);
+    put("#sendLabel", labels[16]);
+    put("#docsModalTitle", labels[17]);
+    const closeButton = document.querySelector("#docsModal button[onclick='toggleDocsModal()']");
+    if (closeButton) closeButton.textContent = labels[18];
+    const identity = document.getElementById("participantIdentity");
+    if (identity) {
+      const avatar = document.createElement("div");
+      avatar.id = "participantAvatar";
+      avatar.className = "w-8 h-8 rounded-full bg-slate-800 border border-indigo-400/60 flex items-center justify-center text-sm overflow-hidden shrink-0";
+      if (profile && profile.avatarType === "photo" && profile.avatarData) {
+        const img = document.createElement("img");
+        img.src = profile.avatarData; img.alt = profile.displayName || "Participant"; img.className = "w-full h-full object-cover";
+        avatar.appendChild(img);
+      } else if (profile && profile.avatarType === "emoji") {
+        avatar.textContent = profile.avatarEmoji || "👤";
+      } else {
+        avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\\s\\-&]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
+      }
+      identity.parentNode.insertBefore(avatar, identity);
+      const localAvatar = document.querySelector("#localUserAvatar");
+      if (localAvatar) {
+        localAvatar.innerHTML = "";
+        if (profile && profile.avatarType === "photo" && profile.avatarData) {
+          const img = document.createElement("img"); img.src = profile.avatarData; img.alt = profile.displayName || "Participant"; img.className = "w-full h-full rounded-full object-cover"; localAvatar.appendChild(img);
+        } else if (profile && profile.avatarType === "emoji") localAvatar.textContent = profile.avatarEmoji || "👤";
+        else localAvatar.textContent = (profile && profile.avatarInitials) || "ME";
+      }
+    }
+  })();
+  </script>
   </script>
 </body>
 </html>
