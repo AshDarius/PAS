@@ -577,10 +577,10 @@
               <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-2xl mb-4">
                 <i class="fa-solid fa-power-off"></i>
               </div>
-              <h2 class="text-xl font-bold text-white mb-2">WavePing  Session Closed</h2>
-              <p class="text-xs text-slate-400 mb-4">The live translation stream has ended.</p>
+              <h2 class="text-xl font-bold text-white mb-2">${wp("sessionClosed")}</h2>
+              <p class="text-xs text-slate-400 mb-4">${wp("streamEnded")}</p>
               <button onclick="location.reload()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs rounded-xl font-medium transition">
-                Re-open Session
+                ${wp("reopen")}
               </button>
             </div>
           `;
@@ -607,12 +607,12 @@
           <div class="flex flex-col items-end max-w-[85%]">
             <div class="flex items-center gap-2 mb-1 px-1">
               <span class="text-[10px] text-slate-600">${timeStr}</span>
-              <span class="text-xs font-semibold text-indigo-400">You (Viewer)</span>
+              <span class="text-xs font-semibold text-indigo-400">${wp("viewer")}</span>
             </div>
             <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-indigo-900/20">
               <p class="leading-relaxed">${escapeHTML(text)}</p>
               <div class="mt-1 text-[10px] text-indigo-200 text-right opacity-80 flex items-center justify-end gap-1">
-                <span>Translating voice & text for stream...</span>
+                <span>${wp("translating")}</span>
                 <i class="fa-solid fa-spinner animate-spin text-[9px]"></i>
               </div>
             </div>
@@ -672,7 +672,7 @@
               <p class="leading-relaxed">${speaker.original}</p>
               <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-${speaker.color}-300/90 flex items-center gap-1.5 font-medium bg-${speaker.color}-500/10 p-2 rounded-lg border border-${speaker.color}-500/20">
                 <i class="fa-solid fa-wand-magic-sparkles text-${speaker.color}-400 text-xs"></i>
-                <span><strong>Translated (EN):</strong> "${speaker.translated}"</span>
+                <span><strong>${wp("translated")} (${window.wavepingTargetLanguage || "EN"}):</strong> "${speaker.translated}"</span>
               </div>
             </div>
           </div>
@@ -681,7 +681,7 @@
 
       dynamicMessages.insertAdjacentHTML('beforeend', msgHTML);
       scrollToBottom();
-      showToast(`Speech from ${speaker.name} (${speaker.lang}) translated`, "fa-globe", `text-${speaker.color}-400`);
+      showToast(wp("speechTranslated") + " " + speaker.name + " (" + speaker.lang + ")", "fa-globe", `text-${speaker.color}-400`);
     }
 
     // Helper Functions
@@ -698,9 +698,9 @@
         showToast(wp("enableVoice"), "fa-volume-xmark", "text-amber-400");
         return;
       }
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Playing...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> ${wp("playing")}`;
       setTimeout(() => {
-        btn.innerHTML = `<i class="fa-solid fa-circle-play"></i> Listen`;
+        btn.innerHTML = `<i class="fa-solid fa-circle-play"></i> ${wp("listen")}`;
       }, 2000);
     }
 
@@ -758,7 +758,7 @@
 
   (function () {
     const text = {
-      en: ["Participant","LIVE","Auto Detect",wp("voiceOff"),wp("headset"),"Mic: OFF","Docs",wp("agree"),"Session encrypted • AI Live Interpretation Active","Host","Original: English",wp("showOriginal"),"Guest Speaker",wp("viewer"),"Speak (Voice Input)","Simulate Incoming","Send","Session Documents & Transcripts","Close"],
+      en: ["Participant","LIVE","Auto Detect","Voice Output: OFF","Headset Mode","Mic: OFF","Docs","Agree","Session encrypted • AI Live Interpretation Active","Host","Original: English","Show Original","Guest Speaker","You (Viewer)","Speak (Voice Input)","Simulate Incoming","Send","Session Documents & Transcripts","Close"],
       es: ["Participante","EN VIVO","Detección automática","Salida de voz: DESACTIVADA","Modo auriculares","Micrófono: APAGADO","Documentos","Aceptar","Sesión cifrada • Interpretación IA activa","Anfitrión","Original: inglés","Mostrar original","Invitado","Tú (espectador)","Hablar (entrada de voz)","Simular entrada","Enviar","Documentos y transcripciones","Cerrar"],
       fr: ["Participant","EN DIRECT","Détection automatique","Sortie vocale : désactivée","Mode casque","Micro : arrêt","Documents","Accepter","Session chiffrée • Interprétation IA active","Hôte","Original : anglais","Afficher l’original","Invité","Vous (spectateur)","Parler (entrée vocale)","Simuler une arrivée","Envoyer","Documents et transcriptions","Fermer"],
       de: ["Teilnehmer","LIVE","Automatisch erkennen","Sprachausgabe: AUS","Kopfhörermodus","Mikrofon: AUS","Dokumente","Zustimmen","Sitzung verschlüsselt • KI-Interpretation aktiv","Gastgeber","Original: Englisch","Original anzeigen","Gastredner","Du (Zuschauer)","Sprechen (Spracheingabe)","Eingang simulieren","Senden","Sitzungsdokumente und Transkripte","Schließen"],
