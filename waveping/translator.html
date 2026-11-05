@@ -773,7 +773,18 @@
     };
     let profile = null;
     try { profile = JSON.parse(sessionStorage.getItem("wavepingParticipant") || "null"); } catch (e) {}
-    const code = (profile && profile.language) || sessionStorage.getItem("wavepingLanguage") || "en";
+    const requestedLanguage = new URLSearchParams(window.location.search).get("lang");
+    const storedLanguage = sessionStorage.getItem("wavepingLanguage");
+    const code = (requestedLanguage && text[requestedLanguage] ? requestedLanguage : null)
+      || (storedLanguage && text[storedLanguage] ? storedLanguage : null)
+      || (profile && profile.language && text[profile.language] ? profile.language : "en");
+    try {
+      sessionStorage.setItem("wavepingLanguage", code);
+      if (profile) {
+        profile.language = code;
+        sessionStorage.setItem("wavepingParticipant", JSON.stringify(profile));
+      }
+    } catch (e) {}
     const extra = {
       en:{guest:"Guest",voiceOn:"Voice Output: ON",voiceOff:"Voice Output: OFF",voiceActive:"Voice playback active",voiceMuted:"Voice output muted",headset:"Headset Mode",speakers:"Speakers",speaker:"Open Speaker",routeHeadset:"Audio output routed to headset",routeSpeakers:"Audio output routed to speakers",micLive:"Mic: LIVE",micMuted:"Mic: MUTED",micUnmutedToast:"Microphone unmuted. Audio stream active.",micMutedToast:"Microphone muted.",listening:"Listening to voice input...",termsAcknowledged:"Terms and translation accuracy acknowledged.",agreed:"Agreed ✓",agree:"Agree",agreementReset:"Agreement status reset.",confirmClose:"Are you sure you want to close WavePing Viewer Translation?",sessionClosed:"WavePing Session Closed",streamEnded:"The live translation stream has ended.",reopen:"Re-open Session",minimized:"WavePing docked to mini viewer mode.",viewer:"You (Viewer)",translating:"Translating voice and text for the stream...",translated:"Translated",showOriginal:"Show Original",hideOriginal:"Hide Original",enableVoice:"Enable Voice Output to hear audio.",playing:"Playing...",listen:"Listen",speechTranslated:"Speech translated from",docBrief:"Translated into English, Spanish and Japanese • 2.4 MB",docTranscript:"Automatically generated • Updated 2 minutes ago",placeholder:"Type a message or use Speak to convert voice to text...",simulateTitle:"Simulate incoming translation"},
       es:{guest:"Invitado",voiceOn:"Salida de voz: ACTIVADA",voiceOff:"Salida de voz: DESACTIVADA",voiceActive:"Reproducción de voz activa",voiceMuted:"Salida de voz silenciada",headset:"Modo auriculares",speakers:"Altavoces",speaker:"Altavoz abierto",routeHeadset:"Audio dirigido a los auriculares",routeSpeakers:"Audio dirigido a los altavoces",micLive:"Micrófono: EN VIVO",micMuted:"Micrófono: SILENCIADO",micUnmutedToast:"Micrófono activado. Audio en directo.",micMutedToast:"Micrófono silenciado.",listening:"Escuchando la entrada de voz...",termsAcknowledged:"Términos y precisión de la traducción reconocidos.",agreed:"Aceptado ✓",agree:"Aceptar",agreementReset:"Se restableció el estado de aceptación.",confirmClose:"¿Seguro que quieres cerrar el visor de traducción WavePing?",sessionClosed:"Sesión de WavePing cerrada",streamEnded:"La transmisión de traducción en directo ha terminado.",reopen:"Volver a abrir la sesión",minimized:"WavePing se minimizó al modo de visor.",viewer:"Tú (espectador)",translating:"Traduciendo voz y texto para la transmisión...",translated:"Traducido",showOriginal:"Mostrar original",hideOriginal:"Ocultar original",enableVoice:"Activa la salida de voz para escuchar el audio.",playing:"Reproduciendo...",listen:"Escuchar",speechTranslated:"Discurso traducido de",docBrief:"Traducido al inglés, español y japonés • 2,4 MB",docTranscript:"Generado automáticamente • Actualizado hace 2 minutos",placeholder:"Escribe un mensaje o usa Hablar para convertir voz en texto...",simulateTitle:"Simular traducción entrante"},
