@@ -289,9 +289,28 @@
     cursor: pointer;
   }
   .consent-page-bg .btn:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
-  #profile-configurator-component input.custom-radio:checked + label { background: rgba(79,70,229,.28); border-color: rgb(99,102,241); color: rgb(224,231,255); box-shadow: 0 0 0 1px rgba(99,102,241,.18); }
+  #profile-configurator-component input.custom-radio + label {
+    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    transform: scale(1);
+  }
+  #profile-configurator-component input.custom-radio:checked + label {
+    background: rgba(79,70,229,.32);
+    border-color: rgb(129,140,248);
+    color: rgb(224,231,255);
+    box-shadow: 0 0 0 2px rgba(99,102,241,.22), 0 0 14px rgba(99,102,241,.22);
+    animation: voiceChoiceSelected 360ms ease-out;
+  }
   #profile-configurator-component input.custom-radio:checked + label span { color: rgb(224,231,255); }
   #profile-configurator-component input.custom-radio:focus-visible + label { outline: 2px solid rgb(129,140,248); outline-offset: 2px; }
+  @keyframes voiceChoiceSelected {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #profile-configurator-component input.custom-radio + label { transition: none; }
+    #profile-configurator-component input.custom-radio:checked + label { animation: none; }
+  }
   .consent-page-bg .btn:focus-visible, .consent-page-bg .link:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
   .consent-page-bg .hint { margin: 0; text-align: center; font-size: 15px; color: var(--muted); min-height: 1.6em; }
 
