@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WavePing - Viewer Translation</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'bounce-short': 'bounce 0.8s infinite',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Custom Scrollbar for sleek UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.6);
+    }
+    /* Glassmorphism effects */
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-full flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden select-none">
+
+  <!-- Main Container Modal / Window -->
+  <div id="mainAppWindow" class="glass-panel w-full max-w-4xl h-[92vh] rounded-2xl shadow-2xl flex flex-col relative overflow-hidden transition-all duration-300 border border-slate-800">
+    
+    <!-- HEADER BAR -->
+    <header class="bg-slate-900/80 px-4 py-3 sm:px-6 flex items-center justify-between border-b border-slate-800/80 z-20 shrink-0">
+      <!-- App Title & Icon -->
+      <div class="flex items-center gap-3">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid font-bold text-lg text-white fa-globe"></i>
+          <span class="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-900"></span>
+          </span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-lg sm:text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-indigo-200">
+              WavePing
+            </h1>
+            <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">TRANSLATE v2.4</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Real-time Multi-lingual Stream Synthesis</p>
+          <p id="participantIdentity" class="text-[11px] text-indigo-300 mt-1" aria-live="polite">Participant: Guest</p>
+        </div>
+      </div>
+
+      <!-- Center Status & Language Selectors -->
+      <div class="hidden md:flex items-center gap-3 bg-slate-950/60 px-3 py-1.5 rounded-full border border-slate-800">
+        <div class="flex items-center gap-1.5 text-xs text-slate-300 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>LIVE</span>
+        </div>
+        <div class="h-3 w-[1px] bg-slate-700"></div>
+        <div class="flex items-center gap-2 text-xs">
+          <select id="sourceLang" class="bg-slate-800/90 text-slate-200 text-xs rounded-md px-2 py-1 outline-none border border-slate-700 cursor-pointer hover:border-slate-600 transition">
+            <option value="Auto">Auto Detect</option>
+            <option value="EN">English (US)</option>
+            <option value="ES">Spanish (ES)</option>
+            <option value="JA">Japanese (JP)</option>
+            <option value="FR">French (FR)</option>
+          </select>
+          <i class="fa-solid fa-arrow-right-long text-slate-500 text-xs"></i>
+          <select id="targetLang" class="bg-indigo-900/40 text-indigo-200 font-medium text-xs rounded-md px-2 py-1 outline-none border border-indigo-700/50 cursor-pointer hover:border-indigo-500 transition">
+            <option value="EN">English (EN)</option>
+            <option value="ES">Spanish (ES)</option>
+            <option value="JA">Japanese (JP)</option>
+            <option value="DE">German (DE)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Window Actions / Close Button -->
+      <div class="flex items-center gap-2">
+        <button id="minimizeBtn" title="Minimize Window" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+          <i class="fa-solid fa-minus text-xs"></i>
+        </button>
+        <button id="closeMainBtn" title="Close WavePing" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- DUAL VOICE & MIC CONTROL BAR -->
+    <div class="bg-slate-900/70 px-3 py-2.5 sm:px-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 z-10 shrink-0">
+      
+      <!-- Audio Input / Output Controls Group -->
+      <div class="flex flex-wrap items-center gap-3">
+        
+        <!-- 1. Voice Output (Listening) Control -->
+        <div class="flex items-center gap-2 bg-slate-950/70 p-1.5 px-3 rounded-xl border border-slate-800">
+          <label for="voiceToggle" class="relative inline-flex items-center cursor-pointer group">
+            <input type="checkbox" id="voiceToggle" class="sr-only peer">
+            <div class="w-10 h-5.5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-indigo-600 border border-slate-700 shadow-inner"></div>
+            <span class="ml-2 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+              <i id="voiceIcon" class="fa-solid fa-headphones text-slate-500"></i>
+              <span id="voiceStatusText" class="text-slate-400">Voice Output: OFF</span>
+            </span>
+          </label>
+
+          <!-- Audio Mode Switcher (Headset / Speaker) -->
+          <button id="audioModeBtn" onclick="toggleAudioDeviceMode()" class="ml-1 px-2 py-0.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium rounded-lg border border-slate-700 transition flex items-center gap-1">
+            <i id="audioModeIcon" class="fa-solid fa-headset text-indigo-400"></i>
+            <span id="audioModeLabel">Headset Mode</span>
+          </button>
+        </div>
+
+        <!-- 2. Mic Input (Talking) Control with Sensitivity Meter -->
+        <div class="flex items-center gap-2 bg-slate-950/70 p-1.5 px-3 rounded-xl border border-slate-800">
+          <button id="mainMicToggleBtn" onclick="toggleMainMic()" class="px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
+            <span id="micBadgeDot" class="w-2 h-2 rounded-full bg-red-500"></span>
+            <i id="mainMicIcon" class="fa-solid fa-microphone-slash"></i>
+            <span id="mainMicText">Mic: OFF</span>
+          </button>
+
+          <!-- Mic Live Level Meter -->
+          <div id="micMeter" class="flex items-center gap-0.5 h-4 px-1.5 bg-slate-900 rounded border border-slate-800">
+            <span class="mic-bar w-1 h-1.5 bg-slate-700 rounded-sm transition-all duration-75"></span>
+            <span class="mic-bar w-1 h-2.5 bg-slate-700 rounded-sm transition-all duration-75"></span>
+            <span class="mic-bar w-1 h-3 bg-slate-700 rounded-sm transition-all duration-75"></span>
+            <span class="mic-bar w-1 h-2 bg-slate-700 rounded-sm transition-all duration-75"></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons: Docs & Agree -->
+      <div class="flex items-center gap-2.5 ml-auto sm:ml-0">
+        <!-- Docs Button -->
+        <button id="docsBtn" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 text-xs sm:text-sm font-medium border border-slate-700/80 hover:border-slate-600 transition shadow-sm active:scale-95">
+          <i class="fa-solid fa-file-contract text-indigo-400"></i>
+          <span>Docs</span>
+          <span id="docsBadge" class="hidden ml-1 px-1.5 py-0.2 bg-indigo-500 text-white text-[10px] rounded-full font-bold">2</span>
+        </button>
+
+        <!-- Agree Button -->
+        <button id="agreeBtn" class="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-medium border border-emerald-500/40 shadow-sm shadow-emerald-900/30 transition active:scale-95">
+          <i class="fa-solid fa-check text-xs"></i>
+          <span id="agreeText">Agree</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN WINDOW / CHAT & TRANSCRIPTION AREA -->
+    <div id="chatScrollArea" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 bg-gradient-to-b from-slate-950/40 via-slate-950/80 to-slate-950 relative">
+      
+      <!-- System Notification Banner -->
+      <div class="flex justify-center my-2">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-[11px] text-slate-400 shadow-sm">
+          <i class="fa-solid fa-lock text-slate-500 text-[10px]"></i>
+          <span>Session encrypted • AI Live Interpretation Active</span>
+        </div>
+      </div>
+
+      <!-- SPEAKER 1: Host (English) -->
+      <div class="flex items-start gap-3 max-w-2xl group">
+        <!-- Avatar -->
+        <div class="relative shrink-0">
+          <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-indigo-500/50 object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Sarah (Host)">
+          <span class="absolute -bottom-1 -right-1 bg-indigo-600 text-[9px] font-bold text-white px-1 rounded border border-slate-900">EN</span>
+        </div>
+        <!-- Chat Bubble -->
+        <div class="flex flex-col items-start max-w-[85%]">
+          <div class="flex items-center gap-2 mb-1 px-1">
+            <span class="text-xs font-semibold text-indigo-300">Sarah Jenkins</span>
+            <span class="text-[10px] text-slate-500">Host</span>
+            <span class="text-[10px] text-slate-600">10:42 AM</span>
+          </div>
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-indigo-500">
+            <p class="leading-relaxed">Welcome everyone to our Q3 Global Product Showcase! Today we'll be discussing the new real-time translation features.</p>
+            <!-- Subtitle / Original Text toggle preview -->
+            <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+              <span class="italic"><i class="fa-solid fa-language mr-1 text-slate-500"></i>Original: English</span>
+              <button onclick="toggleOriginal(this)" class="hover:text-indigo-300 transition text-[10px]">Show Original</button>
+            </div>
+            <p class="hidden text-xs text-slate-400 mt-1 italic bg-slate-950/40 p-1.5 rounded border border-slate-800">
+              "Welcome everyone to our Q3 Global Product Showcase! Today we'll be discussing the new real-time translation features."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPEAKER 2: Guest Speaker (Spanish -> English Translated) -->
+      <div class="flex items-start gap-3 max-w-2xl group">
+        <!-- Avatar -->
+        <div class="relative shrink-0">
+          <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-amber-500/50 object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" alt="Carlos (Guest)">
+          <span class="absolute -bottom-1 -right-1 bg-amber-600 text-[9px] font-bold text-white px-1 rounded border border-slate-900">ES</span>
+        </div>
+        <!-- Chat Bubble -->
+        <div class="flex flex-col items-start max-w-[85%]">
+          <div class="flex items-center gap-2 mb-1 px-1">
+            <span class="text-xs font-semibold text-amber-300">Carlos Mendez</span>
+            <span class="text-[10px] text-slate-500">Guest Speaker</span>
+            <span class="text-[10px] text-slate-600">10:43 AM</span>
+          </div>
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-amber-500">
+            <p class="leading-relaxed">¡Gracias Sarah! Estamos muy emocionados de presentar la integración con la plataforma de WavePing  hoy.</p>
+            <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-amber-300/90 flex items-center gap-1.5 font-medium bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+              <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i>
+              <span><strong>Translated (EN):</strong> "Thank you Sarah! We are very excited to present the integration with the WavePing  platform today."</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+              <span class="italic"><i class="fa-solid fa-microphone text-slate-500 mr-1"></i>Voice synthesized (ES-ES accent)</span>
+              <button onclick="playAudioSnippet(this)" class="text-amber-400 hover:text-amber-300 text-xs flex items-center gap-1">
+                <i class="fa-solid fa-circle-play"></i> Listen
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPEAKER 3: Participant (Japanese -> English Translated) -->
+      <div class="flex items-start gap-3 max-w-2xl group">
+        <!-- Avatar -->
+        <div class="relative shrink-0">
+          <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-rose-500/50 object-cover" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80" alt="Yuki (Participant)">
+          <span class="absolute -bottom-1 -right-1 bg-rose-600 text-[9px] font-bold text-white px-1 rounded border border-slate-900">JP</span>
+        </div>
+        <!-- Chat Bubble -->
+        <div class="flex flex-col items-start max-w-[85%]">
+          <div class="flex items-center gap-2 mb-1 px-1">
+            <span class="text-xs font-semibold text-rose-300">Yuki Tanaka</span>
+            <span class="text-[10px] text-slate-500">Lead Engineer</span>
+            <span class="text-[10px] text-slate-600">10:44 AM</span>
+          </div>
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-rose-500">
+            <p class="leading-relaxed">レイテンシーは100ミリ秒未満に抑えられており、会話が自然に流れます。</p>
+            <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-rose-300/90 flex items-center gap-1.5 font-medium bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">
+              <i class="fa-solid fa-wand-magic-sparkles text-rose-400 text-xs"></i>
+              <span><strong>Translated (EN):</strong> "Latency is kept under 100 milliseconds, allowing the conversation to flow naturally."</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCAL USER (Self / Right-aligned) -->
+      <div class="flex items-start justify-end gap-3 max-w-2xl ml-auto group">
+        <div class="flex flex-col items-end max-w-[85%]">
+          <div class="flex items-center gap-2 mb-1 px-1">
+            <span class="text-[10px] text-slate-600">10:45 AM</span>
+            <span class="text-xs font-semibold text-indigo-400">You (Viewer)</span>
+          </div>
+          <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-indigo-900/20">
+            <p class="leading-relaxed">Can you clarify if multi-party auto-detection works automatically for all connected mics?</p>
+            <div class="mt-1 text-[10px] text-indigo-200 text-right opacity-80 flex items-center justify-end gap-1">
+              <span>Broadcasted in 3 languages</span>
+              <i class="fa-solid fa-check-double text-[10px]"></i>
+            </div>
+          </div>
+        </div>
+        <!-- Local User Avatar -->
+        <div class="relative shrink-0">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400 shadow">
+            ME
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Messages Container (for user created entries) -->
+      <div id="dynamicMessages" class="space-y-4"></div>
+
+      <!-- Live Incoming Transcription Indicator (Active Typing) -->
+      <div id="liveTypingIndicator" class="flex items-center gap-3 text-slate-400 text-xs py-1 px-2 animate-pulse">
+        <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+          <i class="fa-solid fa-waveform text-indigo-400 text-xs"></i>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-medium text-indigo-300">Carlos</span>
+          <span>is speaking (ES)...</span>
+          <div class="flex gap-1 items-center">
+            <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-ping"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM INPUT BAR -->
+    <div class="bg-slate-900/90 p-3 sm:p-4 border-t border-slate-800/80 z-10 shrink-0">
+      <form id="chatForm" onsubmit="handleSendMessage(event)" class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        
+        <!-- Push to Talk / Speak Mic Input Button -->
+        <button type="button" id="speakInputBtn" onclick="triggerVoiceSpeakInput()" class="px-3.5 py-2.5 rounded-xl bg-indigo-950 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-700/50 text-xs sm:text-sm font-medium flex items-center gap-2 transition active:scale-95 shrink-0">
+          <i class="fa-solid fa-microphone text-emerald-400 animate-pulse"></i>
+          <span>Speak (Voice Input)</span>
+        </button>
+
+        <!-- Message Input Field -->
+        <div class="relative flex-1 min-w-[200px]">
+          <input type="text" id="userInput" placeholder="Type a message or use 'Speak' to convert voice to text..." class="w-full bg-slate-950/80 text-slate-100 placeholder-slate-500 text-xs sm:text-sm rounded-xl px-4 py-2.5 outline-none border border-slate-800 focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition">
+          <button type="button" onclick="simulateIncomingSpeaker()" title="Simulate incoming translation" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 text-xs flex items-center gap-1 bg-slate-900 px-2 py-1 rounded border border-slate-800 transition">
+            <i class="fa-solid fa-dice"></i>
+            <span class="hidden sm:inline">Simulate Incoming</span>
+          </button>
+        </div>
+
+        <!-- Send Button -->
+        <button type="submit" class="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition active:scale-95 shrink-0">
+          <span>Send</span>
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- SIDE PANEL / MODAL FOR DOCS (Hidden by default) -->
+    <div id="docsModal" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-md z-30 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in duration-200">
+        <!-- Modal Header -->
+        <div class="p-4 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Session Documents & Transcripts</span>
+          </div>
+          <button onclick="toggleDocsModal()" class="text-slate-400 hover:text-white w-7 h-7 rounded-lg hover:bg-slate-800 flex items-center justify-center">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <!-- Modal Body -->
+        <div class="p-4 overflow-y-auto space-y-3 flex-1 text-xs sm:text-sm text-slate-300">
+          <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/60 flex items-center justify-between hover:border-indigo-500/50 transition cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-red-500/10 text-red-400 rounded-lg">
+                <i class="fa-solid fa-file-pdf text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-medium text-slate-200">Global_Product_Brief_Q3.pdf</h4>
+                <p class="text-[11px] text-slate-400">Translated to EN, ES, JP • 2.4 MB</p>
+              </div>
+            </div>
+            <button class="text-slate-400 hover:text-indigo-400 p-2"><i class="fa-solid fa-download"></i></button>
+          </div>
+
+          <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700/60 flex items-center justify-between hover:border-indigo-500/50 transition cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                <i class="fa-solid fa-file-lines text-lg"></i>
+              </div>
+              <div>
+                <h4 class="font-medium text-slate-200">Live_Transcript_Stream_Summary.docx</h4>
+                <p class="text-[11px] text-slate-400">Auto-generated • Updated 2m ago</p>
+              </div>
+            </div>
+            <button class="text-slate-400 hover:text-indigo-400 p-2"><i class="fa-solid fa-download"></i></button>
+          </div>
+        </div>
+        <!-- Modal Footer -->
+        <div class="p-3 bg-slate-950/60 border-t border-slate-800 text-right">
+          <button onclick="toggleDocsModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST CONFIRMATION NOTIFICATION (For Agree & Voice status) -->
+    <div id="toastNotification" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-slate-900/95 text-white border border-indigo-500/40 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs opacity-0 transition-all duration-300 pointer-events-none z-50">
+      <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+      <span id="toastMessage">Action completed</span>
+    </div>
+
+  </div>
+
+  <!-- JAVASCRIPT INTERACTION LOGIC -->
+  <script>
+    // App State Variables
+    let isVoiceEnabled = false;
+    let isMainMicOn = false;
+    let isHeadsetMode = true; // true = Headset, false = Open Speaker
+    let isAgreed = false;
+    let micInterval = null;
+
+    // Element References
+    const voiceToggle = document.getElementById('voiceToggle');
+    const voiceStatusText = document.getElementById('voiceStatusText');
+    const voiceIcon = document.getElementById('voiceIcon');
+    
+    const mainMicToggleBtn = document.getElementById('mainMicToggleBtn');
+    const mainMicIcon = document.getElementById('mainMicIcon');
+    const mainMicText = document.getElementById('mainMicText');
+    const micBadgeDot = document.getElementById('micBadgeDot');
+    
+    const audioModeBtn = document.getElementById('audioModeBtn');
+    const audioModeIcon = document.getElementById('audioModeIcon');
+    const audioModeLabel = document.getElementById('audioModeLabel');
+
+    const agreeBtn = document.getElementById('agreeBtn');
+    const agreeText = document.getElementById('agreeText');
+    const docsBtn = document.getElementById('docsBtn');
+    const docsModal = document.getElementById('docsModal');
+    
+    const mainAppWindow = document.getElementById('mainAppWindow');
+    const closeMainBtn = document.getElementById('closeMainBtn');
+    const minimizeBtn = document.getElementById('minimizeBtn');
+    
+    const chatScrollArea = document.getElementById('chatScrollArea');
+    const dynamicMessages = document.getElementById('dynamicMessages');
+    const userInput = document.getElementById('userInput');
+
+    // 1. Voice Output Toggle (Listening)
+    voiceToggle.addEventListener('change', (e) => {
+      isVoiceEnabled = e.target.checked;
+      if (isVoiceEnabled) {
+        voiceStatusText.textContent = "Voice Output: ON";
+        voiceStatusText.className = "text-indigo-300 font-semibold";
+        voiceIcon.className = "fa-solid fa-volume-high text-indigo-400";
+        showToast("Voice playback active (" + (isHeadsetMode ? "Headset" : "Speakers") + ")", "fa-volume-high", "text-indigo-400");
+      } else {
+        voiceStatusText.textContent = "Voice Output: OFF";
+        voiceStatusText.className = "text-slate-400";
+        voiceIcon.className = "fa-solid fa-volume-xmark text-slate-500";
+        showToast("Voice output muted", "fa-volume-xmark", "text-slate-400");
+      }
+    });
+
+    // 2. Headset vs Speaker Mode Toggle
+    function toggleAudioDeviceMode() {
+      isHeadsetMode = !isHeadsetMode;
+      if (isHeadsetMode) {
+        audioModeIcon.className = "fa-solid fa-headset text-indigo-400";
+        audioModeLabel.textContent = "Headset Mode";
+        showToast("Audio output routed to Headset", "fa-headset", "text-indigo-400");
+      } else {
+        audioModeIcon.className = "fa-solid fa-bullhorn text-amber-400";
+        audioModeLabel.textContent = "Open Speaker";
+        showToast("Audio output routed to Open Speakers", "fa-bullhorn", "text-amber-400");
+      }
+    }
+
+    // 3. Microphone Control (Talking)
+    function toggleMainMic() {
+      isMainMicOn = !isMainMicOn;
+      if (isMainMicOn) {
+        mainMicToggleBtn.className = "px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
+        mainMicIcon.className = "fa-solid fa-microphone text-emerald-400 animate-pulse";
+        mainMicText.textContent = "Mic: LIVE";
+        micBadgeDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+        startMicMeterAnimation();
+        showToast("Microphone UNMUTED - Audio stream active", "fa-microphone", "text-emerald-400");
+      } else {
+        mainMicToggleBtn.className = "px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
+        mainMicIcon.className = "fa-solid fa-microphone-slash text-red-400";
+        mainMicText.textContent = "Mic: MUTED";
+        micBadgeDot.className = "w-2 h-2 rounded-full bg-red-500";
+        stopMicMeterAnimation();
+        showToast("Microphone MUTED", "fa-microphone-slash", "text-red-400");
+      }
+    }
+
+    // Mic Live Meter Simulation
+    function startMicMeterAnimation() {
+      const bars = document.querySelectorAll('.mic-bar');
+      micInterval = setInterval(() => {
+        bars.forEach(bar => {
+          if (isMainMicOn) {
+            const h = Math.floor(Math.random() * 12) + 4;
+            bar.style.height = `${h}px`;
+            bar.className = "mic-bar w-1 bg-emerald-400 rounded-sm transition-all duration-75";
+          }
+        });
+      }, 100);
+    }
+
+    function stopMicMeterAnimation() {
+      clearInterval(micInterval);
+      const bars = document.querySelectorAll('.mic-bar');
+      bars.forEach((bar, idx) => {
+        bar.style.height = `${(idx + 1) * 3}px`;
+        bar.className = "mic-bar w-1 bg-slate-700 rounded-sm transition-all duration-75";
+      });
+    }
+
+    // 4. Push to Talk / Speak Voice Input Simulator
+    function triggerVoiceSpeakInput() {
+      if (!isMainMicOn) {
+        toggleMainMic();
+      }
+      showToast("Listening to voice input...", "fa-waveform", "text-emerald-400");
+      
+      const sampleVoicePrompts = [
+        "Could you clarify the multi-lingual stream latency?",
+        "I can hear the translated audio clearly through my headset.",
+        "Will the translated transcript be saved automatically in Docs?"
+      ];
+      
+      const randomPrompt = sampleVoicePrompts[Math.floor(Math.random() * sampleVoicePrompts.length)];
+      
+      let index = 0;
+      userInput.value = "";
+      const typeInterval = setInterval(() => {
+        if (index < randomPrompt.length) {
+          userInput.value += randomPrompt.charAt(index);
+          index++;
+        } else {
+          clearInterval(typeInterval);
+        }
+      }, 30);
+    }
+
+    // 5. Agree Button Handling
+    agreeBtn.addEventListener('click', () => {
+      isAgreed = !isAgreed;
+      if (isAgreed) {
+        agreeBtn.className = "flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-800 text-emerald-400 text-xs sm:text-sm font-medium border border-emerald-500/50 shadow-sm transition active:scale-95";
+        agreeText.textContent = "Agreed ✓";
+        showToast("Terms & Translation accuracy acknowledged", "fa-circle-check", "text-emerald-400");
+      } else {
+        agreeBtn.className = "flex items-center gap-2 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-medium border border-emerald-500/40 shadow-sm transition active:scale-95";
+        agreeText.textContent = "Agree";
+        showToast("Agreement status reset", "fa-circle-info", "text-indigo-400");
+      }
+    });
+
+    // 6. Docs Modal Handling
+    docsBtn.addEventListener('click', toggleDocsModal);
+    function toggleDocsModal() {
+      docsModal.classList.toggle('hidden');
+    }
+
+    // 7. Close & Minimize Controls
+    closeMainBtn.addEventListener('click', () => {
+      if (confirm("Are you sure you want to close WavePing  Viewer Translation?")) {
+        mainAppWindow.style.opacity = "0";
+        mainAppWindow.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          mainAppWindow.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full p-8 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-2xl mb-4">
+                <i class="fa-solid fa-power-off"></i>
+              </div>
+              <h2 class="text-xl font-bold text-white mb-2">WavePing  Session Closed</h2>
+              <p class="text-xs text-slate-400 mb-4">The live translation stream has ended.</p>
+              <button onclick="location.reload()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs rounded-xl font-medium transition">
+                Re-open Session
+              </button>
+            </div>
+          `;
+          mainAppWindow.style.opacity = "1";
+          mainAppWindow.style.transform = "scale(1)";
+        }, 250);
+      }
+    });
+
+    minimizeBtn.addEventListener('click', () => {
+      showToast("WavePing  docked to mini viewer mode", "fa-window-minimize", "text-indigo-400");
+    });
+
+    // 8. User Message Submission
+    function handleSendMessage(e) {
+      e.preventDefault();
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const msgHTML = `
+        <div class="flex items-start justify-end gap-3 max-w-2xl ml-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div class="flex flex-col items-end max-w-[85%]">
+            <div class="flex items-center gap-2 mb-1 px-1">
+              <span class="text-[10px] text-slate-600">${timeStr}</span>
+              <span class="text-xs font-semibold text-indigo-400">You (Viewer)</span>
+            </div>
+            <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-indigo-900/20">
+              <p class="leading-relaxed">${escapeHTML(text)}</p>
+              <div class="mt-1 text-[10px] text-indigo-200 text-right opacity-80 flex items-center justify-end gap-1">
+                <span>Translating voice & text for stream...</span>
+                <i class="fa-solid fa-spinner animate-spin text-[9px]"></i>
+              </div>
+            </div>
+          </div>
+          <div class="relative shrink-0">
+            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs border-2 border-indigo-400">
+              ME
+            </div>
+          </div>
+        </div>
+      `;
+
+      dynamicMessages.insertAdjacentHTML('beforeend', msgHTML);
+      userInput.value = '';
+      scrollToBottom();
+    }
+
+    // 9. Simulate Incoming Multi-lingual Speakers
+    const mockSpeakers = [
+      {
+        name: "Elena Rostova",
+        role: "Participant",
+        lang: "RU",
+        color: "cyan",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80",
+        original: "Это потрясающая технология translation!",
+        translated: "This translation technology is amazing!"
+      },
+      {
+        name: "Li Wei",
+        role: "Co-Host",
+        lang: "ZH",
+        color: "emerald",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80",
+        original: "我们很高兴能为全球用户提供实时字幕支持。",
+        translated: "We are delighted to offer real-time subtitle support to global users."
+      }
+    ];
+
+    function simulateIncomingSpeaker() {
+      const speaker = mockSpeakers[Math.floor(Math.random() * mockSpeakers.length)];
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const msgHTML = `
+        <div class="flex items-start gap-3 max-w-2xl group animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div class="relative shrink-0">
+            <img class="w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-${speaker.color}-500/50 object-cover" src="${speaker.avatar}" alt="${speaker.name}">
+            <span class="absolute -bottom-1 -right-1 bg-${speaker.color}-600 text-[9px] font-bold text-white px-1 rounded border border-slate-900">${speaker.lang}</span>
+          </div>
+          <div class="flex flex-col items-start max-w-[85%]">
+            <div class="flex items-center gap-2 mb-1 px-1">
+              <span class="text-xs font-semibold text-${speaker.color}-300">${speaker.name}</span>
+              <span class="text-[10px] text-slate-500">${speaker.role}</span>
+              <span class="text-[10px] text-slate-600">${timeStr}</span>
+            </div>
+            <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-${speaker.color}-500">
+              <p class="leading-relaxed">${speaker.original}</p>
+              <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-${speaker.color}-300/90 flex items-center gap-1.5 font-medium bg-${speaker.color}-500/10 p-2 rounded-lg border border-${speaker.color}-500/20">
+                <i class="fa-solid fa-wand-magic-sparkles text-${speaker.color}-400 text-xs"></i>
+                <span><strong>Translated (EN):</strong> "${speaker.translated}"</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      dynamicMessages.insertAdjacentHTML('beforeend', msgHTML);
+      scrollToBottom();
+      showToast(`Speech from ${speaker.name} (${speaker.lang}) translated`, "fa-globe", `text-${speaker.color}-400`);
+    }
+
+    // Helper Functions
+    function toggleOriginal(btn) {
+      const hiddenBlock = btn.parentElement.nextElementSibling;
+      if (hiddenBlock) {
+        hiddenBlock.classList.toggle('hidden');
+        btn.textContent = hiddenBlock.classList.contains('hidden') ? "Show Original" : "Hide Original";
+      }
+    }
+
+    function playAudioSnippet(btn) {
+      if (!isVoiceEnabled) {
+        showToast("Enable 'Voice Output' to hear audio", "fa-volume-xmark", "text-amber-400");
+        return;
+      }
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Playing...`;
+      setTimeout(() => {
+        btn.innerHTML = `<i class="fa-solid fa-circle-play"></i> Listen`;
+      }, 2000);
+    }
+
+    function scrollToBottom() {
+      chatScrollArea.scrollTop = chatScrollArea.scrollHeight;
+    }
+
+    function showToast(message, iconClass, iconColorClass) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = message;
+      toastIcon.className = `fa-solid ${iconClass} ${iconColorClass}`;
+
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+        toast.classList.remove('opacity-100');
+      }, 2500);
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+  </script>
+  <script>
+    // Read the participant profile saved by index.html in this browser tab.
+    try {
+      const profile = JSON.parse(sessionStorage.getItem('wavepingParticipant') || 'null');
+      const identity = document.getElementById('participantIdentity');
+      if (profile && identity) {
+        identity.textContent = 'Participant: ' + (profile.displayName || 'Guest') +
+          (profile.voice ? ' · Voice: ' + profile.voice : '');
+      }
+    } catch (error) {
+      console.warn('Participant profile could not be loaded:', error);
+    }
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Service worker registration failed:', error));
+      });
+    }
+  </script>
+</body>
+</html>
