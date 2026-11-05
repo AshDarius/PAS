@@ -293,7 +293,45 @@
   .consent-page-bg .hint { margin: 0; text-align: center; font-size: 15px; color: var(--muted); min-height: 1.6em; }
 
   .consent-page-bg .done { display: flex; flex-direction: column; gap: 16px; padding-block: 24px; }
-  #profile-configurator-component { width: 100%; max-width: 100%; }
+  #profile-configurator-component {
+    width: 100%;
+    max-width: 100%;
+    color: var(--fg);
+  }
+  /* Inherit the consent screen theme instead of using a separate dark card. */
+  .consent-page-bg #profile-configurator-component .text-white,
+  .consent-page-bg #profile-configurator-component .text-slate-200 {
+    color: var(--fg) !important;
+  }
+  .consent-page-bg #profile-configurator-component .text-slate-400 {
+    color: var(--muted) !important;
+  }
+  .consent-page-bg #profile-configurator-component .text-indigo-400,
+  .consent-page-bg #profile-configurator-component .text-indigo-300 {
+    color: var(--accent) !important;
+  }
+  .consent-page-bg #profile-configurator-component .border-slate-700,
+  .consent-page-bg #profile-configurator-component .border-slate-700\/60,
+  .consent-page-bg #profile-configurator-component .border-slate-700\/50,
+  .consent-page-bg #profile-configurator-component .border-slate-800 {
+    border-color: var(--line) !important;
+  }
+  .consent-page-bg #profile-configurator-component .bg-slate-900\/30,
+  .consent-page-bg #profile-configurator-component .bg-slate-900\/40,
+  .consent-page-bg #profile-configurator-component .bg-slate-900\/50,
+  .consent-page-bg #profile-configurator-component .bg-slate-900\/60,
+  .consent-page-bg #profile-configurator-component .bg-slate-800,
+  .consent-page-bg #profile-configurator-component .bg-slate-700 {
+    background-color: var(--surface) !important;
+  }
+  .consent-page-bg #profile-configurator-component .bg-indigo-600.text-white,
+  .consent-page-bg #profile-configurator-component .bg-emerald-600.text-white {
+    color: #fff !important;
+  }
+  .consent-page-bg #profile-configurator-component #avatar-container {
+    background-color: var(--surface) !important;
+    border-color: var(--accent) !important;
+  }
   #confirmation-screen .app { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
   .consent-page-bg .done-icon {
     width: 64px; height: 64px; border-radius: 50%;
@@ -392,7 +430,7 @@
         <h1 id="done-title">Thank you</h1>
         <p id="done-text"></p>
         <p class="stamp" id="done-stamp"></p>
-           <div id="profile-configurator-component" class="w-full max-w-xl mx-auto bg-slate-900 text-slate-100 rounded-2xl border border-slate-700 shadow-xl p-3 sm:p-5 transition-all text-xs sm:text-sm">
+           <div id="profile-configurator-component" class="w-full max-w-xl mx-auto bg-transparent p-2 sm:p-4 transition-all text-xs sm:text-sm">
         
         <!-- Header -->
         <div class="flex items-center justify-between pb-3 border-b border-slate-700/60 mb-4">
@@ -460,36 +498,27 @@
                 </label>
 
                 <div class="grid grid-cols-3 gap-1.5">
-                    <!-- Male Option -->
+                    <!-- Masculine Voice -->
                     <div>
-                        <input type="radio" id="voice-male" name="voice_option" value="Male" class="hidden custom-radio" onchange="updateVoiceSelection('Male')">
-                        <label for="voice-male" class="flex flex-col items-center justify-center p-1.5 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <div class="w-7 h-7 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mb-0.5 group-hover:scale-110 transition">
-                                <i class="fa-solid fa-mars text-xs"></i>
-                            </div>
-                            <span class="text-[10px] font-medium text-slate-200">Male</span>
+                        <input type="radio" id="voice-male" name="voice_option" value="Masculine" class="hidden custom-radio" onchange="updateVoiceSelection('Masculine')">
+                        <label for="voice-male" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
+                            <span class="text-xs font-medium text-slate-200">Masculine</span>
                         </label>
                     </div>
 
-                    <!-- Female Option -->
+                    <!-- Feminine Voice -->
                     <div>
-                        <input type="radio" id="voice-female" name="voice_option" value="Female" class="hidden custom-radio" onchange="updateVoiceSelection('Female')">
-                        <label for="voice-female" class="flex flex-col items-center justify-center p-1.5 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <div class="w-7 h-7 rounded-full bg-pink-500/10 text-pink-400 flex items-center justify-center mb-0.5 group-hover:scale-110 transition">
-                                <i class="fa-solid fa-venus text-xs"></i>
-                            </div>
-                            <span class="text-[10px] font-medium text-slate-200">Female</span>
+                        <input type="radio" id="voice-female" name="voice_option" value="Feminine" class="hidden custom-radio" onchange="updateVoiceSelection('Feminine')">
+                        <label for="voice-female" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
+                            <span class="text-xs font-medium text-slate-200">Feminine</span>
                         </label>
                     </div>
 
-                    <!-- Neutral / Group Option -->
+                    <!-- Neutral Voice -->
                     <div>
                         <input type="radio" id="voice-neutral" name="voice_option" value="Neutral" checked class="hidden custom-radio" onchange="updateVoiceSelection('Neutral')">
-                        <label for="voice-neutral" class="flex flex-col items-center justify-center p-1.5 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
-                            <div class="w-7 h-7 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-0.5 group-hover:scale-110 transition">
-                                <i class="fa-solid fa-people-holding-hands text-xs"></i>
-                            </div>
-                            <span class="text-[10px] font-medium text-slate-200">Neutral</span>
+                        <label for="voice-neutral" class="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-700 bg-slate-900/30 hover:bg-slate-700/40 cursor-pointer transition text-center group">
+                            <span class="text-xs font-medium text-slate-200">Neutral</span>
                         </label>
                     </div>
                 </div>
@@ -654,16 +683,8 @@
             currentVoice = voice;
             const badge = document.getElementById('voice-badge');
             
-            if (voice === 'Male') {
-                badge.innerHTML = `<i class="fa-solid fa-mars"></i>`;
-                badge.className = "absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
-            } else if (voice === 'Female') {
-                badge.innerHTML = `<i class="fa-solid fa-venus"></i>`;
-                badge.className = "absolute bottom-0 right-0 bg-pink-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
-            } else {
-                badge.innerHTML = `<i class="fa-solid fa-people-holding-hands"></i>`;
-                badge.className = "absolute bottom-0 right-0 bg-emerald-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
-            }
+            badge.innerHTML = '<i class="fa-solid fa-wave-square" aria-hidden="true"></i>';
+            badge.className = "absolute bottom-0 right-0 bg-indigo-600 text-white p-1.5 rounded-full text-xs shadow-md border-2 border-slate-900";
             
             document.getElementById('voice-preview-label').textContent = `Voice: ${voice}`;
         }
