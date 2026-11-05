@@ -630,21 +630,35 @@
     });
 
     // 8. User Message Submission
-    // Send sound is stored beside translator.html in the waveping folder.
-    const sendMessageSound = new Audio("./WavePingMessage.wav");
+    // Use the published GitHub Pages address so the audio path is independent
+    // of the current page URL or query-string language settings.
+    const sendMessageSound = new Audio("https://ashdarius.github.io/PAS/waveping/WavePingMessage.wav?v=2");
     sendMessageSound.preload = "auto";
     sendMessageSound.volume = 0.65;
 
+    sendMessageSound.addEventListener("error", () => {
+      console.error("WavePing send sound could not be loaded:", sendMessageSound.error);
+      if (typeof showToast === "function") {
+        showToast("Send sound could not be loaded. Check the WAV file URL.", "fa-volume-xmark", "text-amber-400");
+      }
+    });
+
     function playSendMessageSound() {
+      sendMessageSound.pause();
       try {
-        sendMessageSound.pause();
         sendMessageSound.currentTime = 0;
-        const playback = sendMessageSound.play();
-        if (playback && typeof playback.catch === "function") {
-          playback.catch(() => {});
-        }
       } catch (error) {
-        // A missing or unsupported sound file must not prevent sending the message.
+        console.warn("WavePing send sound could not be reset:", error);
+      }
+
+      const playback = sendMessageSound.play();
+      if (playback && typeof playback.catch === "function") {
+        playback.catch((error) => {
+          console.error("WavePing send sound playback failed:", error);
+          if (typeof showToast === "function") {
+            showToast("Browser could not play the send sound: " + error.name, "fa-volume-xmark", "text-amber-400");
+          }
+        });
       }
     }
 
