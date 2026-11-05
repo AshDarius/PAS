@@ -932,15 +932,27 @@
       } else {
         avatar.textContent = (profile && profile.avatarInitials) || ((profile && profile.displayName) || "G").split(/[\s&-]+/).filter(Boolean).map(x => x[0]).slice(0,2).join("").toUpperCase();
       }
-      // Place the participant avatar in the top header row, beside the WavePing logo.
-      // Keep the participant name and selected voice on their own line below the title.
-      const titleGroup = identity.parentElement && identity.parentElement.parentElement;
-      if (titleGroup && titleGroup.children.length >= 2) {
-        avatar.style.display = "inline-flex";
-        avatar.style.verticalAlign = "middle";
-        avatar.style.marginRight = "0";
-        avatar.style.marginLeft = "0";
-        titleGroup.insertBefore(avatar, titleGroup.children[1]);
+      // Keep the WavePing logo and participant avatar in one non-wrapping header row.
+      // The title and participant identity remain together to the right of both icons.
+      const headerRow = identity.closest("header > div");
+      if (headerRow) {
+        headerRow.classList.add("flex-nowrap");
+        headerRow.style.display = "flex";
+        headerRow.style.flexDirection = "row";
+        headerRow.style.alignItems = "center";
+        headerRow.style.flexWrap = "nowrap";
+        avatar.style.display = "flex";
+        avatar.style.flex = "0 0 48px";
+        avatar.style.width = "48px";
+        avatar.style.height = "48px";
+        avatar.style.minWidth = "48px";
+        avatar.style.margin = "0";
+        headerRow.insertBefore(avatar, headerRow.children[1] || null);
+        const title = headerRow.children[2];
+        if (title) {
+          title.style.minWidth = "0";
+          title.style.flex = "1 1 auto";
+        }
       }
       identity.style.display = "block";
       identity.style.marginLeft = "0";
