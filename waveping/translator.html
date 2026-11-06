@@ -1278,6 +1278,11 @@
       const oldTranslationBlock = oldTranslationLabel.closest("div");
       if (oldTranslationBlock && oldTranslationBlock !== bubble) oldTranslationBlock.remove();
     }
+    const oldTranslationIcon = bubble.querySelector(".fa-wand-magic-sparkles");
+    if (oldTranslationIcon) {
+      const oldTranslationBlock = oldTranslationIcon.closest("div");
+      if (oldTranslationBlock && oldTranslationBlock !== bubble) oldTranslationBlock.remove();
+    }
     const oldListenButton = bubble.querySelector('button[onclick*="playAudioSnippet"]');
     if (oldListenButton && oldListenButton.parentElement && oldListenButton.parentElement !== bubble) {
       oldListenButton.parentElement.remove();
