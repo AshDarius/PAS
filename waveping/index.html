@@ -1161,6 +1161,16 @@
 
   const mod = (a, n) => ((a % n) + n) % n;
 
+  // Haptic feedback on supported mobile browsers.
+  function haptic(pattern) {
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      navigator.vibrate(pattern);
+    }
+  }
+
+  // Prevent repeated vibration while the same language remains under the arrows.
+  let lastHapticIndex = 0;
+
   const items = LANGS.map((l, i) => {
     const el = document.createElement("div");
     el.className = "item";
@@ -1223,6 +1233,14 @@
     }
     const tau = dragging ? 40 : 90;
     pos += diff * (1 - Math.exp(-dt / tau));
+
+    // Short pulse whenever a different language moves into the centre position.
+    const pointedLanguage = mod(Math.round(pos), N);
+    if (pointedLanguage !== lastHapticIndex) {
+      lastHapticIndex = pointedLanguage;
+      haptic(12);
+    }
+
     render();
     requestAnimationFrame(loop);
   }
@@ -1251,6 +1269,7 @@
 
   // Launch Screen 2 (Consent Form) from Spinner Continue
   function proceed() {
+    haptic(28);
     const L = LANGS[current];
     const code = L.code;
     window.wavepingLanguage = code;
