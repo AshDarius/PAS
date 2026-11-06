@@ -1366,14 +1366,11 @@
       listenButton.dataset.translationText = translated;
       listenButton.dataset.translationTarget = targetCode;
 
+      // Audio availability must never replace or hide the translated message.
+      // Unsupported audio only disables Listen; the chat text remains visible.
       const supportedLanguage = supportsWavePingAudioLanguage(targetCode);
       const supportedGender = participantVoiceForBubble(listenButton);
-      if (!supportedLanguage) {
-        layout.translated.textContent = "This demo currently supports English and Spanish audio only.";
-        listenButton.disabled = true;
-        listenButton.classList.add("opacity-50", "cursor-not-allowed");
-      } else if (!supportedGender) {
-        layout.translated.textContent = unsupportedParticipantMessage(targetCode);
+      if (!supportedLanguage || !supportedGender) {
         listenButton.disabled = true;
         listenButton.classList.add("opacity-50", "cursor-not-allowed");
       }
@@ -1455,15 +1452,8 @@
     const gender = participantVoiceForBubble(button);
     const audioKey = bubble?.dataset.audioKey;
 
-    if (!supportsWavePingAudioLanguage(code)) {
-      const translated = bubble?.querySelector(".wp-translated-text");
-      if (translated) translated.textContent = "This demo currently supports English and Spanish audio only.";
-      return;
-    }
-
-    if (!gender) {
-      const translated = bubble?.querySelector(".wp-translated-text");
-      if (translated) translated.textContent = unsupportedParticipantMessage(code);
+    if (!supportsWavePingAudioLanguage(code) || !gender) {
+      // Keep the translated chat text intact when no matching WAV voice exists.
       button.disabled = true;
       button.classList.add("opacity-50", "cursor-not-allowed");
       return;
