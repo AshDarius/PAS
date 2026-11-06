@@ -667,6 +667,11 @@
       const text = userInput.value.trim();
       if (!text) return;
 
+      // Give matching haptic feedback for both the Send button and Enter key.
+      if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+        try { navigator.vibrate(12); } catch (error) {}
+      }
+
       // Play directly from the Send action so the browser permits playback.
       playSendMessageSound();
 
