@@ -1476,7 +1476,8 @@
       return;
     }
 
-    const audioUrl = "./audio/" + audioKey + "-" + code.toLowerCase() + "-" + gender + ".wav";
+    const audioFileGender = audioKey === "current-user-question" && gender === "feminine" && code === "EN" ? "feminin" : gender;
+    const audioUrl = "./audio/" + audioKey + "-" + code.toLowerCase() + "-" + audioFileGender + ".wav";
 
     // Pressing the same button toggles between pause and resume.
     if (activeWavePingAudio && activeWavePingButton === button) {
