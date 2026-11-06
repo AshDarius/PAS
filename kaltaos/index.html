@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12162b">
+  <meta name="description" content="KALTA Vessel notification prototype">
+  <title>KALTA | Vessel Notifications</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="KALTA home">
+      <img src="./icons/icon-192.png" alt="" width="42" height="42">
+      <span><strong>KALTA</strong><small>VESSEL NOTIFICATIONS</small></span>
+    </a>
+    <div class="connection"><span id="connectionDot" class="dot"></span><span id="connectionText">Checking connection</span></div>
+  </header>
+
+  <main class="shell">
+    <section class="intro">
+      <p class="eyebrow">NOTIFICATION PROTOTYPE</p>
+      <h1>Stay connected.</h1>
+      <p>Manage this device and test how KALTA notifications appear.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="deviceHeading">
+      <div class="panel-title">
+        <h2 id="deviceHeading">Device status</h2>
+        <span id="deviceBadge" class="badge">Not enabled</span>
+      </div>
+      <div class="status-list">
+        <div><span>Notification permission</span><strong id="permissionStatus">Checking</strong></div>
+        <div><span>Service worker</span><strong id="workerStatus">Checking</strong></div>
+        <div><span>Push subscription</span><strong id="pushStatus">Not connected</strong></div>
+        <div><span>Network</span><strong id="networkStatus">Checking</strong></div>
+      </div>
+      <button id="enableButton" class="button primary" type="button">Enable notifications</button>
+      <p class="hint">Allow notifications when your browser asks. This prototype currently tests local device notifications. Remote push registration will be connected to the Vercel API in the next stage.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="testHeading">
+      <h2 id="testHeading">Test notification</h2>
+      <p class="section-copy">Send a notification to this device to check its appearance.</p>
+      <label for="notificationTitle">Title</label>
+      <input id="notificationTitle" type="text" maxlength="100" value="KALTA Notification">
+      <label for="notificationMessage">Message</label>
+      <textarea id="notificationMessage" rows="3" maxlength="500">Your KALTA notification system is working.</textarea>
+      <button id="testButton" class="button secondary" type="button">Send test notification</button>
+      <p id="testFeedback" class="feedback" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="activityHeading">
+      <div class="panel-title"><h2 id="activityHeading">Activity</h2><button id="clearButton" class="text-button" type="button">Clear</button></div>
+      <div id="activityLog" class="activity-log" aria-live="polite"><p class="empty">No activity recorded.</p></div>
+    </section>
+
+    <section class="panel" aria-labelledby="systemHeading">
+      <h2 id="systemHeading">System information</h2>
+      <div class="status-list">
+        <div><span>Platform</span><strong id="platformInfo">Unknown</strong></div>
+        <div><span>Browser</span><strong id="browserInfo">Unknown</strong></div>
+        <div><span>API connection</span><strong>Not configured</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><strong>KALTA</strong><span>Human Augmented OS</span><span>Prototype environment</span></footer>
+
+  <script>
+    const byId = (id) => document.getElementById(id);
+    let workerRegistration = null;
+
+    function logActivity(message) {
+      const log = byId("activityLog");
+      const empty = log.querySelector(".empty");
+      if (empty) empty.remove();
+      const item = document.createElement("p");
+      const time = new Date().toLocaleTimeString();
+      item.textContent = time + "  " + message;
+      log.prepend(item);
+    }
+
+    function updatePermission() {
+      const supported = "Notification" in window;
+      const permission = supported ? Notification.permission : "unsupported";
+      byId("permissionStatus").textContent =
+        permission === "granted" ? "Granted" :
+        permission === "denied" ? "Blocked" :
+        permission === "default" ? "Not requested" : "Unavailable";
+      byId("deviceBadge").textContent = permission === "granted" ? "Permission granted" : "Not enabled";
+      byId("enableButton").disabled = !supported || permission === "denied";
+      byId("testButton").disabled = !supported || permission !== "granted" || !workerRegistration;
+    }
+
+    async function initialize() {
+      byId("connectionText").textContent = navigator.onLine ? "Online" : "Offline";
+      byId("connectionDot").classList.toggle("online", navigator.onLine);
+      byId("networkStatus").textContent = navigator.onLine ? "Online" : "Offline";
+      byId("platformInfo").textContent = navigator.userAgentData?.platform || navigator.platform || "Unknown";
+      byId("browserInfo").textContent = /Edg\//.test(navigator.userAgent) ? "Microsoft Edge" :
+        /Chrome\//.test(navigator.userAgent) ? "Chrome" :
+        /Firefox\//.test(navigator.userAgent) ? "Firefox" :
+        /Safari\//.test(navigator.userAgent) ? "Safari" : "Other";
+
+      if ("serviceWorker" in navigator) {
+        try {
+          workerRegistration = await navigator.serviceWorker.register("./sw.js");
+          await navigator.serviceWorker.ready;
+          byId("workerStatus").textContent = "Registered";
+          byId("pushStatus").textContent = "Not connected";
+          logActivity("Service worker registered.");
+        } catch (error) {
+          byId("workerStatus").textContent = "Registration failed";
+          logActivity("Service worker error: " + error.message);
+        }
+      } else {
+        byId("workerStatus").textContent = "Unsupported";
+      }
+      updatePermission();
+    }
+
+    byId("enableButton").addEventListener("click", async () => {
+      if (!("Notification" in window)) return;
+      try {
+        const result = await Notification.requestPermission();
+        updatePermission();
+        logActivity("Notification permission: " + result + ".");
+      } catch (error) {
+        logActivity("Permission request failed: " + error.message);
+      }
+    });
+
+    byId("testButton").addEventListener("click", async () => {
+      if (!workerRegistration || Notification.permission !== "granted") return;
+      const title = byId("notificationTitle").value.trim() || "KALTA Notification";
+      const body = byId("notificationMessage").value.trim() || "Test notification.";
+      try {
+        await workerRegistration.showNotification(title, {
+          body,
+          icon: "./icons/icon-192.png",
+          badge: "./icons/icon-192.png",
+          tag: "kalta-local-test",
+          data: { url: "./index.html" }
+        });
+        byId("testFeedback").textContent = "Test notification sent to this device.";
+        logActivity("Test notification displayed.");
+      } catch (error) {
+        byId("testFeedback").textContent = "Could not display notification: " + error.message;
+        logActivity("Notification error: " + error.message);
+      }
+    });
+
+    byId("clearButton").addEventListener("click", () => {
+      byId("activityLog").innerHTML = '<p class="empty">No activity recorded.</p>';
+    });
+
+    window.addEventListener("online", () => {
+      byId("connectionText").textContent = "Online";
+      byId("connectionDot").classList.add("online");
+      byId("networkStatus").textContent = "Online";
+    });
+    window.addEventListener("offline", () => {
+      byId("connectionText").textContent = "Offline";
+      byId("connectionDot").classList.remove("online");
+      byId("networkStatus").textContent = "Offline";
+    });
+
+    initialize();
+  </script>
+</body>
+</html>
