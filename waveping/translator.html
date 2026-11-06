@@ -1265,6 +1265,19 @@
     const existing = bubble.querySelector(".wp-translation-panel");
     if (existing) existing.remove();
 
+    // Remove the older Sarah/Carlos/Yuki translation and original-toggle layouts.
+    const oldOriginalButton = bubble.querySelector("#showOriginalButton");
+    if (oldOriginalButton) {
+      const oldRow = oldOriginalButton.parentElement;
+      const oldCopy = oldRow && oldRow.nextElementSibling;
+      if (oldCopy) oldCopy.remove();
+      if (oldRow) oldRow.remove();
+    }
+    bubble.querySelectorAll("div").forEach((node) => {
+      if (node.querySelector("strong") && /^\\s*Translated\\b/i.test(node.textContent || "")) node.remove();
+      if (node.querySelector('button[onclick*="playAudioSnippet"]')) node.remove();
+    });
+
     const originalParagraph = bubble.querySelector("p.leading-relaxed");
     if (!originalParagraph) return null;
 
