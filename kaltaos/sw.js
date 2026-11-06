@@ -61,7 +61,7 @@ self.addEventListener("push", (event) => {
     icon: payload.icon || "./icons/icon-192.png",
     badge: payload.badge || "./icons/icon-192.png",
     tag: payload.tag || "kalta-notification",
-    data: { url: payload.url || "./index.html", ...(payload.data || {}) }
+    data: { url: payload.url || "./index.html", title, body: options.body, ...(payload.data || {}) }
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -69,15 +69,18 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = new URL(
+  const target = new URL(
     event.notification.data?.url || "./index.html",
     self.registration.scope
-  ).href;
+  );
+  target.searchParams.set("notificationTitle", event.notification.data?.title || "KALTA");
+  target.searchParams.set("notificationBody", event.notification.data?.body || "You have a new notification.");
+  const targetUrl = target.href;
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
       for (const client of windows) {
-        if (client.url === targetUrl && "focus" in client) return client.focus();
+        if ("focus" in client && "navigate" in client) return client.navigate(targetUrl).then(() => client.focus());
       }
       if (clients.openWindow) return clients.openWindow(targetUrl);
     })
