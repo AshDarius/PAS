@@ -1,4 +1,4 @@
-import { Redis } from "@upstash/redis";
+import { getRedis } from "../lib/redis.js";
 import webpush from "web-push";
 import crypto from "node:crypto";
 
@@ -13,16 +13,9 @@ function setCors(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
-function getRedis() {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) throw new Error("Upstash Redis is not configured.");
-  return new Redis({ url, token });
-}
-
 function authorized(req) {
   const expected = process.env.SEND_API_TOKEN || "";
-  const supplied = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  const supplied = (req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
   if (!expected || !supplied) return false;
   const a = Buffer.from(expected);
   const b = Buffer.from(supplied);
