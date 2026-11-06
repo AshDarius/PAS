@@ -1214,6 +1214,46 @@
     }
   }
 
+  // Shared feedback for every deliberate tap or keyboard activation.
+  // Covers buttons, links, choice controls, profile options, and language rows.
+  function giveTapFeedback() {
+    unlockSelectorAudio();
+    haptic(12);
+    playSelectorClick();
+  }
+
+  const feedbackSelector = [
+    "button:not(:disabled)",
+    "a[href]",
+    "input[type='radio']:not(:disabled)",
+    "input[type='checkbox']:not(:disabled)",
+    "select:not(:disabled)",
+    "label.tile",
+    "label.cursor-pointer",
+    "[role='button']",
+    "[role='radio']",
+    "[role='option']",
+    "[aria-pressed]",
+    "[aria-checked]",
+    "[onclick]",
+    ".item"
+  ].join(",");
+
+  // Pointer input gives one short click and vibration at the start of a tap.
+  document.addEventListener("pointerdown", event => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target || !target.closest(feedbackSelector)) return;
+    giveTapFeedback();
+  }, true);
+
+  // Provide the same feedback for keyboard users activating a choice or button.
+  document.addEventListener("keydown", event => {
+    if (event.repeat || (event.key !== "Enter" && event.key !== " ")) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target || !target.closest(feedbackSelector)) return;
+    giveTapFeedback();
+  }, true);
+
   const items = LANGS.map((l, i) => {
     const el = document.createElement("div");
     el.className = "item";
@@ -1313,7 +1353,6 @@
 
   // Launch Screen 2 (Consent Form) from Spinner Continue
   function proceed() {
-    haptic(28);
     const L = LANGS[current];
     const code = L.code;
     window.wavepingLanguage = code;
