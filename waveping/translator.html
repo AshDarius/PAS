@@ -236,7 +236,7 @@
             <span id="hostRoleText" class="text-[10px] text-slate-500">Host</span>
             <span class="text-[10px] text-slate-600">10:42 AM</span>
           </div>
-          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-indigo-500">
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-indigo-500" data-audio-key="sarah-welcome">
             <p class="leading-relaxed">Welcome everyone to our Q3 Global Product Showcase! Today we'll be discussing the new real-time translation features.</p>
             <!-- Subtitle / Original Text toggle preview -->
             <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
@@ -264,7 +264,7 @@
             <span id="guestSpeakerRole" class="text-[10px] text-slate-500">Guest Speaker</span>
             <span class="text-[10px] text-slate-600">10:43 AM</span>
           </div>
-          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-amber-500">
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-amber-500" data-audio-key="carlos-thanks">
             <p class="leading-relaxed">¡Gracias Sarah! Estamos muy emocionados de presentar la integración con la plataforma de WavePing  hoy.</p>
             <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-amber-300/90 flex items-center gap-1.5 font-medium bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
               <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-xs"></i>
@@ -294,7 +294,7 @@
             <span class="text-[10px] text-slate-500">Lead Engineer</span>
             <span class="text-[10px] text-slate-600">10:44 AM</span>
           </div>
-          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-rose-500">
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-rose-500" data-audio-key="yuki-latency">
             <p class="leading-relaxed">レイテンシーは100ミリ秒未満に抑えられており、会話が自然に流れます。</p>
             <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-rose-300/90 flex items-center gap-1.5 font-medium bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">
               <i class="fa-solid fa-wand-magic-sparkles text-rose-400 text-xs"></i>
@@ -311,7 +311,7 @@
             <span class="text-[10px] text-slate-600">10:45 AM</span>
             <span id="viewerLabel" class="text-xs font-semibold text-indigo-400">Guest (You)</span>
           </div>
-          <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-indigo-900/20">
+          <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none text-sm shadow-lg shadow-indigo-900/20" data-audio-key="current-user-question">
             <p class="leading-relaxed">Can you clarify if multi-party auto-detection works automatically for all connected mics?</p>
             <div class="mt-1 text-[10px] text-indigo-200 text-right opacity-80 flex items-center justify-end gap-1">
               <span>Broadcasted in 3 languages</span>
@@ -337,7 +337,7 @@
             <span class="text-[10px] text-slate-500">Participant</span>
             <span class="text-[10px] text-slate-600">10:46 AM</span>
           </div>
-          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-cyan-500">
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-cyan-500" data-audio-key="maya-question">
             <p class="leading-relaxed">Hey KALTA, how do I ask a question when the group is speaking different languages?</p>
           </div>
         </div>
@@ -355,7 +355,7 @@
             <span class="text-[10px] text-slate-500">AI Participant</span>
             <span class="text-[10px] text-slate-600">10:46 AM</span>
           </div>
-          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-violet-500">
+          <div class="glass-card p-3.5 rounded-2xl rounded-tl-none text-slate-200 text-sm shadow-md border-l-2 border-l-violet-500" data-audio-key="kalta-answer">
             <p class="leading-relaxed">Just address me by name. For example, say “Hey KALTA, please explain that last point” or “Hey KALTA, translate the main idea.” I can answer questions, clarify comments, and summarize the discussion. My reply appears here as another group message and is translated for the participants, just like everyone else's messages.</p>
             <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-violet-300/90 flex items-center gap-1.5 font-medium bg-violet-500/10 p-2 rounded-lg border border-violet-500/20">
               <i class="fa-solid fa-language text-violet-400 text-xs"></i>
@@ -1362,8 +1362,21 @@
     try {
       const translated = await translateText(original, sourceCode || "EN", targetCode);
       layout.translated.textContent = translated;
-      layout.panel.querySelector(".wp-listen-button").dataset.translationText = translated;
-      layout.panel.querySelector(".wp-listen-button").dataset.translationTarget = targetCode;
+      const listenButton = layout.panel.querySelector(".wp-listen-button");
+      listenButton.dataset.translationText = translated;
+      listenButton.dataset.translationTarget = targetCode;
+
+      const supportedLanguage = supportsWavePingAudioLanguage(targetCode);
+      const supportedGender = participantVoiceForBubble(listenButton);
+      if (!supportedLanguage) {
+        layout.translated.textContent = "This demo currently supports English and Spanish audio only.";
+        listenButton.disabled = true;
+        listenButton.classList.add("opacity-50", "cursor-not-allowed");
+      } else if (!supportedGender) {
+        layout.translated.textContent = unsupportedParticipantMessage(targetCode);
+        listenButton.disabled = true;
+        listenButton.classList.add("opacity-50", "cursor-not-allowed");
+      }
     } catch (error) {
       console.warn("WavePing translation failed:", error);
       layout.translated.textContent = "Translation unavailable: " + (error.message || "Please try again.");
@@ -1374,82 +1387,142 @@
 
   window.wavepingPrepareBubble = prepareBubble;
 
-  // Participant voice assignments are prototype settings. The current user's
-  // verified profile choice takes precedence for their own messages.
-  function genderForBubble(button) {
+  // WavePing prototype audio uses prerecorded WAV files stored in GitHub Pages.
+  // Each supported sample bubble has a stable audio key in data-audio-key.
+  // Naming: ./audio/<key>-<en|es>-<feminine|masculine>.wav
+  let activeWavePingAudio = null;
+  let activeWavePingButton = null;
+
+  function participantVoiceForBubble(button) {
     const bubble = button.closest(".wp-translation-panel")?.parentElement;
     const root = bubble?.closest(".group");
     const name = root?.querySelector(".text-xs.font-semibold")?.textContent || "";
-    if (/Carlos\\s*Mendez/i.test(name)) return "male";
-    if (/Sarah\\s*Jenkins|Yuki\\s*Tanaka|Maya\\s*Chen|KALTA/i.test(name)) return "female";
+
+    if (/Carlos\\s*Mendez/i.test(name)) return "masculine";
+    if (/Sarah\\s*Jenkins|Yuki\\s*Tanaka|Maya\\s*Chen|KALTA/i.test(name)) return "feminine";
+
     if (bubble?.classList.contains("bg-indigo-600")) {
-      const selected = window.wavepingParticipantProfile?.voice || "Neutral";
-      return selected === "Masculine" ? "male" : selected === "Feminine" ? "female" : "neutral";
+      const selected = window.wavepingParticipantProfile?.voice;
+      if (selected === "Masculine") return "masculine";
+      if (selected === "Feminine") return "feminine";
     }
-    return "neutral";
+    return null;
   }
 
-  function voiceGenderScore(voice, gender) {
-    if (gender === "neutral") return 0;
-    const name = (voice.name || "").toLowerCase();
-    const femaleTerms = /\\b(female|woman|zira|jenny|aria|ava|samantha|victoria|karen|susan|hazel|sonia|libby|natasha|tessa|moira|sara|allison|emma|olivia)\\b/;
-    const maleTerms = /\\b(male|man|david|guy|mark|ryan|george|james|daniel|thomas|alexander|christopher|fred|lee|oliver|aaron|arthur|rishi|andrew)\\b/;
-    if (gender === "female") return femaleTerms.test(name) ? 3 : maleTerms.test(name) ? -3 : 0;
-    return maleTerms.test(name) ? 3 : femaleTerms.test(name) ? -3 : 0;
+  function unsupportedParticipantMessage(code) {
+    return String(code || "").toUpperCase() === "ES"
+      ? "Esta demostración todavía no admite al participante actual."
+      : "This demo doesn't support the current participant yet.";
   }
 
-  function chooseSpeechVoice(code, gender) {
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices.length) return null;
-    const locale = speechLocales[code] || "en-US";
-    const base = locale.split("-")[0].toLowerCase();
-    const languageVoices = voices.filter(voice => (voice.lang || "").toLowerCase().split("-")[0] === base);
-    const candidates = languageVoices.length ? languageVoices : voices;
-    if (gender === "neutral") {
-      return candidates.find(voice => (voice.lang || "").toLowerCase() === locale.toLowerCase()) ||
-        candidates[0] || null;
+  function supportsWavePingAudioLanguage(code) {
+    return ["EN", "ES"].includes(String(code || "").toUpperCase());
+  }
+
+  function setWavePingButton(button, state, code) {
+    if (!button) return;
+    const spanish = String(code || "").toUpperCase() === "ES";
+    const labels = spanish
+      ? { listen: "Escuchar", pause: "Pausar", resume: "Continuar" }
+      : { listen: "Listen", pause: "Pause", resume: "Resume" };
+    const icons = {
+      listen: "fa-circle-play",
+      pause: "fa-circle-pause",
+      resume: "fa-circle-play"
+    };
+    button.innerHTML = '<i class="fa-solid ' + icons[state] + '"></i><span>' + labels[state] + '</span>';
+    button.setAttribute("aria-label", labels[state]);
+  }
+
+  function stopActiveWavePingAudio(resetPosition) {
+    if (activeWavePingAudio) {
+      activeWavePingAudio.pause();
+      if (resetPosition) {
+        try { activeWavePingAudio.currentTime = 0; } catch (error) {}
+      }
     }
-    const ranked = candidates
-      .map(voice => ({ voice, score: voiceGenderScore(voice, gender) +
-        ((voice.lang || "").toLowerCase() === locale.toLowerCase() ? 2 : 0) }))
-      .sort((a, b) => b.score - a.score);
-    // Only claim a gender match when the voice name provides a recognisable clue.
-    return ranked[0]?.score > 0 ? ranked[0].voice :
-      (candidates.find(voice => (voice.lang || "").toLowerCase() === locale.toLowerCase()) || candidates[0] || null);
+    if (activeWavePingButton) {
+      const oldCode = activeWavePingButton.dataset.translationTarget || "EN";
+      setWavePingButton(activeWavePingButton, "listen", oldCode);
+    }
+    activeWavePingAudio = null;
+    activeWavePingButton = null;
   }
 
   window.wavepingPlayTranslation = function (button) {
-    const text = button.dataset.translationText;
-    const code = button.dataset.translationTarget || selectedTargetCode();
-    if (!text || !("speechSynthesis" in window)) {
-      if (typeof showToast === "function") showToast("Speech playback is not available in this browser.", "fa-volume-xmark", "text-amber-400");
+    const bubble = button.closest(".wp-translation-panel")?.parentElement;
+    const code = String(button.dataset.translationTarget || selectedTargetCode()).toUpperCase();
+    const gender = participantVoiceForBubble(button);
+    const audioKey = bubble?.dataset.audioKey;
+
+    if (!supportsWavePingAudioLanguage(code)) {
+      const translated = bubble?.querySelector(".wp-translated-text");
+      if (translated) translated.textContent = "This demo currently supports English and Spanish audio only.";
       return;
     }
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = speechLocales[code] || "en-US";
-    const gender = genderForBubble(button);
-    const voice = chooseSpeechVoice(code, gender);
-    if (voice) {
-      utterance.voice = voice;
-      utterance.lang = voice.lang || utterance.lang;
+
+    if (!gender) {
+      const translated = bubble?.querySelector(".wp-translated-text");
+      if (translated) translated.textContent = unsupportedParticipantMessage(code);
+      button.disabled = true;
+      button.classList.add("opacity-50", "cursor-not-allowed");
+      return;
     }
-    button.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>' +
-      ((window.wavepingText && window.wavepingText.playing) || "Playing...") + '</span>';
-    const reset = () => {
-      button.innerHTML = '<i class="fa-solid fa-circle-play"></i><span>' +
-        ((window.wavepingText && window.wavepingText.listen) || "Listen") + '</span>';
-    };
-    utterance.onend = reset;
-    utterance.onerror = reset;
-    window.speechSynthesis.speak(utterance);
+
+    if (!audioKey) {
+      if (typeof showToast === "function") {
+        showToast("A WAV recording has not been added for this message yet.", "fa-volume-xmark", "text-amber-400");
+      }
+      return;
+    }
+
+    const audioUrl = "./audio/" + audioKey + "-" + code.toLowerCase() + "-" + gender + ".wav";
+
+    // Pressing the same button toggles between pause and resume.
+    if (activeWavePingAudio && activeWavePingButton === button) {
+      if (activeWavePingAudio.paused) {
+        activeWavePingAudio.play().then(() => {
+          setWavePingButton(button, "pause", code);
+        }).catch((error) => {
+          console.error("WavePing audio resume failed:", error);
+          if (typeof showToast === "function") showToast("Could not resume this WAV recording.", "fa-volume-xmark", "text-amber-400");
+        });
+      } else {
+        activeWavePingAudio.pause();
+        setWavePingButton(button, "resume", code);
+      }
+      return;
+    }
+
+    stopActiveWavePingAudio(true);
+    const audio = new Audio(audioUrl);
+    audio.preload = "auto";
+    activeWavePingAudio = audio;
+    activeWavePingButton = button;
+
+    audio.addEventListener("ended", () => {
+      if (activeWavePingAudio === audio) stopActiveWavePingAudio(false);
+    });
+    audio.addEventListener("error", () => {
+      if (activeWavePingAudio === audio) stopActiveWavePingAudio(false);
+      console.error("WavePing WAV file could not be loaded:", audioUrl);
+      if (typeof showToast === "function") {
+        showToast("WAV file not found. Check the filename in waveping/audio: " + audioUrl, "fa-volume-xmark", "text-amber-400");
+      }
+    });
+
+    audio.play().then(() => {
+      setWavePingButton(button, "pause", code);
+    }).catch((error) => {
+      console.error("WavePing WAV playback failed:", error);
+      if (activeWavePingAudio === audio) stopActiveWavePingAudio(false);
+      if (typeof showToast === "function") {
+        showToast("Browser could not play this WAV recording: " + error.name, "fa-volume-xmark", "text-amber-400");
+      }
+    });
   };
 
   window.playAudioSnippet = function (button) {
-    const translated = button.closest(".wp-translation-panel")?.querySelector(".wp-translated-text")?.textContent || "";
-    if (!translated || translated.startsWith("Translating") || translated.startsWith("Translation unavailable")) return;
-    button.dataset.translationText = translated;
-    button.dataset.translationTarget = selectedTargetCode();
     window.wavepingPlayTranslation(button);
   };
 
