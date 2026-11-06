@@ -107,7 +107,7 @@
     }
 
     function getApiBase() {
-      return byId("apiBase").value.trim().replace(/\\/+$/, "");
+      return byId("apiBase").value.trim().replace(/\/+$/, "");
     }
 
     function urlBase64ToUint8Array(base64String) {
