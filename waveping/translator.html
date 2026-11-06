@@ -1398,8 +1398,8 @@
     const root = bubble?.closest(".group");
     const name = root?.querySelector(".text-xs.font-semibold")?.textContent || "";
 
-    if (/Carlos\\s*Mendez/i.test(name)) return "masculine";
-    if (/Sarah\\s*Jenkins|Yuki\\s*Tanaka|Maya\\s*Chen|KALTA/i.test(name)) return "feminine";
+    if (/Carlos\s*Mendez/i.test(name)) return "masculine";
+    if (/Sarah\s*Jenkins|Yuki\s*Tanaka|Maya\s*Chen|KALTA/i.test(name)) return "feminine";
 
     if (bubble?.classList.contains("bg-indigo-600")) {
       const selected = window.wavepingParticipantProfile?.voice;
