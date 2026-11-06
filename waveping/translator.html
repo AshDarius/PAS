@@ -1273,10 +1273,15 @@
       if (oldCopy) oldCopy.remove();
       if (oldRow) oldRow.remove();
     }
-    bubble.querySelectorAll("div").forEach((node) => {
-      if (node.querySelector("strong") && /^\\s*Translated\\b/i.test(node.textContent || "")) node.remove();
-      if (node.querySelector('button[onclick*="playAudioSnippet"]')) node.remove();
-    });
+    const oldTranslationLabel = bubble.querySelector("strong");
+    if (oldTranslationLabel && /^\\s*Translated\\b/i.test(oldTranslationLabel.textContent || "")) {
+      const oldTranslationBlock = oldTranslationLabel.closest("div");
+      if (oldTranslationBlock && oldTranslationBlock !== bubble) oldTranslationBlock.remove();
+    }
+    const oldListenButton = bubble.querySelector('button[onclick*="playAudioSnippet"]');
+    if (oldListenButton && oldListenButton.parentElement && oldListenButton.parentElement !== bubble) {
+      oldListenButton.parentElement.remove();
+    }
 
     const originalParagraph = bubble.querySelector("p.leading-relaxed");
     if (!originalParagraph) return null;
