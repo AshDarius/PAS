@@ -1,0 +1,12 @@
+{
+  "name": "kalta-vessel-notifications",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.35.6",
+    "web-push": "^3.6.7"
+  }
+}
