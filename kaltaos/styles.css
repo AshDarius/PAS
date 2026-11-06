@@ -1,0 +1,139 @@
+:root {
+  color-scheme: dark;
+  --background: #0d1020;
+  --surface: #171c31;
+  --surface-soft: #1d243c;
+  --text: #edf1f5;
+  --muted: #a5afc1;
+  --accent: #53bebe;
+  --border: #303951;
+  --danger: #e28a8a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.topbar {
+  min-height: 76px;
+  padding: 14px max(22px, calc((100% - 920px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid var(--border);
+  background: #12162b;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand img { border-radius: 11px; }
+.brand strong { display: block; font-size: 18px; letter-spacing: 2px; }
+.brand small { display: block; color: var(--muted); font-size: 10px; letter-spacing: 1.4px; }
+
+.connection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #8790a3; }
+.dot.online { background: var(--accent); box-shadow: 0 0 10px #53bebe66; }
+
+.shell { width: min(100% - 32px, 720px); margin: 0 auto; padding: 38px 0 52px; }
+.intro { margin: 0 0 28px; }
+.eyebrow { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+h1 { margin: 8px 0; font-size: clamp(32px, 7vw, 46px); line-height: 1.1; letter-spacing: -1.5px; }
+.intro > p:last-child, .section-copy { color: var(--muted); }
+
+.panel {
+  margin: 18px 0;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+.panel h2 { margin: 0 0 16px; font-size: 18px; font-weight: 600; }
+.panel-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.panel-title h2 { margin-bottom: 16px; }
+.badge { padding: 4px 9px; border: 1px solid var(--border); border-radius: 20px; color: var(--muted); font-size: 11px; }
+
+.status-list { margin: 4px 0 20px; }
+.status-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #30395188;
+  color: var(--muted);
+  font-size: 14px;
+}
+.status-list strong { color: var(--text); font-weight: 600; text-align: right; }
+
+label { display: block; margin: 16px 0 7px; color: var(--muted); font-size: 13px; }
+input, textarea {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: none;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+}
+input:focus, textarea:focus { border-color: var(--accent); }
+textarea { resize: vertical; }
+
+.button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.button:disabled { opacity: .45; cursor: not-allowed; }
+.primary { background: var(--accent); color: #101b25; }
+.secondary { border: 1px solid var(--accent); background: transparent; color: var(--accent); }
+.hint, .feedback { color: var(--muted); font-size: 12px; }
+.hint { margin: 13px 0 0; }
+.feedback { min-height: 18px; margin-bottom: 0; }
+.text-button { padding: 4px 0 8px; border: 0; background: transparent; color: var(--accent); font: inherit; font-size: 12px; cursor: pointer; }
+.activity-log { max-height: 190px; overflow: auto; }
+.activity-log p { margin: 0; padding: 9px 0; border-bottom: 1px solid #30395188; color: var(--muted); font-size: 13px; }
+.activity-log .empty { border: 0; }
+footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 25px 16px 32px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+}
+footer strong { color: var(--text); letter-spacing: 2px; }
+footer span { opacity: .8; }
+
+@media (max-width: 480px) {
+  .topbar { padding: 12px 16px; }
+  .connection { font-size: 11px; }
+  .shell { width: min(100% - 24px, 720px); padding-top: 28px; }
+  .panel { padding: 18px; }
+}
