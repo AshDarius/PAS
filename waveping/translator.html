@@ -125,7 +125,14 @@
       </div>
     </header>
 
-    <!-- DUAL VOICE & MIC CONTROL BAR -->
+    <!-- COLLAPSIBLE CONTROLS TO GIVE THE CHAT MORE ROOM -->
+    <div class="bg-slate-900/50 px-4 py-1.5 border-b border-slate-800/80 z-10 shrink-0">
+      <button id="controlsToggle" type="button" aria-expanded="false" aria-controls="controlPanel" onclick="toggleControlPanel()" class="w-full flex items-center justify-between text-xs text-slate-400 hover:text-indigo-300 transition">
+        <span id="controlsToggleLabel">Show controls</span>
+        <i id="controlsToggleIcon" class="fa-solid fa-chevron-down text-[10px] transition-transform" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div id="controlPanel" hidden>
     <div class="bg-slate-900/70 px-3 py-2.5 sm:px-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 z-10 shrink-0">
       
       <!-- Audio Input / Output Controls Group -->
@@ -184,6 +191,23 @@
         </button>
       </div>
     </div>
+    </div>
+
+    <script>
+      function toggleControlPanel() {
+        const panel = document.getElementById("controlPanel");
+        const button = document.getElementById("controlsToggle");
+        const label = document.getElementById("controlsToggleLabel");
+        const icon = document.getElementById("controlsToggleIcon");
+        if (!panel || !button || !label || !icon) return;
+        const expanded = button.getAttribute("aria-expanded") === "true";
+        panel.hidden = expanded;
+        button.setAttribute("aria-expanded", expanded ? "false" : "true");
+        label.textContent = expanded ? "Show controls" : "Hide controls";
+        icon.classList.toggle("fa-chevron-down", expanded);
+        icon.classList.toggle("fa-chevron-up", !expanded);
+      }
+    </script>
 
     <!-- MAIN WINDOW / CHAT & TRANSCRIPTION AREA -->
     <div id="chatScrollArea" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 bg-gradient-to-b from-slate-950/40 via-slate-950/80 to-slate-950 relative">
