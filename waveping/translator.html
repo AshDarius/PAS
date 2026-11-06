@@ -658,12 +658,29 @@
           showToast(wp("listening"), "fa-microphone", "text-emerald-400");
         };
 
+        function formatSpeechTranscript(transcript) {
+          let formatted = (transcript || "").replace(/\\s+/g, " ").trim();
+          if (!formatted) return "";
+
+          // Apply a small, language-specific correction list for clear common
+          // recognition errors. Keep this conservative to avoid changing meaning.
+          if (recognition.lang.toLowerCase().startsWith("es")) {
+            formatted = formatted
+              .replace(/\\bgracis\\b/gi, "Gracias")
+              .replace(/\\bcalos\\b/gi, "Carlos");
+          }
+
+          // Capitalize the first word and the first word after sentence endings.
+          return formatted.replace(/(^|[.!?。！？]\\s*)([\\p{L}])/gu,
+            (match, boundary, letter) => boundary + letter.toLocaleUpperCase(recognition.lang));
+        }
+
         recognition.onresult = (event) => {
           let transcript = "";
           for (let i = 0; i < event.results.length; i++) {
             transcript += event.results[i][0].transcript;
           }
-          userInput.value = transcript.trim();
+          userInput.value = formatSpeechTranscript(transcript);
           userInput.dispatchEvent(new Event("input", { bubbles: true }));
         };
 
