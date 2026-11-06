@@ -1,4 +1,4 @@
-import { Redis } from "@upstash/redis";
+import { getRedis } from "../lib/redis.js";
 import crypto from "node:crypto";
 
 function setCors(req, res) {
@@ -10,13 +10,6 @@ function setCors(req, res) {
   }
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-}
-
-function getRedis() {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) throw new Error("Upstash Redis is not configured.");
-  return new Redis({ url, token });
 }
 
 export default async function handler(req, res) {
@@ -39,8 +32,7 @@ export default async function handler(req, res) {
     }
 
     const id = crypto.createHash("sha256").update(subscription.endpoint).digest("hex");
-    const redis = getRedis();
-    await redis.hset("kalta:push:subscriptions", { [id]: JSON.stringify(subscription) });
+    await getRedis().hset("kalta:push:subscriptions", { [id]: JSON.stringify(subscription) });
 
     return res.status(200).json({ ok: true, message: "This device is registered for KALTA notifications." });
   } catch (error) {
