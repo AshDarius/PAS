@@ -137,3 +137,24 @@ footer span { opacity: .8; }
   .shell { width: min(100% - 24px, 720px); padding-top: 28px; }
   .panel { padding: 18px; }
 }
+
+.message-dialog {
+  width: min( calc(100% - 32px), 480px );
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 24px 80px #0009;
+}
+.message-dialog::backdrop { background: #050817cc; }
+.message-card { padding: 26px; }
+.message-card h2 { margin: 8px 0 14px; font-size: 23px; }
+.message-body {
+  margin: 0;
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
