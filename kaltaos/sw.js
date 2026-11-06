@@ -1,4 +1,4 @@
-const CACHE_NAME = "kalta-pwa-v3";
+const CACHE_NAME = "kalta-pwa-v4";
 const APP_FILES = [
   "./",
   "./index.html",
