@@ -580,31 +580,124 @@
       });
     }
 
-    // 4. Push to Talk / Speak Voice Input Simulator
-    function triggerVoiceSpeakInput() {
-      if (!isMainMicOn) {
-        toggleMainMic();
+    // 4. Speech-to-text input using the browser Speech Recognition API.
+    let voiceRecognition = null;
+    let isVoiceInputActive = false;
+
+    function voiceInputWords(key) {
+      const language = document.documentElement.lang || "en";
+      const labels = window.wavepingVoiceInputLabels || {};
+      const selected = labels[language] || labels.en || {};
+      return selected[key] || (labels.en && labels.en[key]) || key;
+    }
+
+    function updateSpeakInputButton(active) {
+      const button = document.getElementById("speakInputBtn");
+      if (!button) return;
+      const icon = button.querySelector("i");
+      const label = button.querySelector("span");
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+      if (active) {
+        button.className = "px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 text-xs sm:text-sm font-medium flex items-center gap-2 transition active:scale-95 shrink-0";
+        if (icon) icon.className = "fa-solid fa-stop text-red-300";
+        if (label) label.textContent = voiceInputWords("stop");
+      } else {
+        button.className = "px-3.5 py-2.5 rounded-xl bg-indigo-950 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-700/50 text-xs sm:text-sm font-medium flex items-center gap-2 transition active:scale-95 shrink-0";
+        if (icon) icon.className = "fa-solid fa-microphone text-emerald-400";
+        if (label) label.textContent = voiceInputWords("start");
       }
-      showToast(wp("listening"), "fa-waveform", "text-emerald-400");
-      
-      const sampleVoicePrompts = [
-        "Could you clarify the multi-lingual stream latency?",
-        "I can hear the translated audio clearly through my headset.",
-        "Will the translated transcript be saved automatically in Docs?"
-      ];
-      
-      const randomPrompt = sampleVoicePrompts[Math.floor(Math.random() * sampleVoicePrompts.length)];
-      
-      let index = 0;
-      userInput.value = "";
-      const typeInterval = setInterval(() => {
-        if (index < randomPrompt.length) {
-          userInput.value += randomPrompt.charAt(index);
-          index++;
-        } else {
-          clearInterval(typeInterval);
-        }
-      }, 30);
+    }
+
+    function triggerVoiceSpeakInput() {
+      if (isVoiceInputActive && voiceRecognition) {
+        voiceRecognition.stop();
+        return;
+      }
+
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognitionAPI) {
+        showToast(voiceInputWords("unsupported"), "fa-circle-exclamation", "text-amber-400");
+        return;
+      }
+
+      const sourceSelect = document.getElementById("sourceLang");
+      const selectedSource = sourceSelect ? sourceSelect.value : "Auto";
+      const languageLocales = {
+        EN: "en-US", ES: "es-ES", FR: "fr-FR", DE: "de-DE",
+        IT: "it-IT", PT: "pt-PT", JA: "ja-JP", ZH: "zh-CN",
+        KO: "ko-KR", AR: "ar-SA", HI: "hi-IN", RU: "ru-RU"
+      };
+      const interfaceLocales = {
+        en: "en-US", es: "es-ES", fr: "fr-FR", de: "de-DE",
+        it: "it-IT", pt: "pt-PT", ja: "ja-JP", zh: "zh-CN",
+        ko: "ko-KR", ar: "ar-SA", hi: "hi-IN", ru: "ru-RU"
+      };
+
+      try {
+        const recognition = new SpeechRecognitionAPI();
+        voiceRecognition = recognition;
+        recognition.lang = selectedSource !== "Auto"
+          ? (languageLocales[selectedSource] || "en-US")
+          : (interfaceLocales[document.documentElement.lang] || "en-US");
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        userInput.value = "";
+        recognition.onstart = () => {
+          isVoiceInputActive = true;
+          updateSpeakInputButton(true);
+          if (!isMainMicOn) {
+            isMainMicOn = true;
+            mainMicToggleBtn.className = "px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
+            mainMicIcon.className = "fa-solid fa-microphone text-emerald-400 animate-pulse";
+            mainMicText.textContent = wp("micLive");
+            micBadgeDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+            startMicMeterAnimation();
+          }
+          showToast(wp("listening"), "fa-microphone", "text-emerald-400");
+        };
+
+        recognition.onresult = (event) => {
+          let transcript = "";
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          userInput.value = transcript.trim();
+          userInput.dispatchEvent(new Event("input", { bubbles: true }));
+        };
+
+        recognition.onerror = (event) => {
+          const message = event.error === "not-allowed" || event.error === "service-not-allowed"
+            ? voiceInputWords("permission")
+            : event.error === "no-speech"
+              ? voiceInputWords("noSpeech")
+              : voiceInputWords("error");
+          showToast(message, "fa-circle-exclamation", "text-amber-400");
+        };
+
+        recognition.onend = () => {
+          isVoiceInputActive = false;
+          voiceRecognition = null;
+          updateSpeakInputButton(false);
+          if (isMainMicOn) {
+            isMainMicOn = false;
+            mainMicToggleBtn.className = "px-3 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
+            mainMicIcon.className = "fa-solid fa-microphone-slash text-red-400";
+            mainMicText.textContent = wp("micMuted");
+            micBadgeDot.className = "w-2 h-2 rounded-full bg-red-500";
+            stopMicMeterAnimation();
+          }
+        };
+
+        recognition.start();
+      } catch (error) {
+        isVoiceInputActive = false;
+        voiceRecognition = null;
+        updateSpeakInputButton(false);
+        showToast(voiceInputWords("error"), "fa-circle-exclamation", "text-amber-400");
+        console.error("WavePing speech recognition could not start:", error);
+      }
     }
 
     // 5. Agree Button Handling
@@ -920,6 +1013,20 @@
       ru:{guest:"Гость",voiceOn:"Голосовой вывод: ВКЛ",voiceOff:"Голосовой вывод: ВЫКЛ",voiceActive:"Воспроизведение голоса включено",voiceMuted:"Голосовой вывод отключён",headset:"Режим наушников",speakers:"Динамики",speaker:"Режим динамика",routeHeadset:"Звук направлен в наушники",routeSpeakers:"Звук направлен на динамики",micLive:"Микрофон: В ЭФИРЕ",micMuted:"Микрофон: ВЫКЛ",micUnmutedToast:"Микрофон включён. Аудиопоток активен.",micMutedToast:"Микрофон отключён.",listening:"Прослушивание голосового ввода...",termsAcknowledged:"Условия и точность перевода подтверждены.",agreed:"Согласовано ✓",agree:"Согласен",agreementReset:"Статус согласия сброшен.",confirmClose:"Закрыть окно перевода WavePing?",sessionClosed:"Сеанс WavePing закрыт",streamEnded:"Прямая трансляция перевода завершена.",reopen:"Открыть сеанс снова",minimized:"WavePing свёрнут в режим мини-просмотра.",viewer:"Вы (зритель)",translating:"Перевод речи и текста для трансляции...",translated:"Перевод",showOriginal:"Показать оригинал",hideOriginal:"Скрыть оригинал",enableVoice:"Включите голосовой вывод, чтобы услышать звук.",playing:"Воспроизведение...",listen:"Слушать",speechTranslated:"Речь переведена от",docBrief:"Переведено на английский, испанский и японский • 2,4 МБ",docTranscript:"Создано автоматически • Обновлено 2 минуты назад",placeholder:"Введите сообщение или используйте голосовой ввод...",simulateTitle:"Симуляция входящего перевода"}
     };
     window.wavepingText = extra[code] || extra.en;
+    window.wavepingVoiceInputLabels = {
+      en:{start:"Speak",stop:"Stop recording",unsupported:"Speech recognition is not supported by this browser.",permission:"Allow microphone access to use voice input.",noSpeech:"No speech was detected. Try again.",error:"Voice input could not start. Please try again."},
+      es:{start:"Hablar",stop:"Detener grabación",unsupported:"Este navegador no admite el reconocimiento de voz.",permission:"Permite el acceso al micrófono para usar la entrada de voz.",noSpeech:"No se detectó voz. Inténtalo de nuevo.",error:"No se pudo iniciar la entrada de voz. Inténtalo de nuevo."},
+      fr:{start:"Parler",stop:"Arrêter l’enregistrement",unsupported:"La reconnaissance vocale n’est pas prise en charge par ce navigateur.",permission:"Autorisez l’accès au microphone pour utiliser la saisie vocale.",noSpeech:"Aucune parole détectée. Réessayez.",error:"La saisie vocale n’a pas pu démarrer. Réessayez."},
+      de:{start:"Sprechen",stop:"Aufnahme stoppen",unsupported:"Dieser Browser unterstützt keine Spracherkennung.",permission:"Erlaube den Mikrofonzugriff für die Spracheingabe.",noSpeech:"Keine Sprache erkannt. Bitte erneut versuchen.",error:"Die Spracheingabe konnte nicht gestartet werden. Bitte erneut versuchen."},
+      it:{start:"Parla",stop:"Ferma registrazione",unsupported:"Questo browser non supporta il riconoscimento vocale.",permission:"Consenti l’accesso al microfono per usare l’input vocale.",noSpeech:"Nessuna voce rilevata. Riprova.",error:"Impossibile avviare l’input vocale. Riprova."},
+      pt:{start:"Falar",stop:"Parar gravação",unsupported:"Este navegador não oferece suporte ao reconhecimento de voz.",permission:"Permita o acesso ao microfone para usar a entrada de voz.",noSpeech:"Nenhuma fala detectada. Tente novamente.",error:"Não foi possível iniciar a entrada de voz. Tente novamente."},
+      ja:{start:"話す",stop:"録音を停止",unsupported:"このブラウザーは音声認識に対応していません。",permission:"音声入力を使うにはマイクへのアクセスを許可してください。",noSpeech:"音声が検出されませんでした。もう一度お試しください。",error:"音声入力を開始できませんでした。もう一度お試しください。"},
+      zh:{start:"开始说话",stop:"停止录音",unsupported:"此浏览器不支持语音识别。",permission:"请允许使用麦克风以启用语音输入。",noSpeech:"未检测到语音，请重试。",error:"无法启动语音输入，请重试。"},
+      ko:{start:"말하기",stop:"녹음 중지",unsupported:"이 브라우저는 음성 인식을 지원하지 않습니다.",permission:"음성 입력을 사용하려면 마이크 접근을 허용하세요.",noSpeech:"음성이 감지되지 않았습니다. 다시 시도하세요.",error:"음성 입력을 시작할 수 없습니다. 다시 시도하세요."},
+      ar:{start:"تحدث",stop:"إيقاف التسجيل",unsupported:"هذا المتصفح لا يدعم التعرّف على الكلام.",permission:"اسمح بالوصول إلى الميكروفون لاستخدام الإدخال الصوتي.",noSpeech:"لم يتم اكتشاف كلام. حاول مرة أخرى.",error:"تعذر بدء الإدخال الصوتي. حاول مرة أخرى."},
+      hi:{start:"बोलें",stop:"रिकॉर्डिंग रोकें",unsupported:"यह ब्राउज़र वाक् पहचान का समर्थन नहीं करता।",permission:"वॉइस इनपुट के लिए माइक्रोफ़ोन की अनुमति दें।",noSpeech:"कोई आवाज़ नहीं मिली। फिर कोशिश करें।",error:"वॉइस इनपुट शुरू नहीं हो सका। फिर कोशिश करें।"},
+      ru:{start:"Говорить",stop:"Остановить запись",unsupported:"Этот браузер не поддерживает распознавание речи.",permission:"Разрешите доступ к микрофону для голосового ввода.",noSpeech:"Речь не обнаружена. Попробуйте ещё раз.",error:"Не удалось запустить голосовой ввод. Попробуйте ещё раз."}
+    };
     window.wavepingTargetLanguage = code.toUpperCase();
     const targetLanguageSelect = document.getElementById("targetLang");
     if (targetLanguageSelect) {
