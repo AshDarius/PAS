@@ -140,10 +140,10 @@
     async function initialize() {
       updateConnection();
       byId("platformInfo").textContent = navigator.userAgentData?.platform || navigator.platform || "Unknown";
-      byId("browserInfo").textContent = /Edg\\//.test(navigator.userAgent) ? "Microsoft Edge" :
-        /Chrome\\//.test(navigator.userAgent) ? "Chrome" :
-        /Firefox\\//.test(navigator.userAgent) ? "Firefox" :
-        /Safari\\//.test(navigator.userAgent) ? "Safari" : "Other";
+      byId("browserInfo").textContent = /Edg\//.test(navigator.userAgent) ? "Microsoft Edge" :
+        /Chrome\//.test(navigator.userAgent) ? "Chrome" :
+        /Firefox\//.test(navigator.userAgent) ? "Firefox" :
+        /Safari\//.test(navigator.userAgent) ? "Safari" : "Other";
       updatePermission();
 
       if (!("serviceWorker" in navigator)) {
