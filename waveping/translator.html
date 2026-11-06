@@ -203,7 +203,9 @@
         const expanded = button.getAttribute("aria-expanded") === "true";
         panel.hidden = expanded;
         button.setAttribute("aria-expanded", expanded ? "false" : "true");
-        label.textContent = expanded ? "Show controls" : "Hide controls";
+        const language = document.documentElement.lang || "en";
+        const words = (window.wavepingControlToggleLabels || {})[language] || (window.wavepingControlToggleLabels || {}).en || {show:"Show controls",hide:"Hide controls"};
+        label.textContent = expanded ? words.show : words.hide;
         icon.classList.toggle("fa-chevron-down", expanded);
         icon.classList.toggle("fa-chevron-up", !expanded);
       }
@@ -933,6 +935,22 @@
     const labels = text[code] || text.en;
     document.documentElement.lang = text[code] ? code : "en";
     document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
+    window.wavepingControlToggleLabels = {
+      en:{show:"Show controls",hide:"Hide controls"},
+      es:{show:"Mostrar controles",hide:"Ocultar controles"},
+      fr:{show:"Afficher les commandes",hide:"Masquer les commandes"},
+      de:{show:"Steuerung anzeigen",hide:"Steuerung ausblenden"},
+      it:{show:"Mostra controlli",hide:"Nascondi controlli"},
+      pt:{show:"Mostrar controles",hide:"Ocultar controles"},
+      ja:{show:"コントロールを表示",hide:"コントロールを非表示"},
+      zh:{show:"显示控件",hide:"隐藏控件"},
+      ko:{show:"컨트롤 표시",hide:"컨트롤 숨기기"},
+      ar:{show:"إظهار عناصر التحكم",hide:"إخفاء عناصر التحكم"},
+      hi:{show:"नियंत्रण दिखाएँ",hide:"नियंत्रण छिपाएँ"},
+      ru:{show:"Показать элементы управления",hide:"Скрыть элементы управления"}
+    };
+    const controlsLabel = document.getElementById("controlsToggleLabel");
+    if (controlsLabel) controlsLabel.textContent = window.wavepingControlToggleLabels[document.documentElement.lang].show;
     const put = (selector, value) => { const el = document.querySelector(selector); if (el) el.textContent = value; };
     const voiceLabels = {
       en:{Masculine:"Masculine",Feminine:"Feminine",Neutral:"Neutral"},
