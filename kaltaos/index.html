@@ -39,7 +39,7 @@
         <div><span>Network</span><strong id="networkStatus">Checking</strong></div>
       </div>
       <button id="enableButton" class="button primary" type="button">Enable notifications</button>
-      <p class="hint">Allow notifications when your browser asks. This prototype currently tests local device notifications. Remote push registration will be connected to the Vercel API in the next stage.</p>
+      <p class="hint">Enter the Vercel API address below, then enable notifications. This registers this device so it can receive remote KALTA messages.</p>
     </section>
 
     <section class="panel" aria-labelledby="testHeading">
@@ -51,6 +51,18 @@
       <textarea id="notificationMessage" rows="3" maxlength="500">Your KALTA notification system is working.</textarea>
       <button id="testButton" class="button secondary" type="button">Send test notification</button>
       <p id="testFeedback" class="feedback" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="remoteHeading">
+      <h2 id="remoteHeading">Remote notification</h2>
+      <p class="section-copy">Send a message through Vercel to every registered device.</p>
+      <label for="apiBase">Vercel API address</label>
+      <input id="apiBase" type="url" inputmode="url" placeholder="https://your-project.vercel.app">
+      <label for="apiToken">Private send token</label>
+      <input id="apiToken" type="password" autocomplete="off" placeholder="Enter the Vercel send token">
+      <button id="remoteSendButton" class="button primary" type="button">Send remote notification</button>
+      <p id="remoteFeedback" class="feedback" role="status" aria-live="polite"></p>
+      <p class="hint">The API address is saved on this device. The private token is not saved and must never be added to the public website code.</p>
     </section>
 
     <section class="panel" aria-labelledby="activityHeading">
@@ -93,6 +105,17 @@
       log.prepend(item);
     }
 
+    function getApiBase() {
+      return byId("apiBase").value.trim().replace(/\\/+$/, "");
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const raw = atob(base64);
+      return Uint8Array.from([...raw].map((char) => char.charCodeAt(0)));
+    }
+
     function updatePermission() {
       const supported = "Notification" in window;
       const permission = supported ? Notification.permission : "unsupported";
@@ -120,7 +143,8 @@
           workerRegistration = await navigator.serviceWorker.register("./sw.js");
           await navigator.serviceWorker.ready;
           byId("workerStatus").textContent = "Registered";
-          byId("pushStatus").textContent = "Not connected";
+          const existingSubscription = await workerRegistration.pushManager.getSubscription();
+          byId("pushStatus").textContent = existingSubscription ? "Registered" : "Not connected";
           logActivity("Service worker registered.");
         } catch (error) {
           byId("workerStatus").textContent = "Registration failed";
@@ -133,13 +157,49 @@
     }
 
     byId("enableButton").addEventListener("click", async () => {
-      if (!("Notification" in window)) return;
+      if (!("Notification" in window) || !workerRegistration) return;
+      const apiBase = getApiBase();
+      if (!apiBase) {
+        byId("remoteFeedback").textContent = "Enter your Vercel API address first.";
+        byId("apiBase").focus();
+        return;
+      }
       try {
-        const result = await Notification.requestPermission();
+        const permission = await Notification.requestPermission();
         updatePermission();
-        logActivity("Notification permission: " + result + ".");
+        if (permission !== "granted") {
+          byId("remoteFeedback").textContent = "Notification permission was not granted.";
+          return;
+        }
+
+        const configResponse = await fetch(apiBase + "/api/config");
+        const config = await configResponse.json();
+        if (!configResponse.ok || !config.publicKey) {
+          throw new Error(config.error || "Could not get the Vercel push key.");
+        }
+
+        let subscription = await workerRegistration.pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await workerRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(config.publicKey)
+          });
+        }
+
+        const saveResponse = await fetch(apiBase + "/api/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription })
+        });
+        const saved = await saveResponse.json();
+        if (!saveResponse.ok) throw new Error(saved.error || "Could not register this device.");
+
+        byId("pushStatus").textContent = "Registered";
+        byId("remoteFeedback").textContent = "This device is registered for remote KALTA notifications.";
+        logActivity("Device registered with Vercel for remote push.");
       } catch (error) {
-        logActivity("Permission request failed: " + error.message);
+        byId("remoteFeedback").textContent = "Registration failed: " + error.message;
+        logActivity("Remote registration error: " + error.message);
       }
     });
 
@@ -195,6 +255,58 @@
         byId("testFeedback").textContent = "Could not display notification: " + error.message;
         logActivity("Notification error: " + error.message);
       }
+    });
+
+    byId("remoteSendButton").addEventListener("click", async () => {
+      const apiBase = getApiBase();
+      const token = byId("apiToken").value.trim();
+      const title = byId("notificationTitle").value.trim() || "KALTA";
+      const body = byId("notificationMessage").value.trim();
+      const feedback = byId("remoteFeedback");
+
+      if (!apiBase) {
+        feedback.textContent = "Enter your Vercel API address first.";
+        byId("apiBase").focus();
+        return;
+      }
+      if (!token) {
+        feedback.textContent = "Enter the private send token.";
+        byId("apiToken").focus();
+        return;
+      }
+      if (!body) {
+        feedback.textContent = "Enter a message to send.";
+        byId("notificationMessage").focus();
+        return;
+      }
+
+      byId("remoteSendButton").disabled = true;
+      feedback.textContent = "Sending notification...";
+      try {
+        const response = await fetch(apiBase + "/api/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ title, body })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "The send request failed.");
+        feedback.textContent = result.message + " Devices reached: " + result.sent + ". Failed: " + result.failed + ".";
+        logActivity("Remote notification request completed. Sent: " + result.sent + ", failed: " + result.failed + ".");
+        byId("apiToken").value = "";
+      } catch (error) {
+        feedback.textContent = "Send failed: " + error.message;
+        logActivity("Remote send error: " + error.message);
+      } finally {
+        byId("remoteSendButton").disabled = false;
+      }
+    });
+
+    byId("apiBase").value = localStorage.getItem("kaltaVercelApiBase") || "";
+    byId("apiBase").addEventListener("change", () => {
+      localStorage.setItem("kaltaVercelApiBase", getApiBase());
     });
 
     byId("clearButton").addEventListener("click", () => {
