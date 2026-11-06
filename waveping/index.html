@@ -1171,6 +1171,49 @@
   // Prevent repeated vibration while the same language remains under the arrows.
   let lastHapticIndex = 0;
 
+  // Generate a short, quiet click with Web Audio. Audio is unlocked by the
+  // user's first interaction because browsers restrict automatic sound.
+  let selectorAudioContext = null;
+
+  function unlockSelectorAudio() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    try {
+      if (!selectorAudioContext) selectorAudioContext = new AudioContextClass();
+      if (selectorAudioContext.state === "suspended") {
+        selectorAudioContext.resume().catch(() => {});
+      }
+    } catch (error) {
+      // Sound is optional; language selection must continue to work.
+    }
+  }
+
+  function playSelectorClick() {
+    if (!selectorAudioContext || selectorAudioContext.state !== "running") return;
+
+    try {
+      const now = selectorAudioContext.currentTime;
+      const oscillator = selectorAudioContext.createOscillator();
+      const gain = selectorAudioContext.createGain();
+
+      oscillator.type = "square";
+      oscillator.frequency.setValueAtTime(1050, now);
+      oscillator.frequency.exponentialRampToValueAtTime(720, now + 0.018);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.002);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+
+      oscillator.connect(gain);
+      gain.connect(selectorAudioContext.destination);
+      oscillator.start(now);
+      oscillator.stop(now + 0.027);
+    } catch (error) {
+      // Ignore audio errors so the selector remains usable.
+    }
+  }
+
   const items = LANGS.map((l, i) => {
     const el = document.createElement("div");
     el.className = "item";
@@ -1239,6 +1282,7 @@
     if (pointedLanguage !== lastHapticIndex) {
       lastHapticIndex = pointedLanguage;
       haptic(12);
+      playSelectorClick();
     }
 
     render();
@@ -1322,12 +1366,14 @@
   // Spinner Input Handlers
   document.addEventListener("keydown", e => {
     if (document.getElementById("spinner-screen").style.display === "none") return;
+    unlockSelectorAudio();
     if (e.code === "ArrowUp")   { e.preventDefault(); step(-1); }
     if (e.code === "ArrowDown") { e.preventDefault(); step(+1); }
   });
 
   window.addEventListener("wheel", e => {
     if (document.getElementById("spinner-screen").style.display === "none") return;
+    unlockSelectorAudio();
     e.preventDefault();
     let dy = e.deltaY;
     if (e.deltaMode === 1) dy *= 16;
@@ -1347,6 +1393,7 @@
   let startY = 0, startTarget = 0;
   window.addEventListener("pointerdown", e => {
     if (document.getElementById("spinner-screen").style.display === "none") return;
+    unlockSelectorAudio();
     if (e.target.closest("button")) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
     dragging = true; moved = 0;
