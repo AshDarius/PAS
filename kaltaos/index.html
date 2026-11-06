@@ -68,6 +68,15 @@
     </section>
   </main>
 
+  <dialog id="messageDialog" class="message-dialog" aria-labelledby="messageDialogTitle">
+    <div class="message-card">
+      <p class="eyebrow">KALTA MESSAGE</p>
+      <h2 id="messageDialogTitle">Notification</h2>
+      <p id="messageDialogBody" class="message-body"></p>
+      <button id="closeMessageButton" class="button primary" type="button">Close message</button>
+    </div>
+  </dialog>
+
   <footer><strong>KALTA</strong><span>Human Augmented OS</span><span>Prototype environment</span></footer>
 
   <script>
@@ -134,6 +143,40 @@
       }
     });
 
+    function showNotificationMessage(title, body) {
+      byId("messageDialogTitle").textContent = title || "KALTA";
+      byId("messageDialogBody").textContent = body || "";
+      const dialog = byId("messageDialog");
+      if (typeof dialog.showModal === "function") {
+        if (!dialog.open) dialog.showModal();
+      } else {
+        dialog.setAttribute("open", "");
+      }
+    }
+
+    function openMessageFromNotification() {
+      const params = new URLSearchParams(window.location.search);
+      const title = params.get("notificationTitle");
+      const body = params.get("notificationBody");
+      if (title !== null || body !== null) {
+        showNotificationMessage(title, body);
+        params.delete("notificationTitle");
+        params.delete("notificationBody");
+        const cleanUrl = window.location.pathname +
+          (params.toString() ? "?" + params.toString() : "") +
+          window.location.hash;
+        window.history.replaceState({}, "", cleanUrl);
+      }
+    }
+
+    byId("closeMessageButton").addEventListener("click", () => {
+      const dialog = byId("messageDialog");
+      if (typeof dialog.close === "function") dialog.close();
+      else dialog.removeAttribute("open");
+    });
+
+    openMessageFromNotification();
+
     byId("testButton").addEventListener("click", async () => {
       if (!workerRegistration || Notification.permission !== "granted") return;
       const title = byId("notificationTitle").value.trim() || "KALTA Notification";
@@ -144,7 +187,7 @@
           icon: "./icons/icon-192.png",
           badge: "./icons/icon-192.png",
           tag: "kalta-local-test",
-          data: { url: "./index.html" }
+          data: { url: "./index.html", title, body }
         });
         byId("testFeedback").textContent = "Test notification sent to this device.";
         logActivity("Test notification displayed.");
