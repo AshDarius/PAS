@@ -39,7 +39,8 @@
         <div><span>Network</span><strong id="networkStatus">Checking</strong></div>
       </div>
       <button id="enableButton" class="button primary" type="button">Enable notifications</button>
-      <p class="hint">Enter the Vercel API address below, then enable notifications. This registers this device so it can receive remote KALTA messages.</p>
+      <p id="enableFeedback" class="feedback" role="status" aria-live="polite"></p>
+      <p class="hint">This will ask for notification permission and register this device with the KALTA notification service.</p>
     </section>
 
     <section class="panel" aria-labelledby="testHeading">
@@ -157,21 +158,31 @@
     }
 
     byId("enableButton").addEventListener("click", async () => {
-      if (!("Notification" in window) || !workerRegistration) return;
-      const apiBase = getApiBase();
-      if (!apiBase) {
-        byId("remoteFeedback").textContent = "Enter your Vercel API address first.";
-        byId("apiBase").focus();
+      const feedback = byId("enableFeedback");
+      if (!("Notification" in window)) {
+        feedback.textContent = "This browser does not support web notifications. Open this page in Chrome or Edge.";
         return;
       }
+      if (!workerRegistration) {
+        feedback.textContent = "The service worker is not ready yet. Wait a few seconds and try again. Check the Service worker status above.";
+        return;
+      }
+      const apiBase = getApiBase();
+      if (!apiBase) {
+        feedback.textContent = "The notification server address is missing. Reload this page and try again.";
+        return;
+      }
+      byId("enableButton").disabled = true;
+      feedback.textContent = "Requesting notification permission...";
       try {
         const permission = await Notification.requestPermission();
         updatePermission();
         if (permission !== "granted") {
-          byId("remoteFeedback").textContent = "Notification permission was not granted.";
+          feedback.textContent = "Notification permission was not granted. Check this site’s notification settings in your browser.";
           return;
         }
 
+        feedback.textContent = "Connecting to the KALTA notification service...";
         const configResponse = await fetch(apiBase + "/api/config");
         const config = await configResponse.json();
         if (!configResponse.ok || !config.publicKey) {
@@ -195,11 +206,13 @@
         if (!saveResponse.ok) throw new Error(saved.error || "Could not register this device.");
 
         byId("pushStatus").textContent = "Registered";
-        byId("remoteFeedback").textContent = "This device is registered for remote KALTA notifications.";
+        feedback.textContent = "This device is registered for remote KALTA notifications.";
         logActivity("Device registered with Vercel for remote push.");
       } catch (error) {
-        byId("remoteFeedback").textContent = "Registration failed: " + error.message;
+        feedback.textContent = "Registration failed: " + error.message;
         logActivity("Remote registration error: " + error.message);
+      } finally {
+        updatePermission();
       }
     });
 
@@ -304,7 +317,7 @@
       }
     });
 
-    byId("apiBase").value = localStorage.getItem("kaltaVercelApiBase") || "";
+    byId("apiBase").value = localStorage.getItem("kaltaVercelApiBase") || "https://pas-kaltaos.vercel.app";
     byId("apiBase").addEventListener("change", () => {
       localStorage.setItem("kaltaVercelApiBase", getApiBase());
     });
