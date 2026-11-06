@@ -17,12 +17,13 @@
       <img src="./icons/icon-192.png" alt="" width="42" height="42">
       <span><strong>KALTA</strong><small>VESSEL NOTIFICATIONS</small></span>
     </a>
-    <div class="connection"><span id="connectionDot" class="dot"></span><span id="connectionText">Checking connection</span></div>
+    <div class="connection"><span id="connectionDot" class="dot"></span><span id="connectionText">Starting...</span></div>
   </header>
 
   <main class="shell">
     <section class="intro">
       <p class="eyebrow">NOTIFICATION PROTOTYPE</p>
+      <p class="version" id="appVersion">KALTA Vessel · Version 0.1.6 · Build 2026.11.06.1</p>
       <h1>Stay connected.</h1>
       <p>Manage this device and test how KALTA notifications appear.</p>
     </section>
@@ -90,7 +91,7 @@
     </div>
   </dialog>
 
-  <footer><strong>KALTA</strong><span>Human Augmented OS</span><span>Prototype environment</span></footer>
+  <footer><strong>KALTA</strong><span>Human Augmented OS</span><span>Prototype environment</span><span id="footerVersion">Version 0.1.6 · Build 2026.11.06.1</span></footer>
 
   <script>
     const byId = (id) => document.getElementById(id);
@@ -129,34 +130,43 @@
       byId("testButton").disabled = !supported || permission !== "granted" || !workerRegistration;
     }
 
-    async function initialize() {
-      byId("connectionText").textContent = navigator.onLine ? "Online" : "Offline";
-      byId("connectionDot").classList.toggle("online", navigator.onLine);
-      byId("networkStatus").textContent = navigator.onLine ? "Online" : "Offline";
-      byId("platformInfo").textContent = navigator.userAgentData?.platform || navigator.platform || "Unknown";
-      byId("browserInfo").textContent = /Edg\//.test(navigator.userAgent) ? "Microsoft Edge" :
-        /Chrome\//.test(navigator.userAgent) ? "Chrome" :
-        /Firefox\//.test(navigator.userAgent) ? "Firefox" :
-        /Safari\//.test(navigator.userAgent) ? "Safari" : "Other";
+    function updateConnection() {
+      const online = navigator.onLine;
+      byId("connectionText").textContent = online ? "Connected" : "Offline";
+      byId("connectionDot").classList.toggle("online", online);
+      byId("networkStatus").textContent = online ? "Online" : "Offline";
+    }
 
-      if ("serviceWorker" in navigator) {
-        try {
-          workerRegistration = await navigator.serviceWorker.register("./sw.js");
-          await navigator.serviceWorker.ready;
-          byId("workerStatus").textContent = "Registered";
-          const existingSubscription = await workerRegistration.pushManager.getSubscription();
-          byId("pushStatus").textContent = existingSubscription ? "Registered" : "Not connected";
-          logActivity("Service worker registered.");
-        } catch (error) {
-          byId("workerStatus").textContent = "Registration failed";
-          logActivity("Service worker error: " + error.message);
-        }
-      } else {
+    async function initialize() {
+      updateConnection();
+      byId("platformInfo").textContent = navigator.userAgentData?.platform || navigator.platform || "Unknown";
+      byId("browserInfo").textContent = /Edg\\//.test(navigator.userAgent) ? "Microsoft Edge" :
+        /Chrome\\//.test(navigator.userAgent) ? "Chrome" :
+        /Firefox\\//.test(navigator.userAgent) ? "Firefox" :
+        /Safari\\//.test(navigator.userAgent) ? "Safari" : "Other";
+      updatePermission();
+
+      if (!("serviceWorker" in navigator)) {
         byId("workerStatus").textContent = "Unsupported";
+        logActivity("This browser does not support service workers.");
+        return;
+      }
+
+      byId("workerStatus").textContent = "Registering...";
+      try {
+        const registration = await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
+        workerRegistration = registration;
+        await registration.update().catch(() => {});
+        byId("workerStatus").textContent = "Registered";
+        const existingSubscription = await registration.pushManager.getSubscription();
+        byId("pushStatus").textContent = existingSubscription ? "Registered" : "Not connected";
+        logActivity("Service worker registered. App version 0.1.6.");
+      } catch (error) {
+        byId("workerStatus").textContent = "Registration failed";
+        logActivity("Service worker error: " + error.message);
       }
       updatePermission();
     }
-
     byId("enableButton").addEventListener("click", async () => {
       const feedback = byId("enableFeedback");
       if (!("Notification" in window)) {
@@ -326,18 +336,21 @@
       byId("activityLog").innerHTML = '<p class="empty">No activity recorded.</p>';
     });
 
-    window.addEventListener("online", () => {
-      byId("connectionText").textContent = "Online";
-      byId("connectionDot").classList.add("online");
-      byId("networkStatus").textContent = "Online";
+    window.addEventListener("online", updateConnection);
+    window.addEventListener("offline", updateConnection);
+    window.addEventListener("error", (event) => {
+      const message = event.message || "Unknown page script error";
+      logActivity("Page script error: " + message);
+      byId("connectionText").textContent = "Page error";
     });
-    window.addEventListener("offline", () => {
-      byId("connectionText").textContent = "Offline";
-      byId("connectionDot").classList.remove("online");
-      byId("networkStatus").textContent = "Offline";
+    window.addEventListener("unhandledrejection", (event) => {
+      logActivity("Page startup error: " + (event.reason?.message || String(event.reason)));
     });
 
-    initialize();
+    initialize().catch((error) => {
+      byId("workerStatus").textContent = "Startup error";
+      logActivity("Startup error: " + error.message);
+    });
   </script>
 </body>
 </html>
