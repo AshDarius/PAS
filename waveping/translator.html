@@ -1373,6 +1373,51 @@
   }
 
   window.wavepingPrepareBubble = prepareBubble;
+
+  // Participant voice assignments are prototype settings. The current user's
+  // verified profile choice takes precedence for their own messages.
+  function genderForBubble(button) {
+    const bubble = button.closest(".wp-translation-panel")?.parentElement;
+    const root = bubble?.closest(".group");
+    const name = root?.querySelector(".text-xs.font-semibold")?.textContent || "";
+    if (/Carlos\\s*Mendez/i.test(name)) return "male";
+    if (/Sarah\\s*Jenkins|Yuki\\s*Tanaka|Maya\\s*Chen|KALTA/i.test(name)) return "female";
+    if (bubble?.classList.contains("bg-indigo-600")) {
+      const selected = window.wavepingParticipantProfile?.voice || "Neutral";
+      return selected === "Masculine" ? "male" : selected === "Feminine" ? "female" : "neutral";
+    }
+    return "neutral";
+  }
+
+  function voiceGenderScore(voice, gender) {
+    if (gender === "neutral") return 0;
+    const name = (voice.name || "").toLowerCase();
+    const femaleTerms = /\\b(female|woman|zira|jenny|aria|ava|samantha|victoria|karen|susan|hazel|sonia|libby|natasha|tessa|moira|sara|allison|emma|olivia)\\b/;
+    const maleTerms = /\\b(male|man|david|guy|mark|ryan|george|james|daniel|thomas|alexander|christopher|fred|lee|oliver|aaron|arthur|rishi|andrew)\\b/;
+    if (gender === "female") return femaleTerms.test(name) ? 3 : maleTerms.test(name) ? -3 : 0;
+    return maleTerms.test(name) ? 3 : femaleTerms.test(name) ? -3 : 0;
+  }
+
+  function chooseSpeechVoice(code, gender) {
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length) return null;
+    const locale = speechLocales[code] || "en-US";
+    const base = locale.split("-")[0].toLowerCase();
+    const languageVoices = voices.filter(voice => (voice.lang || "").toLowerCase().split("-")[0] === base);
+    const candidates = languageVoices.length ? languageVoices : voices;
+    if (gender === "neutral") {
+      return candidates.find(voice => (voice.lang || "").toLowerCase() === locale.toLowerCase()) ||
+        candidates[0] || null;
+    }
+    const ranked = candidates
+      .map(voice => ({ voice, score: voiceGenderScore(voice, gender) +
+        ((voice.lang || "").toLowerCase() === locale.toLowerCase() ? 2 : 0) }))
+      .sort((a, b) => b.score - a.score);
+    // Only claim a gender match when the voice name provides a recognisable clue.
+    return ranked[0]?.score > 0 ? ranked[0].voice :
+      (candidates.find(voice => (voice.lang || "").toLowerCase() === locale.toLowerCase()) || candidates[0] || null);
+  }
+
   window.wavepingPlayTranslation = function (button) {
     const text = button.dataset.translationText;
     const code = button.dataset.translationTarget || selectedTargetCode();
@@ -1383,6 +1428,12 @@
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = speechLocales[code] || "en-US";
+    const gender = genderForBubble(button);
+    const voice = chooseSpeechVoice(code, gender);
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang || utterance.lang;
+    }
     button.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>' +
       ((window.wavepingText && window.wavepingText.playing) || "Playing...") + '</span>';
     const reset = () => {
