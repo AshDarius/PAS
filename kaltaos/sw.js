@@ -1,4 +1,4 @@
-const CACHE_NAME = "kalta-pwa-v1";
+const CACHE_NAME = "kalta-pwa-v2";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -56,12 +56,13 @@ self.addEventListener("push", (event) => {
   }
 
   const title = payload.title || "KALTA";
+  const body = payload.body || "You have a new notification.";
   const options = {
-    body: payload.body || "You have a new notification.",
+    body,
     icon: payload.icon || "./icons/icon-192.png",
     badge: payload.badge || "./icons/icon-192.png",
     tag: payload.tag || "kalta-notification",
-    data: { url: payload.url || "./index.html", title, body: options.body, ...(payload.data || {}) }
+    data: { url: payload.url || "./index.html", title, body, ...(payload.data || {}) }
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
