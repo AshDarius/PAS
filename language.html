@@ -204,6 +204,16 @@
 
   const mod = (a, n) => ((a % n) + n) % n;
 
+  // Haptic feedback is available on supported mobile browsers (mainly Android).
+  function haptic(pattern) {
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      navigator.vibrate(pattern);
+    }
+  }
+
+  // Track the language currently passing the centre arrows.
+  let lastHapticIndex = 0;
+
   const items = LANGS.map((l, i) => {
     const el = document.createElement("div");
     el.className = "item";
@@ -271,6 +281,14 @@
     }
     const tau = dragging ? 40 : 90; // ms: snappier while a finger/mouse is holding the reel
     pos += diff * (1 - Math.exp(-dt / tau));
+
+    // Give one short vibration whenever a new language reaches the centre.
+    const pointedLanguage = mod(Math.round(pos), N);
+    if (pointedLanguage !== lastHapticIndex) {
+      lastHapticIndex = pointedLanguage;
+      haptic(12);
+    }
+
     render();
     requestAnimationFrame(loop);
   }
@@ -303,6 +321,7 @@
   // Listen for this event elsewhere to move on to the next screen:
   //   document.addEventListener("languagechosen", e => console.log(e.detail));
   function proceed() {
+    haptic(28);
     const L = LANGS[current];
     document.dispatchEvent(new CustomEvent("languagechosen", { detail: { code: L.code, name: L.name } }));
   }
