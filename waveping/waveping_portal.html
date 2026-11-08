@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VELSTEN · WavePing Beacon</title>
+    
+    <!-- Google Fonts: Instrument Serif (Italic) & Jost (Regular, Medium 500, SemiBold 600) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- QRCode.js Library for dynamic reliable rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: '#121820',
+              stone: '#ECE9E3',
+              fjord: '#1E3340',
+              brass: '#C08A34',
+              paper: '#F5F3EF',
+              deepfjord: '#152530',
+              mist: '#C9C3B6',
+              slate: '#4A5560',
+            },
+            fontFamily: {
+              serif: ['"Instrument Serif"', 'serif'],
+              sans: ['Jost', 'sans-serif'],
+            },
+            letterSpacing: {
+              wordmark: '0.28em',
+              label: '0.18em',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+      /* Font styles based on design system rules */
+      body {
+        background-color: #ECE9E3; /* Stone */
+        color: #121820; /* Ink */
+        font-family: 'Jost', sans-serif;
+        font-size: 18px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .font-serif-italic {
+        font-family: 'Instrument Serif', serif;
+        font-style: italic;
+      }
+
+      .tracking-wordmark {
+        letter-spacing: 0.28em;
+      }
+
+      .tracking-label-caps {
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* Delicate border styling using palette tones */
+      .border-mist-subtle {
+        border-color: rgba(201, 195, 182, 0.35);
+      }
+      .border-fjord-subtle {
+        border-color: rgba(30, 51, 64, 0.15);
+      }
+
+      /* Custom button hover animation */
+      .btn-brass-accent {
+        background-color: #1E3340;
+        color: #F5F3EF;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(192, 138, 52, 0.4);
+      }
+      .btn-brass-accent:hover {
+        background-color: #152530;
+        border-color: #C08A34;
+        box-shadow: 0 4px 20px -2px rgba(192, 138, 52, 0.25);
+      }
+
+      /* Custom SVG facet hover effect */
+      .v-facet {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .logo-group:hover .v-facet-accent {
+        filter: drop-shadow(0 0 6px rgba(192, 138, 52, 0.6));
+      }
+    </style>
+</head>
+<body class="min-h-full flex flex-col justify-between selection:bg-brass selection:text-deepfjord">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="w-full bg-deepfjord text-stone border-b border-mist/10 py-6 px-6 sm:px-12">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            
+            <!-- BRAND LOGO & WORDMARK -->
+            <div class="flex items-center gap-4 logo-group">
+                <!-- Custom Geometric Faceted V Logo SVG -->
+                <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Outer Hexagon Frame in Fjord Light -->
+                    <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" stroke="#C9C3B6" stroke-width="2.5" fill="none" opacity="0.3"/>
+                    
+                    <!-- Left Wing Facet (Deep Fjord tone) -->
+                    <polygon points="50,82 22,22 36,22 50,58" fill="#1E3340"/>
+                    <polygon points="22,22 36,22 50,58" fill="#152530" opacity="0.7"/>
+                    
+                    <!-- Right Wing Facet (Fjord tone) -->
+                    <polygon points="50,82 78,22 64,22 50,58" fill="#2C485A"/>
+                    
+                    <!-- SUN BRASS FACET (The V Facet - One Accent Only) -->
+                    <polygon class="v-facet v-facet-accent" points="50,82 78,22 69,22 50,68" fill="#C08A34"/>
+                    
+                    <!-- Top Center Horizon Dot -->
+                    <circle cx="50" cy="16" r="3" fill="#C08A34"/>
+                </svg>
+
+                <div class="flex flex-col">
+                    <span class="font-sans font-medium text-xl sm:text-2xl text-stone tracking-wordmark uppercase">VELSTEN · KALTA</span>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINMENT -->
+    <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-8">
+        
+        <!-- CENTERED QR CODE POSTER CARD -->
+        <div class="w-full max-w-xl bg-paper rounded-3xl p-8 sm:p-14 shadow-2xl border border-fjord-subtle flex flex-col items-center text-center my-auto">
+            
+            <!-- Prominent Large QR Code Container -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-mist-subtle shadow-md mb-8 relative w-full max-w-md flex justify-center items-center">
+                <div id="qrcode" class="flex justify-center items-center"></div>
+                <!-- Corner brass accent marks -->
+                <div class="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-2 border-l-2 border-brass"></div>
+                <div class="absolute -top-1.5 -right-1.5 w-5 h-5 border-t-2 border-r-2 border-brass"></div>
+                <div class="absolute -bottom-1.5 -left-1.5 w-5 h-5 border-b-2 border-l-2 border-brass"></div>
+                <div class="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-2 border-r-2 border-brass"></div>
+            </div>
+
+            <!-- Direct Action Link Button -->
+            <a href="https://ashdarius.github.io/PAS/waveping/" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="btn-brass-accent w-full max-w-md py-4 px-8 rounded-xl font-sans font-medium text-base tracking-wide flex items-center justify-center gap-3 group">
+                <span>OPEN WAVEPING DIRECTLY</span>
+                <svg class="w-5 h-5 text-brass transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </a>
+
+            <p class="text-slate text-xs sm:text-sm mt-6 font-mono opacity-80">
+                https://ashdarius.github.io/PAS/waveping/
+            </p>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-deepfjord text-mist border-t border-mist/10 py-6 px-6 sm:px-12 text-center text-xs">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="tracking-label-caps text-mist/70">
+                VELSTEN BARGE COMMUNICATIONS
+            </div>
+            <div class="text-mist/60 font-mono">
+                SECURE REDIRECT &rarr; ASHDARIUS.GITHUB.IO
+            </div>
+        </div>
+    </footer>
+
+    <!-- QR CODE GENERATION SCRIPT -->
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            var targetUrl = "https://ashdarius.github.io/PAS/waveping/";
+            var qrContainer = document.getElementById("qrcode");
+
+            // Calculate responsive large QR size (up to 340px for easy distance scanning)
+            var size = Math.min(window.innerWidth - 120, 340);
+
+            try {
+                new QRCode(qrContainer, {
+                    text: targetUrl,
+                    width: size,
+                    height: size,
+                    colorDark : "#121820", // Ink color
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            } catch (e) {
+                console.error("QRCode instantiation fallback", e);
+                qrContainer.innerHTML = '<div class="p-4 text-center text-xs text-slate">Scan URL: ' + targetUrl + '</div>';
+            }
+        });
+    </script>
+</body>
+</html>
