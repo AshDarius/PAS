@@ -1213,6 +1213,20 @@
       // Ignore audio errors so the selector remains usable.
     }
   }
+  // Load the recorded scroll wheel sound.
+const scrollWheelAudio = new Audio("./ScrollWheel.wav");
+
+scrollWheelAudio.preload = "auto";
+scrollWheelAudio.volume = 0.45;
+
+function playScrollWheelSound() {
+    try {
+        scrollWheelAudio.currentTime = 0;
+        scrollWheelAudio.play().catch(() => {});
+    } catch (error) {
+        // Sound is optional.
+    }
+}
 
   // Shared feedback for every deliberate tap or keyboard activation.
   // Covers buttons, links, choice controls, profile options, and language rows.
@@ -1322,7 +1336,7 @@
     if (pointedLanguage !== lastHapticIndex) {
       lastHapticIndex = pointedLanguage;
       haptic(12);
-      playSelectorClick();
+      playScrollWheelSound();
     }
 
     render();
