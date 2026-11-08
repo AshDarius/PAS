@@ -1545,5 +1545,50 @@
 })();
 </script>
 
+
+<script>
+(function () {
+  // All interactive controls use the button sound. This is separate from the language wheel sound.
+  const buttonPushReleaseAudio = new Audio("./ButtonPushRelease.wav");
+  buttonPushReleaseAudio.preload = "auto";
+  buttonPushReleaseAudio.volume = 0.45;
+
+  function playButtonPushReleaseSound() {
+    try {
+      buttonPushReleaseAudio.currentTime = 0;
+      buttonPushReleaseAudio.play().catch(() => {});
+    } catch (error) {
+      // Sound is optional.
+    }
+  }
+
+  const feedbackSelector = [
+    "button:not(:disabled)",
+    "a[href]",
+    "input[type='radio']:not(:disabled)",
+    "input[type='checkbox']:not(:disabled)",
+    "select:not(:disabled)",
+    "[role='button']",
+    "[role='radio']",
+    "[role='option']",
+    "[aria-pressed]",
+    "[aria-checked]"
+  ].join(",");
+
+  document.addEventListener("pointerdown", event => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target || !target.closest(feedbackSelector)) return;
+    playButtonPushReleaseSound();
+  }, true);
+
+  document.addEventListener("keydown", event => {
+    if (event.repeat || (event.key !== "Enter" && event.key !== " ")) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target || !target.closest(feedbackSelector)) return;
+    playButtonPushReleaseSound();
+  }, true);
+})();
+</script>
+
 </body>
 </html>
