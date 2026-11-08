@@ -1568,11 +1568,15 @@
     "input[type='radio']:not(:disabled)",
     "input[type='checkbox']:not(:disabled)",
     "select:not(:disabled)",
+    "label.tile",
+    "label.cursor-pointer",
     "[role='button']",
     "[role='radio']",
     "[role='option']",
     "[aria-pressed]",
-    "[aria-checked]"
+    "[aria-checked]",
+    "[onclick]",
+    ".item"
   ].join(",");
 
   document.addEventListener("pointerdown", event => {
