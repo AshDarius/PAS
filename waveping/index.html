@@ -1173,8 +1173,7 @@
 
   // Generate a short, quiet click with Web Audio. Audio is unlocked by the
   // user's first interaction because browsers restrict automatic sound.
-  let selectorAudioContext = null;
-
+  
   function unlockSelectorAudio() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
@@ -1189,30 +1188,6 @@
     }
   }
 
-  function playSelectorClick() {
-    if (!selectorAudioContext || selectorAudioContext.state !== "running") return;
-
-    try {
-      const now = selectorAudioContext.currentTime;
-      const oscillator = selectorAudioContext.createOscillator();
-      const gain = selectorAudioContext.createGain();
-
-      oscillator.type = "square";
-      oscillator.frequency.setValueAtTime(1050, now);
-      oscillator.frequency.exponentialRampToValueAtTime(720, now + 0.018);
-
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.055, now + 0.002);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
-
-      oscillator.connect(gain);
-      gain.connect(selectorAudioContext.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.027);
-    } catch (error) {
-      // Ignore audio errors so the selector remains usable.
-    }
-  }
   // Load the recorded scroll wheel sound.
 const scrollWheelAudio = new Audio("./ScrollWheel.wav");
 
@@ -1230,11 +1205,10 @@ function playScrollWheelSound() {
 
   // Shared feedback for every deliberate tap or keyboard activation.
   // Covers buttons, links, choice controls, profile options, and language rows.
-  function giveTapFeedback() {
-    unlockSelectorAudio();
+function giveTapFeedback() {
     haptic(12);
-    playSelectorClick();
-  }
+    playScrollWheelSound();
+}
 
   const feedbackSelector = [
     "button:not(:disabled)",
