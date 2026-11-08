@@ -1221,7 +1221,7 @@ function giveTapFeedback() {
     "[onclick]",
   ].join(",");
 
-  // Pointer input gives one short click and vibration at the start of a tap.
+  // Pointer input plays the button sound and gives vibration at the start of a tap.
   document.addEventListener("pointerdown", event => {
     const target = event.target instanceof Element ? event.target : null;
     if (!target || !target.closest(feedbackSelector)) return;
