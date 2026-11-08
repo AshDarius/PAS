@@ -1,5 +1,5 @@
-const CACHE_NAME = 'waveping-shell-v15';
-const APP_FILES = ['./', './index.html', './translator.html', './manifest.json', './icon.svg', './KALTA6.jpg', './ScrollWheel.wav', './ButtonPushRelease.wav'];
+const CACHE_NAME = 'waveping-shell-v16';
+const APP_FILES = ['./', './index.html', './translator.html', './manifest.json', './icon.svg', './KALTA6.jpg', './KALTA_AVATAR.jpeg', './ScrollWheel.wav', './ButtonPushRelease.wav'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)));
